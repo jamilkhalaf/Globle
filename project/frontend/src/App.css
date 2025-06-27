@@ -1,0 +1,72 @@
+#root {
+  max-width: none;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  overflow: hidden;
+  background-color: #2b2b2b;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  background-color: #2b2b2b;
+}
+
+/* Ensure Leaflet map takes full viewport */
+.leaflet-container {
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #2b2b2b !important;
+}
+
+.leaflet-map-pane {
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #2b2b2b !important;
+}
+
+/* Additional Leaflet background fixes */
+.leaflet-pane {
+  background-color: #2b2b2b !important;
+}
+
+.leaflet-overlay-pane {
+  background-color: #2b2b2b !important;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #213547;
+}
+
+.card {
+  padding: 2rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+}
+
+p {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0;
+}
+
+.logo,
+.logo:hover,
+.logo.react:hover,
+@keyframes logo-spin,
+@media (prefers-reduced-motion: no-preference),
+.read-the-docs {
+  display: none;
+}

@@ -1,0 +1,33 @@
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ThemeProvider, createTheme } from '@mui/material'
+import Home from './components/Home'
+import Game from './components/Game'
+import Wordle from './components/Wordle'
+import Population from './components/population'
+import './App.css'
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+  },
+})
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/game" element={<Game />} />
+          <Route path="/wordle" element={<Wordle />} />
+          <Route path="/population" element={<Population />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
+  )
+}
+
+export default App
