@@ -1,0 +1,2 @@
+# Globle
+globle, wordle games
