@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Toolbar, Button, Paper, Fade } from '@mui/material';
+import { Box, Typography, Toolbar, Button, Paper, Fade, useTheme, useMediaQuery } from '@mui/material';
 import Header from './Header';
 import Confetti from 'react-confetti';
 
@@ -7,6 +7,8 @@ const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 
 const Wordle = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [targetWord, setTargetWord] = useState('');
   const [guesses, setGuesses] = useState(Array(MAX_GUESSES).fill(''));
   const [currentGuess, setCurrentGuess] = useState(0);
@@ -88,7 +90,7 @@ const Wordle = () => {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (gameOver) return;
+      if (gameOver || isMobile) return; // Disable keyboard handler on mobile
       
       const key = event.key.toUpperCase();
       
@@ -105,7 +107,7 @@ const Wordle = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameOver, currentInput]);
+  }, [gameOver, currentInput, isMobile]);
 
   const handleSubmit = () => {
     if (gameOver) return;
@@ -217,15 +219,15 @@ const Wordle = () => {
     }
     
     return {
-      width: '62px',
-      height: '62px',
+      width: { xs: '50px', sm: '56px', md: '62px' },
+      height: { xs: '50px', sm: '56px', md: '62px' },
       border: '2px solid #3a3a3c',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor,
       color: hasLetter ? 'white' : '#121213',
-      fontSize: '2rem',
+      fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
       fontWeight: 'bold',
       textTransform: 'uppercase',
       transition: 'all 0.3s ease',
@@ -252,38 +254,42 @@ const Wordle = () => {
         display: 'flex', 
         flexDirection: 'column',
         alignItems: 'center',
-        pt: 4
+        pt: { xs: 2, md: 4 },
+        px: { xs: 2, md: 0 }
       }}>
         <Paper 
           elevation={3}
           sx={{ 
-            p: 3, 
-            mb: 4, 
+            p: { xs: 2, md: 3 }, 
+            mb: { xs: 2, md: 4 }, 
             bgcolor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
             borderRadius: 2,
-            minWidth: '300px'
+            minWidth: { xs: '280px', md: '300px' },
+            width: { xs: '100%', md: 'auto' }
           }}
         >
           <Typography 
-            variant="h5" 
+            variant={isMobile ? "h6" : "h5"}
             sx={{ 
               color: 'white',
               fontWeight: 'bold',
               textAlign: 'center',
-              mb: gameOver ? 2 : 0
+              mb: gameOver ? { xs: 1, md: 2 } : 0,
+              fontSize: { xs: '1.1rem', md: '1.5rem' }
             }}
           >
             {message}
           </Typography>
           {gameOver && !showConfetti && (
             <Typography 
-              variant="h6" 
+              variant={isMobile ? "body1" : "h6"}
               sx={{ 
                 color: '#6aaa64',
                 fontWeight: 'bold',
                 textAlign: 'center',
-                textTransform: 'uppercase'
+                textTransform: 'uppercase',
+                fontSize: { xs: '1rem', md: '1.25rem' }
               }}
             >
               {targetWord}
@@ -291,9 +297,16 @@ const Wordle = () => {
           )}
         </Paper>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 4 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: { xs: 0.5, md: 1 }, 
+          mb: { xs: 2, md: 4 },
+          width: '100%',
+          maxWidth: { xs: '280px', md: '400px' }
+        }}>
           {guesses.map((guess, guessIndex) => (
-            <Box key={guessIndex} sx={{ display: 'flex', gap: 0.5 }}>
+            <Box key={guessIndex} sx={{ display: 'flex', gap: { xs: 0.25, md: 0.5 }, justifyContent: 'center' }}>
               {Array(WORD_LENGTH).fill('').map((_, letterIndex) => (
                 <Box
                   key={letterIndex}
@@ -306,26 +319,123 @@ const Wordle = () => {
           ))}
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: { xs: 1, md: 2 }, 
+          alignItems: 'center',
+          width: '100%',
+          maxWidth: { xs: '280px', md: '400px' }
+        }}>
           <Typography 
-            variant="h6" 
+            variant={isMobile ? "body1" : "h6"}
             sx={{ 
               color: 'white',
-              minWidth: '250px',
-              textAlign: 'center'
+              minWidth: { xs: 'auto', md: '250px' },
+              textAlign: 'center',
+              fontSize: { xs: '1.1rem', md: '1.25rem' },
+              mb: { xs: 1, md: 0 }
             }}
           >
             {currentInput}
           </Typography>
+          
+          {/* Mobile Input Box */}
+          {isMobile && (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: 1,
+              width: '100%',
+              mb: 2
+            }}>
+              <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.9rem' }}>
+                Type your guess:
+              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 0.5, 
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                maxWidth: '280px'
+              }}>
+                {Array(WORD_LENGTH).fill('').map((_, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      width: '40px',
+                      height: '40px',
+                      border: '2px solid #3a3a3c',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#121213',
+                      color: currentInput[index] ? 'white' : '#3a3a3c',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase',
+                      borderRadius: 1,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        borderColor: '#1976d2',
+                      }
+                    }}
+                  >
+                    {currentInput[index] || ''}
+                  </Box>
+                ))}
+              </Box>
+              <input
+                id="mobile-wordle-input"
+                type="text"
+                value={currentInput}
+                onChange={(e) => {
+                  const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, WORD_LENGTH);
+                  setCurrentInput(value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  maxWidth: '280px',
+                  padding: '12px',
+                  fontSize: '16px',
+                  border: '2px solid #3a3a3c',
+                  borderRadius: '8px',
+                  backgroundColor: '#121213',
+                  color: 'white',
+                  textAlign: 'center',
+                  textTransform: 'uppercase',
+                  outline: 'none',
+                  '&:focus': {
+                    borderColor: '#1976d2'
+                  }
+                }}
+                placeholder="Type 5 letters..."
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="characters"
+                maxLength={WORD_LENGTH}
+                autoFocus
+              />
+            </Box>
+          )}
+          
           <Button
             variant="contained"
             onClick={handleSubmit}
             disabled={currentInput.length !== WORD_LENGTH || gameOver}
+            size={isMobile ? "medium" : "large"}
             sx={{
               bgcolor: '#538d4e',
               '&:hover': {
                 bgcolor: '#4a7d45'
-              }
+              },
+              width: { xs: '100%', md: 'auto' }
             }}
           >
             Submit
@@ -337,12 +447,14 @@ const Wordle = () => {
             <Button
               variant="contained"
               onClick={startNewGame}
+              size={isMobile ? "medium" : "large"}
               sx={{
-                mt: 4,
+                mt: { xs: 2, md: 4 },
                 bgcolor: '#538d4e',
                 '&:hover': {
                   bgcolor: '#4a7d45'
-                }
+                },
+                width: { xs: '200px', md: 'auto' }
               }}
             >
               New Game

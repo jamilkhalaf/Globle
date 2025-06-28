@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, Tooltip } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, Tooltip, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import 'leaflet/dist/leaflet.css';
@@ -10,9 +10,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const Game = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [countries, setCountries] = useState([]);
   const [secretCountry, setSecretCountry] = useState(null);
   const [guessedCountries, setGuessedCountries] = useState([]);
@@ -25,6 +29,7 @@ const Game = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const mapRef = useRef(null);
   
   // Game state
@@ -41,6 +46,75 @@ const Game = () => {
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
 
+  // Add state to track recently used countries for better variety
+  const [recentlyUsedCountries, setRecentlyUsedCountries] = useState([]);
+
+  // Function to show country selection statistics
+  const logCountryVariety = (countryList) => {
+    const continents = {
+      'North America': 0,
+      'South America': 0,
+      'Europe': 0,
+      'Asia': 0,
+      'Africa': 0,
+      'Oceania': 0
+    };
+    
+    // Simple continent detection based on coordinates
+    countryList.forEach(country => {
+      try {
+        const center = getCountryCenter(country);
+        if (center.lat > 0 && center.lon < -30) {
+          continents['North America']++;
+        } else if (center.lat < 0 && center.lon < -30) {
+          continents['South America']++;
+        } else if (center.lat > 35 && center.lon > -10 && center.lon < 40) {
+          continents['Europe']++;
+        } else if (center.lat > 0 && center.lon > 40) {
+          continents['Asia']++;
+        } else if (center.lat < 0 && center.lon > -10 && center.lon < 40) {
+          continents['Africa']++;
+        } else if (center.lat < 0 && center.lon > 100) {
+          continents['Oceania']++;
+        }
+      } catch (e) {
+        // Skip countries with invalid coordinates
+      }
+    });
+    
+    console.log('Country distribution by continent:', continents);
+  };
+
+  // Function to categorize countries by difficulty
+  const getCountryDifficulty = (countryName) => {
+    // Well-known countries (easy)
+    const easyCountries = [
+      'United States', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Chile',
+      'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Portugal',
+      'China', 'Japan', 'India', 'Australia', 'South Africa', 'Egypt',
+      'Russia', 'Turkey', 'Iran', 'Saudi Arabia', 'Thailand', 'Vietnam'
+    ];
+    
+    // Medium difficulty countries
+    const mediumCountries = [
+      'Netherlands', 'Belgium', 'Switzerland', 'Austria', 'Poland', 'Czech Republic',
+      'Hungary', 'Romania', 'Bulgaria', 'Greece', 'Ukraine', 'Belarus',
+      'Pakistan', 'Bangladesh', 'Sri Lanka', 'Myanmar', 'Malaysia', 'Indonesia',
+      'Philippines', 'New Zealand', 'Fiji', 'Papua New Guinea',
+      'Nigeria', 'Kenya', 'Morocco', 'Algeria', 'Tunisia', 'Libya',
+      'Sudan', 'Ethiopia', 'Somalia', 'Madagascar', 'Zimbabwe', 'Botswana',
+      'Namibia', 'Mozambique', 'Tanzania', 'Uganda', 'Rwanda', 'Burundi',
+      'Colombia', 'Venezuela', 'Ecuador', 'Peru', 'Bolivia', 'Paraguay',
+      'Uruguay', 'Guyana', 'Suriname', 'French Guiana',
+      'Guatemala', 'Belize', 'El Salvador', 'Honduras', 'Nicaragua',
+      'Costa Rica', 'Panama', 'Cuba', 'Jamaica', 'Haiti', 'Dominican Republic'
+    ];
+    
+    if (easyCountries.includes(countryName)) return 'easy';
+    if (mediumCountries.includes(countryName)) return 'medium';
+    return 'hard';
+  };
+
   const selectRandomCountry = (countryList) => {
     // Filter out countries that are too small or have invalid coordinates
     const validCountries = countryList.filter(country => {
@@ -52,23 +126,56 @@ const Game = () => {
       }
     });
     
-    // Debug: Check if Monaco is in the dataset
-    const monaco = countryList.find(c => c.properties.name === 'Monaco');
-    if (monaco) {
-      console.log('Monaco found in dataset');
+    // Filter out recently used countries (last 5 games) for better variety
+    const availableCountries = validCountries.filter(country => 
+      !recentlyUsedCountries.includes(country.properties.name)
+    );
+    
+    // If we've used too many countries recently, reset the list
+    const countriesToUse = availableCountries.length > 0 ? availableCountries : validCountries;
+    
+    // Add slight bias toward easier countries (70% chance for easy/medium, 30% for hard)
+    const random = Math.random();
+    let filteredCountries = countriesToUse;
+    
+    if (random < 0.7) {
+      // 70% chance: prefer easy and medium countries
+      const easyMediumCountries = countriesToUse.filter(country => {
+        const difficulty = getCountryDifficulty(country.properties.name);
+        return difficulty === 'easy' || difficulty === 'medium';
+      });
+      
+      if (easyMediumCountries.length > 0) {
+        filteredCountries = easyMediumCountries;
+        console.log('Using easy/medium bias - filtered to', filteredCountries.length, 'countries');
+      }
     } else {
-      console.log('Monaco NOT found in dataset');
-      console.log('Available countries near Monaco:', countryList.filter(c => 
-        c.properties.name.includes('France') || 
-        c.properties.name.includes('Italy') || 
-        c.properties.name.includes('Spain')
-      ).map(c => c.properties.name));
+      // 30% chance: include all countries (including hard ones)
+      console.log('Using full country pool - no difficulty bias');
     }
     
-    const randomIndex = Math.floor(Math.random() * validCountries.length);
-    const selectedCountry = validCountries[randomIndex];
+    // Ensure we have a good mix of countries by not excluding any valid ones
+    console.log(`Total countries available: ${countryList.length}`);
+    console.log(`Valid countries after filtering: ${validCountries.length}`);
+    console.log(`Available countries (excluding recent): ${countriesToUse.length}`);
+    console.log(`Final selection pool: ${filteredCountries.length}`);
     
+    // Use a more robust random selection
+    const randomIndex = Math.floor(Math.random() * filteredCountries.length);
+    const selectedCountry = filteredCountries[randomIndex];
+    
+    // Log the selection for debugging
+    console.log(`Random index: ${randomIndex} out of ${filteredCountries.length}`);
     console.log(`Selected country: ${selectedCountry.properties.name}`);
+    console.log(`Difficulty: ${getCountryDifficulty(selectedCountry.properties.name)}`);
+    
+    // Log some sample countries to verify variety
+    const sampleCountries = filteredCountries.slice(0, 10).map(c => c.properties.name);
+    console.log(`Sample of available countries: ${sampleCountries.join(', ')}`);
+    
+    // Log continent distribution for verification
+    logCountryVariety(filteredCountries);
+    
     return selectedCountry;
   };
 
@@ -391,7 +498,27 @@ const Game = () => {
 
   const resetGame = () => {
     // Start new game with different country
-    const newSecretCountry = selectRandomCountry(countries);
+    let newSecretCountry;
+    let attempts = 0;
+    const maxAttempts = 10; // Prevent infinite loop
+    
+    do {
+      newSecretCountry = selectRandomCountry(countries);
+      attempts++;
+    } while (
+      newSecretCountry.properties.name === secretCountry?.properties.name && 
+      attempts < maxAttempts
+    );
+    
+    // Track recently used countries for better variety
+    if (secretCountry) {
+      setRecentlyUsedCountries(prev => {
+        const updated = [secretCountry.properties.name, ...prev.slice(0, 4)]; // Keep last 5
+        console.log(`Recently used countries: ${updated.join(', ')}`);
+        return updated;
+      });
+    }
+    
     setSecretCountry(newSecretCountry);
     setGuessedCountries([]);
     setMessage('Guess the country!');
@@ -803,7 +930,9 @@ const Game = () => {
       overflow: 'hidden',
       margin: 0,
       padding: 0,
-      backgroundColor: '#2b2b2b'
+      backgroundColor: '#2b2b2b',
+      touchAction: 'none', // Prevent touch scrolling on the page
+      WebkitOverflowScrolling: 'touch'
     }} onMouseMove={handleMouseMove}>
       <Header />
       <Toolbar /> {/* This creates space for the fixed AppBar */}
@@ -819,12 +948,14 @@ const Game = () => {
         margin: 0,
         padding: 0,
         zIndex: 1,
-        backgroundColor: '#2b2b2b'
+        backgroundColor: '#2b2b2b',
+        overflow: 'hidden', // Prevent scrolling
+        touchAction: 'none' // Prevent touch scrolling
       }}>
         <MapContainer
           center={[20, 0]}
-          zoom={3}
-          minZoom={3}
+          zoom={isMobile ? 2 : 3}
+          minZoom={isMobile ? 2 : 3}
           maxZoom={10}
           style={{ 
             height: '100vh', 
@@ -835,9 +966,11 @@ const Game = () => {
             margin: 0,
             padding: 0,
             zIndex: 1,
-            backgroundColor: '#2b2b2b'
+            backgroundColor: '#2b2b2b',
+            touchAction: 'pan-x pan-y', // Allow only map panning
+            overflow: 'hidden'
           }}
-          zoomControl={false}
+          zoomControl={!isMobile}
           scrollWheelZoom={true}
           doubleClickZoom={false}
           dragging={true}
@@ -848,14 +981,23 @@ const Game = () => {
           maxBoundsViscosity={1.0}
           ref={mapRef}
           whenCreated={(map) => {
-            map.setMinZoom(3);
+            map.setMinZoom(isMobile ? 2 : 3);
             map.setMaxZoom(10);
             map.setMaxBounds([[-85, -180], [85, 180]]);
             map.on('zoomend', () => {
               const currentZoom = map.getZoom();
-              if (currentZoom < 3) {
-                map.setZoom(3);
+              if (currentZoom < (isMobile ? 2 : 3)) {
+                map.setZoom(isMobile ? 2 : 3);
               }
+            });
+            
+            // Prevent page scrolling when interacting with map
+            map.on('touchstart', (e) => {
+              e.originalEvent.stopPropagation();
+            });
+            
+            map.on('touchmove', (e) => {
+              e.originalEvent.stopPropagation();
             });
           }}
         >
@@ -929,37 +1071,40 @@ const Game = () => {
         <Box
           sx={{
             position: 'fixed',
-            left: mousePosition.x + 10,
-            top: mousePosition.y - 40,
+            left: { xs: 10, md: mousePosition.x + 10 },
+            right: { xs: 10, md: 'auto' },
+            top: { xs: 'auto', md: mousePosition.y - 40 },
+            bottom: { xs: 80, md: 'auto' },
             backgroundColor: 'rgba(0, 0, 0, 0.9)',
             color: 'white',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            fontSize: '14px',
+            padding: { xs: '12px 16px', md: '8px 12px' },
+            borderRadius: { xs: 2, md: '6px' },
+            fontSize: { xs: '16px', md: '14px' },
             fontWeight: 'bold',
             zIndex: 2000,
             pointerEvents: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: '8px',
+            alignItems: { xs: 'center', md: 'flex-start' },
+            gap: { xs: '12px', md: '8px' },
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            maxWidth: { xs: 'calc(100vw - 20px)', md: 'auto' }
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '16px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: '12px', md: '8px' } }}>
+            <span style={{ fontSize: { xs: '20px', md: '16px' } }}>
               {getCountryFlag(hoveredCountry.properties.name)}
             </span>
-            <span>{hoveredCountry.properties.name}</span>
+            <span style={{ fontSize: { xs: '18px', md: '14px' } }}>{hoveredCountry.properties.name}</span>
           </Box>
           {(() => {
             const info = countryInfo[hoveredCountry.properties.name];
-            if (!info) return <Typography variant="body2" sx={{ color: '#ccc' }}>No info available.</Typography>;
+            if (!info) return <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '14px', md: '12px' } }}>No info available.</Typography>;
             return (
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="body2" sx={{ color: '#ccc' }}>Capital: <b>{info.capital}</b></Typography>
-                <Typography variant="body2" sx={{ color: '#ccc' }}>Population: <b>{info.population.toLocaleString()}</b></Typography>
+              <Box sx={{ mt: { xs: 0, md: 1 }, textAlign: { xs: 'center', md: 'left' } }}>
+                <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '14px', md: '12px' } }}>Capital: <b>{info.capital}</b></Typography>
+                <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '14px', md: '12px' } }}>Population: <b>{info.population.toLocaleString()}</b></Typography>
               </Box>
             );
           })()}
@@ -970,46 +1115,55 @@ const Game = () => {
       <Paper
         sx={{
           position: 'absolute',
-          top: 80,
-          left: 20,
-          padding: 2,
+          top: { xs: 70, md: 80 },
+          left: { xs: 10, md: 20 },
+          right: { xs: 'auto', md: 'auto' },
+          transform: { xs: 'none', md: 'none' },
+          padding: { xs: 1, md: 2 },
           backgroundColor: 'rgba(0, 0, 0, 0.95)',
           color: 'white',
           zIndex: 1000,
-          maxWidth: '320px',
-          width: '320px',
+          maxWidth: { xs: '200px', md: '320px' },
+          width: { xs: '200px', md: '320px' },
           boxShadow: 3,
-          borderRadius: 2,
-          backdropFilter: 'blur(10px)'
+          borderRadius: { xs: 1, md: 2 },
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease'
         }}
       >
-        <Stack spacing={2}>
-          <Box>
+        <Stack spacing={isMobile ? 1 : 2}>
+          {/* Header with expand/collapse button */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography 
-              variant="h6" 
-              gutterBottom 
+              variant="caption"
               sx={{ 
                 fontWeight: 'bold',
                 color: gameOver ? '#4CAF50' : '#1976d2',
-                fontSize: '1.1rem',
-                lineHeight: 1.3
+                fontSize: { xs: '0.75rem', md: '1.1rem' },
+                lineHeight: 1.2,
+                flex: 1,
+                mr: 1
               }}
             >
               {message}
             </Typography>
-            {!gameOver && (
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#ccc' }}>
-                Type a country name
-              </Typography>
-            )}
-            {gameOver && (
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#4CAF50' }}>
-                Score: {score} • Time: {gameEndTime ? formatTime(gameEndTime - gameStartTime) : '--'}
-              </Typography>
-            )}
+            <IconButton
+              size="small"
+              onClick={() => setIsMenuExpanded(!isMenuExpanded)}
+              sx={{ 
+                color: 'white',
+                padding: 0.25,
+                minWidth: '24px',
+                height: '24px',
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+              }}
+            >
+              {isMenuExpanded ? <ExpandLessIcon sx={{ fontSize: '16px' }} /> : <ExpandMoreIcon sx={{ fontSize: '16px' }} />}
+            </IconButton>
           </Box>
-          
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+
+          {/* Always visible: Country input */}
+          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
             <Autocomplete
               value={guess}
               onChange={handleCountrySelect}
@@ -1024,18 +1178,35 @@ const Game = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  placeholder="Country name"
+                  placeholder="Country"
                   disabled={gameOver}
                   fullWidth
                   variant="outlined"
                   size="small"
+                  inputProps={{
+                    ...params.inputProps,
+                    style: {
+                      fontSize: '16px', // Prevents zoom on iOS
+                      transform: 'scale(1)', // Prevents zoom
+                    }
+                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: 'white',
-                      fontSize: '0.9rem',
+                      fontSize: { xs: '0.7rem', md: '0.9rem' },
+                      height: { xs: '32px', md: '40px' },
                       '&:hover fieldset': {
                         borderColor: '#1976d2',
                       },
+                      '& input': {
+                        padding: { xs: '6px 8px', md: '8px 12px' },
+                        fontSize: { xs: '0.7rem', md: '0.9rem' },
+                        fontSize: '16px !important', // Prevents zoom on iOS
+                        transform: 'scale(1) !important', // Prevents zoom
+                        '&:focus': {
+                          fontSize: '16px !important', // Maintains size on focus
+                        }
+                      }
                     },
                   }}
                 />
@@ -1047,8 +1218,8 @@ const Game = () => {
               onClose={() => setIsDropdownOpen(false)}
               ListboxProps={{
                 style: {
-                  maxHeight: '150px',
-                  fontSize: '0.9rem'
+                  maxHeight: isMobile ? '100px' : '150px',
+                  fontSize: { xs: '0.7rem', md: '0.9rem' }
                 }
               }}
             />
@@ -1058,111 +1229,122 @@ const Game = () => {
               disabled={gameOver}
               size="small"
               sx={{
-                minWidth: '60px',
+                minWidth: { xs: '40px', md: '60px' },
+                height: { xs: '32px', md: '40px' },
                 backgroundColor: '#1976d2',
-                fontSize: '0.8rem',
+                fontSize: { xs: '0.6rem', md: '0.8rem' },
+                padding: { xs: '4px 8px', md: '8px 16px' },
                 '&:hover': {
                   backgroundColor: '#1565c0',
                 },
               }}
             >
-              Guess
+              {isMobile ? '✓' : 'Guess'}
             </Button>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {!gameOver && (
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleGiveUp}
-                fullWidth
-                size="small"
-                sx={{
-                  borderColor: '#d32f2f',
-                  color: '#d32f2f',
-                  fontSize: '0.8rem',
-                  '&:hover': {
-                    borderColor: '#b71c1c',
-                    backgroundColor: 'rgba(211, 47, 47, 0.04)',
-                  },
-                }}
-              >
-                Give Up
-              </Button>
-            )}
-            {gameOver && (
-              <Button
-                variant="contained"
-                color="success"
-                onClick={resetGame}
-                fullWidth
-                size="small"
-                sx={{
-                  backgroundColor: '#4CAF50',
-                  fontSize: '0.8rem',
-                  '&:hover': {
-                    backgroundColor: '#388E3C',
-                  },
-                }}
-              >
-                Next Country
-              </Button>
-            )}
-          </Box>
+          {/* Collapsible content */}
+          {isMenuExpanded && (
+            <>
+              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                {!gameOver && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={handleGiveUp}
+                    fullWidth
+                    size="small"
+                    sx={{
+                      borderColor: '#d32f2f',
+                      color: '#d32f2f',
+                      fontSize: { xs: '0.6rem', md: '0.8rem' },
+                      height: { xs: '28px', md: '36px' },
+                      '&:hover': {
+                        borderColor: '#b71c1c',
+                        backgroundColor: 'rgba(211, 47, 47, 0.04)',
+                      },
+                    }}
+                  >
+                    {isMobile ? 'X' : 'Give Up'}
+                  </Button>
+                )}
+                {gameOver && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={resetGame}
+                    fullWidth
+                    size="small"
+                    sx={{
+                      backgroundColor: '#4CAF50',
+                      fontSize: { xs: '0.6rem', md: '0.8rem' },
+                      height: { xs: '28px', md: '36px' },
+                      '&:hover': {
+                        backgroundColor: '#388E3C',
+                      },
+                    }}
+                  >
+                    {isMobile ? '↻' : 'Next Country'}
+                  </Button>
+                )}
+              </Box>
 
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            padding: 1,
-            borderRadius: 1
-          }}>
-            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#ccc' }}>
-              Guessed:
-            </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                fontWeight: 'bold',
-                color: '#1976d2',
-                fontSize: '0.9rem'
-              }}
-            >
-              {guessedCountries.length}
-            </Typography>
-          </Box>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                padding: { xs: 0.5, md: 1 },
+                borderRadius: 0.5,
+                fontSize: { xs: '0.6rem', md: '0.75rem' }
+              }}>
+                <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', md: '0.75rem' }, color: '#ccc' }}>
+                  Guessed:
+                </Typography>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: '#1976d2',
+                    fontSize: { xs: '0.6rem', md: '0.75rem' }
+                  }}
+                >
+                  {guessedCountries.length}
+                </Typography>
+              </Box>
 
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            padding: 1,
-            borderRadius: 1
-          }}>
-            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#ccc' }}>
-              Best Attempts:
-            </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                fontWeight: 'bold',
-                color: '#4CAF50',
-                fontSize: '0.9rem'
-              }}
-            >
-              {bestScore || '--'}
-            </Typography>
-          </Box>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                padding: { xs: 0.5, md: 1 },
+                borderRadius: 0.5,
+                fontSize: { xs: '0.6rem', md: '0.75rem' }
+              }}>
+                <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', md: '0.75rem' }, color: '#ccc' }}>
+                  Best:
+                </Typography>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    color: '#4CAF50',
+                    fontSize: { xs: '0.6rem', md: '0.75rem' }
+                  }}
+                >
+                  {bestScore || '--'}
+                </Typography>
+              </Box>
+            </>
+          )}
         </Stack>
       </Paper>
 
       {/* Footer with ? button */}
       <Box sx={{
         position: 'fixed',
-        bottom: 16,
+        bottom: { xs: 20, md: 16 },
         left: 0,
         width: '100vw',
         display: 'flex',
@@ -1171,7 +1353,17 @@ const Game = () => {
       }}>
         <Button
           variant="outlined"
-          sx={{ borderRadius: '50%', minWidth: 0, width: 40, height: 40, fontSize: 24, color: 'white', borderColor: 'white', backgroundColor: 'rgba(0,0,0,0.7)', '&:hover': { backgroundColor: 'rgba(0,0,0,0.9)' } }}
+          sx={{ 
+            borderRadius: '50%', 
+            minWidth: 0, 
+            width: { xs: 48, md: 40 }, 
+            height: { xs: 48, md: 40 }, 
+            fontSize: { xs: 28, md: 24 }, 
+            color: 'white', 
+            borderColor: 'white', 
+            backgroundColor: 'rgba(0,0,0,0.7)', 
+            '&:hover': { backgroundColor: 'rgba(0,0,0,0.9)' } 
+          }}
           onClick={() => setContactOpen(true)}
           aria-label="Contact Info"
         >

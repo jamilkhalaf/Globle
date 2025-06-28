@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Paper, Stack, Fade, Avatar, Toolbar } from '@mui/material';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, Button, Paper, Stack, Fade, Avatar, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import countryInfo from './countryInfo';
 import Header from './Header';
 
@@ -208,6 +208,7 @@ const getCountryFlag = (countryName) => {
     'Benin': '🇧🇯',
     'Cameroon': '🇨🇲',
     'Central African Republic': '🇨🇫',
+    'Equatorial Guinea': '🇬🇶',
     'Gabon': '🇬🇦',
     'Republic of the Congo': '🇨🇬',
     'Democratic Republic of the Congo': '🇨🇩',
@@ -238,118 +239,7 @@ const getCountryFlag = (countryName) => {
     'Western Sahara': '🇪🇭',
     'Polisario Front': '🇪🇭',
     'Sahrawi Arab Democratic Republic': '🇪🇭',
-    'Guinea-Bissau': '🇬🇼',
     'São Tomé and Príncipe': '🇸🇹',
-    'Equatorial Guinea': '🇬🇶',
-    'Chad': '🇹🇩',
-    'Niger': '🇳🇪',
-    'Mali': '🇲🇱',
-    'Burkina Faso': '🇧🇫',
-    'Senegal': '🇸🇳',
-    'Guinea': '🇬🇳',
-    'Sierra Leone': '🇸🇱',
-    'Liberia': '🇱🇷',
-    'Ivory Coast': '🇨🇮',
-    'Ghana': '🇬🇭',
-    'Togo': '🇹🇬',
-    'Benin': '🇧🇯',
-    'Cameroon': '🇨🇲',
-    'Central African Republic': '🇨🇫',
-    'Gabon': '🇬🇦',
-    'Republic of the Congo': '🇨🇬',
-    'Democratic Republic of the Congo': '🇨🇩',
-    'Angola': '🇦🇴',
-    'Zambia': '🇿🇲',
-    'Zimbabwe': '🇿🇼',
-    'Botswana': '🇧🇼',
-    'Namibia': '🇳🇦',
-    'Mozambique': '🇲🇿',
-    'Malawi': '🇲🇼',
-    'Tanzania': '🇹🇿',
-    'Uganda': '🇺🇬',
-    'Rwanda': '🇷🇼',
-    'Burundi': '🇧🇮',
-    'Ethiopia': '🇪🇹',
-    'Eritrea': '🇪🇷',
-    'Djibouti': '🇩🇯',
-    'Somalia': '🇸🇴',
-    'Madagascar': '🇲🇬',
-    'Comoros': '🇰🇲',
-    'Mauritius': '🇲🇺',
-    'Seychelles': '🇸🇨',
-    'Cape Verde': '🇨🇻',
-    'The Gambia': '🇬🇲',
-    'Mauritania': '🇲🇷',
-    'Western Sahara': '🇪🇭',
-    'Polisario Front': '🇪🇭',
-    'Sahrawi Arab Democratic Republic': '🇪🇭',
-    
-    // Russia and former Soviet states
-    'Russia': '🇷🇺',
-    'Belarus': '🇧🇾',
-    'Ukraine': '🇺🇦',
-    'Moldova': '🇲🇩',
-    'Lithuania': '🇱🇹',
-    'Latvia': '🇱🇻',
-    'Estonia': '🇪🇪',
-    'Georgia': '🇬🇪',
-    'Armenia': '🇦🇲',
-    'Azerbaijan': '🇦🇿',
-    'Kazakhstan': '🇰🇿',
-    'Uzbekistan': '🇺🇿',
-    'Turkmenistan': '🇹🇲',
-    'Kyrgyzstan': '🇰🇬',
-    'Tajikistan': '🇹🇯',
-    
-    // Middle East
-    'Turkey': '🇹🇷',
-    'Cyprus': '🇨🇾',
-    'Northern Cyprus': '🇨🇾',
-    'Iraq': '🇮🇶',
-    'Iran': '🇮🇷',
-    'Afghanistan': '🇦🇫',
-    'Pakistan': '🇵🇰',
-    'India': '🇮🇳',
-    'Nepal': '🇳🇵',
-    'Bhutan': '🇧🇹',
-    'Bangladesh': '🇧🇩',
-    'Sri Lanka': '🇱🇰',
-    'Maldives': '🇲🇻',
-    'Myanmar': '🇲🇲',
-    'Thailand': '🇹🇭',
-    'Laos': '🇱🇦',
-    'Cambodia': '🇰🇭',
-    'Vietnam': '🇻🇳',
-    'Malaysia': '🇲🇾',
-    'Singapore': '🇸🇬',
-    'Brunei': '🇧🇳',
-    'Indonesia': '🇮🇩',
-    'Philippines': '🇵🇭',
-    'East Timor': '🇹🇱',
-    'Papua New Guinea': '🇵🇬',
-    'Australia': '🇦🇺',
-    'New Zealand': '🇳🇿',
-    'Fiji': '🇫🇯',
-    'Solomon Islands': '🇸🇧',
-    'Vanuatu': '🇻🇺',
-    'New Caledonia': '🇳🇨',
-    'Samoa': '🇼🇸',
-    'American Samoa': '🇦🇸',
-    'Tonga': '🇹🇴',
-    'Tuvalu': '🇹🇻',
-    'Kiribati': '🇰🇮',
-    'Nauru': '🇳🇷',
-    'Palau': '🇵🇼',
-    'Micronesia': '🇫🇲',
-    'Marshall Islands': '🇲🇭',
-    'Cook Islands': '🇨🇰',
-    'Niue': '🇳🇺',
-    'Tokelau': '🇹🇰',
-    'French Polynesia': '🇵🇫',
-    'Wallis and Futuna': '🇼🇫',
-    'Pitcairn Islands': '🇵🇳',
-    'Guam': '🇬🇺',
-    'Northern Mariana Islands': '🇲🇵',
     'Lesotho': '🇱🇸',
     'eSwatini': '🇸🇿'
   };
@@ -359,120 +249,276 @@ const getCountryFlag = (countryName) => {
   
 
 const Population = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [countries, setCountries] = useState([]); // [left, right]
   const [score, setScore] = useState(0);
   const [message, setMessage] = useState('');
   const [fadeKey, setFadeKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Memoize the random country generation to prevent unnecessary re-renders
+  const generateNewCountries = useCallback(() => {
+    const left = getRandomCountry();
+    const right = getRandomCountry(left);
+    return [left, right];
+  }, []);
 
   useEffect(() => {
     // Initial two random countries
-    const left = getRandomCountry();
-    const right = getRandomCountry(left);
-    setCountries([left, right]);
+    setCountries(generateNewCountries());
     setMessage('Which country has a higher population?');
-  }, []);
+  }, [generateNewCountries]);
 
-  const handleGuess = (guessIdx) => {
+  const handleGuess = useCallback((guessIdx) => {
+    if (isLoading) return; // Prevent multiple clicks
+    
+    setIsLoading(true);
     const [left, right] = countries;
     const popLeft = getPopulation(left);
     const popRight = getPopulation(right);
     const correct = (guessIdx === 0 && popLeft >= popRight) || (guessIdx === 1 && popRight > popLeft);
+    
     if (correct) {
-      setScore(score + 1);
-      setMessage('Correct!');
+      setScore(prev => prev + 1);
+      setMessage('Correct! 🎉');
+      
+      // Faster transition for correct answers
       setTimeout(() => {
-        // On correct, reload two new random countries
-        const newLeft = getRandomCountry();
-        const newRight = getRandomCountry(newLeft);
-        setCountries([newLeft, newRight]);
+        setCountries(generateNewCountries());
         setMessage('Which country has a higher population?');
-        setFadeKey(fadeKey + 1);
-      }, 900);
+        setFadeKey(prev => prev + 1);
+        setIsLoading(false);
+      }, 600);
     } else {
       setScore(0);
       setMessage(`Wrong! The answer was ${popLeft > popRight ? left : right}.`);
+      
       setTimeout(() => {
-        // Both change
-        const newLeft = getRandomCountry();
-        const newRight = getRandomCountry(newLeft);
-        setCountries([newLeft, newRight]);
+        setCountries(generateNewCountries());
         setMessage('Which country has a higher population?');
-        setFadeKey(fadeKey + 1);
-      }, 1400);
+        setFadeKey(prev => prev + 1);
+        setIsLoading(false);
+      }, 1000);
     }
-  };
+  }, [countries, isLoading, generateNewCountries]);
 
   if (countries.length < 2) return null;
   const [left, right] = countries;
 
   return (
-    <Box sx={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 60% 40%, #232a3b 60%, #121213 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      background: 'radial-gradient(ellipse at 60% 40%, #232a3b 60%, #121213 100%)', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center',
+      overflow: 'hidden', // Prevent scrolling issues on mobile
+      position: 'relative'
+    }}>
       <Header />
       <Toolbar />
-      <Fade in key={fadeKey} timeout={600}>
-        <Paper elevation={6} sx={{ p: 4, borderRadius: 4, minWidth: 340, maxWidth: 480, textAlign: 'center', background: 'rgba(30,34,44,0.92)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)', backdropFilter: 'blur(8px)', mt: { xs: 10, md: 14 } }}>
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold', color: 'transparent', background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Population Showdown
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 3, color: '#b0c4de' }}>{message}</Typography>
-          <Stack direction="row" spacing={3} justifyContent="center" alignItems="center" sx={{ mb: 3 }}>
-            {[left, right].map((name, idx) => (
-              <Button key={name} onClick={() => handleGuess(idx)} sx={{
-                p: 0,
-                borderRadius: 3,
-                minWidth: 160,
-                minHeight: 180,
-                maxWidth: 180,
-                maxHeight: 220,
-                background: 'rgba(25,118,210,0.10)',
-                '&:hover': { background: 'rgba(25,118,210,0.22)', transform: 'scale(1.05)' },
-                boxShadow: '0 2px 12px 0 #1976d255',
+      
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        width: '100%',
+        px: { xs: 2, md: 4 },
+        py: { xs: 1, md: 2 }
+      }}>
+        <Fade in key={fadeKey} timeout={400}>
+          <Paper 
+            elevation={6} 
+            sx={{ 
+              p: { xs: 3, md: 4 }, 
+              borderRadius: { xs: 3, md: 4 }, 
+              width: { xs: '100%', md: 480 }, 
+              maxWidth: { xs: '100%', md: 480 },
+              textAlign: 'center', 
+              background: 'rgba(30,34,44,0.95)', 
+              color: 'white', 
+              boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)', 
+              backdropFilter: 'blur(12px)', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Background gradient overlay */}
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(0,188,212,0.1) 100%)',
+              pointerEvents: 'none'
+            }} />
+            
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography 
+                variant={isMobile ? "h5" : "h4"} 
+                sx={{ 
+                  mb: { xs: 2, md: 3 }, 
+                  fontWeight: 'bold', 
+                  color: 'transparent', 
+                  background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)', 
+                  WebkitBackgroundClip: 'text', 
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: { xs: '1.75rem', md: '2.125rem' },
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                }}
+              >
+                Population Showdown
+              </Typography>
+              
+              <Typography 
+                variant={isMobile ? "body1" : "subtitle1"} 
+                sx={{ 
+                  mb: { xs: 3, md: 4 }, 
+                  color: '#b0c4de',
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  fontWeight: 500,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                }}
+              >
+                {message}
+              </Typography>
+              
+              <Stack 
+                direction={isMobile ? "column" : "row"} 
+                spacing={isMobile ? 2 : 3} 
+                justifyContent="center" 
+                alignItems="center" 
+                sx={{ mb: { xs: 3, md: 4 } }}
+              >
+                {[left, right].map((name, idx) => (
+                  <Button 
+                    key={`${name}-${fadeKey}`} 
+                    onClick={() => handleGuess(idx)}
+                    disabled={isLoading}
+                    sx={{
+                      p: 0,
+                      borderRadius: { xs: 3, md: 4 },
+                      width: { xs: '100%', md: 200 },
+                      height: { xs: 120, md: 160 },
+                      background: 'rgba(25,118,210,0.15)',
+                      border: '2px solid rgba(25,118,210,0.3)',
+                      '&:hover': { 
+                        background: 'rgba(25,118,210,0.25)', 
+                        transform: 'translateY(-2px)',
+                        border: '2px solid rgba(25,118,210,0.5)',
+                        boxShadow: '0 8px 25px rgba(25,118,210,0.3)'
+                      },
+                      '&:active': {
+                        transform: 'translateY(0px)',
+                        transition: 'transform 0.1s'
+                      },
+                      '&:disabled': {
+                        opacity: 0.7,
+                        transform: 'none'
+                      },
+                      boxShadow: '0 4px 20px rgba(25,118,210,0.2)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {/* Button background gradient */}
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                      pointerEvents: 'none'
+                    }} />
+                    
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      p: { xs: 1.5, md: 2 }, 
+                      width: '100%',
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      <Box sx={{ 
+                        width: { xs: 50, md: 70 }, 
+                        height: { xs: 50, md: 70 }, 
+                        fontSize: { xs: 32, md: 48 }, 
+                        mb: { xs: 1, md: 1.5 }, 
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.15)',
+                        backdropFilter: 'blur(10px)',
+                        border: '2px solid rgba(255,255,255,0.3)',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                          boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+                        }
+                      }}>
+                        {getCountryFlag(name)}
+                      </Box>
+                      <Typography 
+                        variant={isMobile ? "body1" : "h6"} 
+                        sx={{ 
+                          color: '#90caf9', 
+                          fontWeight: 600, 
+                          fontSize: { xs: 16, md: 18 }, 
+                          mb: { xs: 0.5, md: 1 }, 
+                          wordBreak: 'break-word',
+                          textAlign: 'center',
+                          lineHeight: 1.2,
+                          textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                        }}
+                      >
+                        {name}
+                      </Typography>
+                    </Box>
+                  </Button>
+                ))}
+              </Stack>
+              
+              <Box sx={{
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'all 0.2s',
+                gap: 2,
+                p: { xs: 2, md: 3 },
+                borderRadius: 2,
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(8px)'
               }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 2, width: '100%' }}>
-                  <Box sx={{ 
-                    width: 80, 
-                    height: 80, 
-                    fontSize: 60, 
-                    mb: 2, 
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(255,255,255,0.2)',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'scale(1.1)',
-                      boxShadow: '0 6px 25px rgba(0,0,0,0.4)',
-                    }
-                  }}>
-                    {getCountryFlag(name)}
-                  </Box>
-                  <Typography variant="h6" sx={{ 
-                    color: '#90caf9', 
-                    fontWeight: 600, 
-                    fontSize: 18, 
-                    mb: 1, 
-                    wordBreak: 'break-word',
-                    textAlign: 'center',
-                    lineHeight: 1.2
-                  }}>
-                    {name}
-                  </Typography>
-                </Box>
-              </Button>
-            ))}
-          </Stack>
-          <Typography variant="body1" sx={{ color: '#b0c4de', mb: 2 }}>Score: {score}</Typography>
-        </Paper>
-      </Fade>
+                <Typography 
+                  variant={isMobile ? "h6" : "h5"} 
+                  sx={{ 
+                    color: '#4caf50', 
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', md: '2rem' },
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  Score: {score}
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
+        </Fade>
+      </Box>
     </Box>
   );
 };

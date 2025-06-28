@@ -26,6 +26,7 @@
   margin: 0 !important;
   padding: 0 !important;
   background-color: #2b2b2b !important;
+  touch-action: manipulation !important;
 }
 
 .leaflet-map-pane {
@@ -41,6 +42,55 @@
 
 .leaflet-overlay-pane {
   background-color: #2b2b2b !important;
+}
+
+/* Mobile-specific Leaflet controls */
+@media (max-width: 768px) {
+  .leaflet-control-zoom {
+    display: none !important;
+  }
+  
+  .leaflet-control-attribution {
+    font-size: 10px !important;
+    padding: 2px 4px !important;
+  }
+  
+  .leaflet-container {
+    touch-action: pan-x pan-y !important;
+  }
+}
+
+/* Ensure proper touch handling on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile viewport meta tag simulation */
+@media (max-width: 768px) {
+  body {
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
+    overflow: hidden !important;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+    transform: scale(1) !important;
+    -webkit-transform: scale(1) !important;
+  }
+  
+  /* Prevent zoom on autocomplete dropdown */
+  .MuiAutocomplete-popper {
+    font-size: 16px !important;
+  }
+  
+  /* Prevent zoom on any focused element */
+  *:focus {
+    font-size: 16px !important;
+    transform: scale(1) !important;
+    -webkit-transform: scale(1) !important;
+  }
 }
 
 h1 {
