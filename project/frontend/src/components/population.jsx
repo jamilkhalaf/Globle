@@ -2,6 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Button, Paper, Stack, Fade, Avatar, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import countryInfo from './countryInfo';
 import Header from './Header';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 
 const getRandomCountry = (exclude) => {
   const keys = Object.keys(countryInfo).filter(k => k !== exclude);
@@ -10,243 +15,9 @@ const getRandomCountry = (exclude) => {
 
 const getPopulation = (name) => countryInfo[name]?.population || 0;
 
-const getCountryFlag = (countryName) => {
-  // Direct flag emoji mapping for better reliability
-  const countryFlags = {
-    // North America
-    'United States': '🇺🇸',
-    'USA': '🇺🇸',
-    'United States of America': '🇺🇸',
-    'Canada': '🇨🇦',
-    'Mexico': '🇲🇽',
-    
-    // Central America
-    'Guatemala': '🇬🇹',
-    'Belize': '🇧🇿',
-    'El Salvador': '🇸🇻',
-    'Honduras': '🇭🇳',
-    'Nicaragua': '🇳🇮',
-    'Costa Rica': '🇨🇷',
-    'Panama': '🇵🇦',
-    
-    // Caribbean
-    'Cuba': '🇨🇺',
-    'Jamaica': '🇯🇲',
-    'Haiti': '🇭🇹',
-    'Dominican Republic': '🇩🇴',
-    'Puerto Rico': '🇵🇷',
-    'Bahamas': '🇧🇸',
-    'Barbados': '🇧🇧',
-    'Trinidad and Tobago': '🇹🇹',
-    'Grenada': '🇬🇩',
-    'Saint Vincent and the Grenadines': '🇻🇨',
-    'Saint Lucia': '🇱🇨',
-    'ST. Lucia': '🇱🇨',
-    'Dominica': '🇩🇲',
-    'Antigua and Barbuda': '🇦🇬',
-    'Saint Kitts and Nevis': '🇰🇳',
-    'Montserrat': '🇲🇸',
-    'Falkland Islands': '🇫🇰',
-    'Curacao': '🇨🇼',
-    
-    // South America
-    'Brazil': '🇧🇷',
-    'Argentina': '🇦🇷',
-    'Chile': '🇨🇱',
-    'Peru': '🇵🇪',
-    'Colombia': '🇨🇴',
-    'Venezuela': '🇻🇪',
-    'Ecuador': '🇪🇨',
-    'Bolivia': '🇧🇴',
-    'Paraguay': '🇵🇾',
-    'Uruguay': '🇺🇾',
-    'Guyana': '🇬🇾',
-    'Suriname': '🇸🇷',
-    'French Guiana': '🇬🇫',
-    
-    // Europe
-    'United Kingdom': '🇬🇧',
-    'Germany': '🇩🇪',
-    'France': '🇫🇷',
-    'Italy': '🇮🇹',
-    'Spain': '🇪🇸',
-    'Portugal': '🇵🇹',
-    'Netherlands': '🇳🇱',
-    'Belgium': '🇧🇪',
-    'Luxembourg': '🇱🇺',
-    'Switzerland': '🇨🇭',
-    'Austria': '🇦🇹',
-    'Poland': '🇵🇱',
-    'Czech Republic': '🇨🇿',
-    'Czechia': '🇨🇿',
-    'Slovakia': '🇸🇰',
-    'Hungary': '🇭🇺',
-    'Romania': '🇷🇴',
-    'Bulgaria': '🇧🇬',
-    'Greece': '🇬🇷',
-    'Albania': '🇦🇱',
-    'North Macedonia': '🇲🇰',
-    'Serbia': '🇷🇸',
-    'Montenegro': '🇲🇪',
-    'Bosnia and Herzegovina': '🇧🇦',
-    'Croatia': '🇭🇷',
-    'Slovenia': '🇸🇮',
-    'Ukraine': '🇺🇦',
-    'Belarus': '🇧🇾',
-    'Moldova': '🇲🇩',
-    'Lithuania': '🇱🇹',
-    'Latvia': '🇱🇻',
-    'Estonia': '🇪🇪',
-    'Finland': '🇫🇮',
-    'Sweden': '🇸🇪',
-    'Norway': '🇳🇴',
-    'Denmark': '🇩🇰',
-    'Iceland': '🇮🇸',
-    'Ireland': '🇮🇪',
-    'Malta': '🇲🇹',
-    'Russian Federation': '🇷🇺',
-    
-    // Asia
-    'China': '🇨🇳',
-    'Japan': '🇯🇵',
-    'South Korea': '🇰🇷',
-    'North Korea': '🇰🇵',
-    'Korea, Rep.': '🇰🇷',
-    'Korea, Dem. Peoples Rep.': '🇰🇵',
-    'India': '🇮🇳',
-    'Pakistan': '🇵🇰',
-    'Bangladesh': '🇧🇩',
-    'Sri Lanka': '🇱🇰',
-    'Nepal': '🇳🇵',
-    'Bhutan': '🇧🇹',
-    'Maldives': '🇲🇻',
-    'Afghanistan': '🇦🇫',
-    'Iran': '🇮🇷',
-    'Iraq': '🇮🇶',
-    'Syria': '🇸🇾',
-    'Lebanon': '🇱🇧',
-    'Jordan': '🇯🇴',
-    'Israel': '🇮🇱',
-    'Palestine': '🇵🇸',
-    'Saudi Arabia': '🇸🇦',
-    'Yemen': '🇾🇪',
-    'Oman': '🇴🇲',
-    'United Arab Emirates': '🇦🇪',
-    'Qatar': '🇶🇦',
-    'Kuwait': '🇰🇼',
-    'Bahrain': '🇧🇭',
-    'Kazakhstan': '🇰🇿',
-    'Uzbekistan': '🇺🇿',
-    'Turkmenistan': '🇹🇲',
-    'Kyrgyzstan': '🇰🇬',
-    'Tajikistan': '🇹🇯',
-    'Mongolia': '🇲🇳',
-    'Vietnam': '🇻🇳',
-    'Laos': '🇱🇦',
-    'Cambodia': '🇰🇭',
-    'Thailand': '🇹🇭',
-    'Myanmar': '🇲🇲',
-    'Malaysia': '🇲🇾',
-    'Singapore': '🇸🇬',
-    'Indonesia': '🇮🇩',
-    'Philippines': '🇵🇭',
-    'Brunei': '🇧🇳',
-    'East Timor': '🇹🇱',
-    'Timor-Leste': '🇹🇱',
-    'Taiwan': '🇹🇼',
-    'Hong Kong': '🇭🇰',
-    'Macau': '🇲🇴',
-    
-    // Oceania
-    'Australia': '🇦🇺',
-    'New Zealand': '🇳🇿',
-    'Papua New Guinea': '🇵🇬',
-    'Fiji': '🇫🇯',
-    'Solomon Islands': '🇸🇧',
-    'Vanuatu': '🇻🇺',
-    'New Caledonia': '🇳🇨',
-    'Samoa': '🇼🇸',
-    'American Samoa': '🇦🇸',
-    'Tonga': '🇹🇴',
-    'Tuvalu': '🇹🇻',
-    'Kiribati': '🇰🇮',
-    'Nauru': '🇳🇷',
-    'Palau': '🇵🇼',
-    'Micronesia': '🇫🇲',
-    'Marshall Islands': '🇲🇭',
-    'Cook Islands': '🇨🇰',
-    'Niue': '🇳🇺',
-    'Tokelau': '🇹🇰',
-    'French Polynesia': '🇵🇫',
-    'Wallis and Futuna': '🇼🇫',
-    'Pitcairn Islands': '🇵🇳',
-    'Guam': '🇬🇺',
-    'Northern Mariana Islands': '🇲🇵',
-    
-    // Africa
-    'South Africa': '🇿🇦',
-    'Egypt': '🇪🇬',
-    'Nigeria': '🇳🇬',
-    'Kenya': '🇰🇪',
-    'Morocco': '🇲🇦',
-    'Algeria': '🇩🇿',
-    'Tunisia': '🇹🇳',
-    'Libya': '🇱🇾',
-    'Sudan': '🇸🇩',
-    'South Sudan': '🇸🇸',
-    'Chad': '🇹🇩',
-    'Niger': '🇳🇪',
-    'Mali': '🇲🇱',
-    'Burkina Faso': '🇧🇫',
-    'Senegal': '🇸🇳',
-    'Guinea': '🇬🇳',
-    'Sierra Leone': '🇸🇱',
-    'Liberia': '🇱🇷',
-    'Ivory Coast': '🇨🇮',
-    'Ghana': '🇬🇭',
-    'Togo': '🇹🇬',
-    'Benin': '🇧🇯',
-    'Cameroon': '🇨🇲',
-    'Central African Republic': '🇨🇫',
-    'Equatorial Guinea': '🇬🇶',
-    'Gabon': '🇬🇦',
-    'Republic of the Congo': '🇨🇬',
-    'Democratic Republic of the Congo': '🇨🇩',
-    'Angola': '🇦🇴',
-    'Zambia': '🇿🇲',
-    'Zimbabwe': '🇿🇼',
-    'Botswana': '🇧🇼',
-    'Namibia': '🇳🇦',
-    'Mozambique': '🇲🇿',
-    'Malawi': '🇲🇼',
-    'Tanzania': '🇹🇿',
-    'United Republic of Tanzania': '🇹🇿',
-    'Uganda': '🇺🇬',
-    'Rwanda': '🇷🇼',
-    'Burundi': '🇧🇮',
-    'Ethiopia': '🇪🇹',
-    'Eritrea': '🇪🇷',
-    'Djibouti': '🇩🇯',
-    'Somalia': '🇸🇴',
-    'Madagascar': '🇲🇬',
-    'Comoros': '🇰🇲',
-    'Mauritius': '🇲🇺',
-    'Seychelles': '🇸🇨',
-    'Cape Verde': '🇨🇻',
-    'Guinea-Bissau': '🇬🇼',
-    'The Gambia': '🇬🇲',
-    'Mauritania': '🇲🇷',
-    'Western Sahara': '🇪🇭',
-    'Polisario Front': '🇪🇭',
-    'Sahrawi Arab Democratic Republic': '🇪🇭',
-    'São Tomé and Príncipe': '🇸🇹',
-    'Lesotho': '🇱🇸',
-    'eSwatini': '🇸🇿'
-  };
-  
-  return countryFlags[countryName] || '🏳️'; // Return flag emoji or default flag
+const getCountryCapital = (countryName) => {
+  return countryInfo[countryName]?.capital || 'Unknown';
 };
-  
 
 const Population = () => {
   const theme = useTheme();
@@ -256,6 +27,9 @@ const Population = () => {
   const [message, setMessage] = useState('');
   const [fadeKey, setFadeKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Add state for contact dialog
+  const [contactOpen, setContactOpen] = useState(false);
 
   // Memoize the random country generation to prevent unnecessary re-renders
   const generateNewCountries = useCallback(() => {
@@ -451,33 +225,12 @@ const Population = () => {
                       position: 'relative',
                       zIndex: 1
                     }}>
-                      <Box sx={{ 
-                        width: { xs: 50, md: 70 }, 
-                        height: { xs: 50, md: 70 }, 
-                        fontSize: { xs: 32, md: 48 }, 
-                        mb: { xs: 1, md: 1.5 }, 
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '50%',
-                        background: 'rgba(255,255,255,0.15)',
-                        backdropFilter: 'blur(10px)',
-                        border: '2px solid rgba(255,255,255,0.3)',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'scale(1.1)',
-                          boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
-                        }
-                      }}>
-                        {getCountryFlag(name)}
-                      </Box>
                       <Typography 
-                        variant={isMobile ? "body1" : "h6"} 
+                        variant={isMobile ? "h6" : "h5"} 
                         sx={{ 
                           color: '#90caf9', 
-                          fontWeight: 600, 
-                          fontSize: { xs: 16, md: 18 }, 
+                          fontWeight: 700, 
+                          fontSize: { xs: 18, md: 20 }, 
                           mb: { xs: 0.5, md: 1 }, 
                           wordBreak: 'break-word',
                           textAlign: 'center',
@@ -486,6 +239,20 @@ const Population = () => {
                         }}
                       >
                         {name}
+                      </Typography>
+                      <Typography 
+                        variant={isMobile ? "body2" : "body1"} 
+                        sx={{ 
+                          color: '#b0c4de', 
+                          fontWeight: 500, 
+                          fontSize: { xs: 14, md: 16 }, 
+                          textAlign: 'center',
+                          lineHeight: 1.2,
+                          textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                          fontStyle: 'italic'
+                        }}
+                      >
+                        {getCountryCapital(name)}
                       </Typography>
                     </Box>
                   </Button>
@@ -519,6 +286,46 @@ const Population = () => {
           </Paper>
         </Fade>
       </Box>
+
+      {/* Footer with ? button */}
+      <Box sx={{
+        position: 'fixed',
+        bottom: { xs: 20, md: 16 },
+        left: 0,
+        width: '100vw',
+        display: 'flex',
+        justifyContent: 'center',
+        zIndex: 2001
+      }}>
+        <Button
+          variant="outlined"
+          sx={{ 
+            borderRadius: '50%', 
+            minWidth: 0, 
+            width: { xs: 48, md: 40 }, 
+            height: { xs: 48, md: 40 }, 
+            fontSize: { xs: 28, md: 24 }, 
+            color: 'white', 
+            borderColor: 'white', 
+            backgroundColor: 'rgba(0,0,0,0.7)', 
+            '&:hover': { backgroundColor: 'rgba(0,0,0,0.9)' } 
+          }}
+          onClick={() => setContactOpen(true)}
+          aria-label="Contact Info"
+        >
+          ?
+        </Button>
+      </Box>
+      <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
+        <DialogTitle>Contact</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            For questions, contact: <br />
+            <b>Jamil Khalaf</b><br />
+            <a href="mailto:jamilkhalaf04@gmail.com">jamilkhalaf04@gmail.com</a>
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

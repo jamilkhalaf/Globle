@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Toolbar, Button, Paper, Fade, useTheme, useMediaQuery } from '@mui/material';
 import Header from './Header';
 import Confetti from 'react-confetti';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
@@ -22,6 +27,13 @@ const Wordle = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  
+  // Streak state
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+
+  // Add state for contact dialog
+  const [contactOpen, setContactOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -79,7 +91,43 @@ const Wordle = () => {
     };
 
     fetchRandomWord();
+    loadStreakData();
   }, []);
+
+  // Load streak data from localStorage
+  const loadStreakData = () => {
+    const savedCurrentStreak = localStorage.getItem('wordleCurrentStreak');
+    const savedBestStreak = localStorage.getItem('wordleBestStreak');
+    
+    if (savedCurrentStreak) {
+      setCurrentStreak(parseInt(savedCurrentStreak));
+    }
+    if (savedBestStreak) {
+      setBestStreak(parseInt(savedBestStreak));
+    }
+  };
+
+  // Save streak data to localStorage
+  const saveStreakData = (current, best) => {
+    localStorage.setItem('wordleCurrentStreak', current.toString());
+    localStorage.setItem('wordleBestStreak', best.toString());
+  };
+
+  // Update streak when game ends
+  const updateStreak = (won) => {
+    if (won) {
+      const newCurrentStreak = currentStreak + 1;
+      const newBestStreak = Math.max(bestStreak, newCurrentStreak);
+      
+      setCurrentStreak(newCurrentStreak);
+      setBestStreak(newBestStreak);
+      saveStreakData(newCurrentStreak, newBestStreak);
+    } else {
+      // Reset current streak on loss
+      setCurrentStreak(0);
+      saveStreakData(0, bestStreak);
+    }
+  };
 
   const startNewGame = () => {
     setGuesses(Array(MAX_GUESSES).fill(''));
@@ -208,6 +256,7 @@ const Wordle = () => {
         setMessage('🎉 Amazing! You got it! 🎉');
         // Maintain scroll position
         window.scrollTo(0, currentScrollPosition);
+        updateStreak(true);
         return;
       }
 
@@ -216,6 +265,7 @@ const Wordle = () => {
         setMessage(`Game Over! The word was ${targetWord}`);
         // Maintain scroll position
         window.scrollTo(0, currentScrollPosition);
+        updateStreak(false);
       }
 
       setCurrentGuess(prev => prev + 1);
@@ -353,6 +403,77 @@ const Wordle = () => {
           )}
         </Paper>
 
+        {/* Streak Display */}
+        <Paper 
+          elevation={2}
+          sx={{ 
+            p: { xs: 1.5, md: 2 }, 
+            mb: { xs: 2, md: 3 }, 
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: 2,
+            minWidth: { xs: '280px', md: '300px' },
+            width: { xs: '100%', md: 'auto' }
+          }}
+        >
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            gap: { xs: 2, md: 3 }
+          }}>
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography 
+                variant={isMobile ? "body2" : "body1"}
+                sx={{ 
+                  color: '#ccc',
+                  fontSize: { xs: '0.8rem', md: '0.9rem' },
+                  mb: 0.5
+                }}
+              >
+                Current Streak
+              </Typography>
+              <Typography 
+                variant={isMobile ? "h6" : "h5"}
+                sx={{ 
+                  color: '#6aaa64',
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1.2rem', md: '1.5rem' }
+                }}
+              >
+                {currentStreak}
+              </Typography>
+            </Box>
+            <Box sx={{ 
+              width: '1px', 
+              height: '40px', 
+              bgcolor: 'rgba(255, 255, 255, 0.2)' 
+            }} />
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography 
+                variant={isMobile ? "body2" : "body1"}
+                sx={{ 
+                  color: '#ccc',
+                  fontSize: { xs: '0.8rem', md: '0.9rem' },
+                  mb: 0.5
+                }}
+              >
+                Best Streak
+              </Typography>
+              <Typography 
+                variant={isMobile ? "h6" : "h5"}
+                sx={{ 
+                  color: '#c9b458',
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1.2rem', md: '1.5rem' }
+                }}
+              >
+                {bestStreak}
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
+
         <Box sx={{ 
           display: 'flex', 
           flexDirection: 'column', 
@@ -414,7 +535,10 @@ const Wordle = () => {
               <Box sx={{
                 position: 'relative',
                 width: '100%',
-                maxWidth: '280px'
+                maxWidth: '280px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
               }}>
                 <input
                   id="mobile-wordle-input"
@@ -435,8 +559,7 @@ const Wordle = () => {
                     e.target.scrollIntoView({ behavior: 'auto', block: 'nearest' });
                   }}
                   style={{
-                    width: '100%',
-                    maxWidth: '280px',
+                    flex: 1,
                     padding: '12px',
                     fontSize: '16px', // Prevents zoom on iOS
                     border: '2px solid #3a3a3c',
@@ -467,6 +590,27 @@ const Wordle = () => {
                   inputMode="text"
                   spellCheck="false"
                 />
+                <Button
+                  variant="contained"
+                  onClick={handleSubmit}
+                  disabled={currentInput.length !== WORD_LENGTH || gameOver}
+                  size="small"
+                  sx={{
+                    bgcolor: '#538d4e',
+                    minWidth: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    '&:hover': {
+                      bgcolor: '#4a7d45'
+                    },
+                    '&:disabled': {
+                      bgcolor: '#666',
+                      color: '#999'
+                    }
+                  }}
+                >
+                  ✓
+                </Button>
               </Box>
             </Box>
           )}
@@ -481,7 +625,8 @@ const Wordle = () => {
               '&:hover': {
                 bgcolor: '#4a7d45'
               },
-              width: { xs: '100%', md: 'auto' }
+              width: { xs: '100%', md: 'auto' },
+              display: { xs: 'none', md: 'inline-flex' } // Hide on mobile, show on desktop
             }}
           >
             Submit
@@ -508,6 +653,46 @@ const Wordle = () => {
           </Fade>
         )}
       </Box>
+
+      {/* Footer with ? button */}
+      <Box sx={{
+        position: 'fixed',
+        bottom: { xs: 20, md: 16 },
+        left: 0,
+        width: '100vw',
+        display: 'flex',
+        justifyContent: 'center',
+        zIndex: 2001
+      }}>
+        <Button
+          variant="outlined"
+          sx={{ 
+            borderRadius: '50%', 
+            minWidth: 0, 
+            width: { xs: 48, md: 40 }, 
+            height: { xs: 48, md: 40 }, 
+            fontSize: { xs: 28, md: 24 }, 
+            color: 'white', 
+            borderColor: 'white', 
+            backgroundColor: 'rgba(0,0,0,0.7)', 
+            '&:hover': { backgroundColor: 'rgba(0,0,0,0.9)' } 
+          }}
+          onClick={() => setContactOpen(true)}
+          aria-label="Contact Info"
+        >
+          ?
+        </Button>
+      </Box>
+      <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
+        <DialogTitle>Contact</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            For questions, contact: <br />
+            <b>Jamil Khalaf</b><br />
+            <a href="mailto:jamilkhalaf04@gmail.com">jamilkhalaf04@gmail.com</a>
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

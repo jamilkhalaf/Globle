@@ -27,8 +27,6 @@ const Game = () => {
   const [lastDistance, setLastDistance] = useState(null);
   const [countryOptions, setCountryOptions] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [hoveredCountry, setHoveredCountry] = useState(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const mapRef = useRef(null);
   
@@ -116,11 +114,13 @@ const Game = () => {
   };
 
   const selectRandomCountry = (countryList) => {
-    // Filter out countries that are too small or have invalid coordinates
+    // Filter out countries that are too small, have invalid coordinates, or aren't in the official 196 countries
     const validCountries = countryList.filter(country => {
       try {
         const center = getCountryCenter(country);
-        return center.lat !== 0 && center.lon !== 0;
+        const hasValidCoordinates = center.lat !== 0 && center.lon !== 0;
+        const isOfficialCountry = countryInfo[country.properties.name];
+        return hasValidCoordinates && isOfficialCountry;
       } catch (e) {
         return false;
       }
@@ -545,351 +545,6 @@ const Game = () => {
     setMessage(`Game Over! The secret country was ${secretCountry.properties.name}`);
   };
 
-  const handleMouseMove = (event) => {
-    setMousePosition({ x: event.clientX, y: event.clientY });
-  };
-
-  const getCountryFlag = (countryName) => {
-    // Direct flag emoji mapping for better reliability
-    const countryFlags = {
-      // North America
-      'United States': '🇺🇸',
-      'USA': '🇺🇸',
-      'United States of America': '🇺🇸',
-      'Canada': '🇨🇦',
-      'Mexico': '🇲🇽',
-      
-      // Central America
-      'Guatemala': '🇬🇹',
-      'Belize': '🇧🇿',
-      'El Salvador': '🇸🇻',
-      'Honduras': '🇭🇳',
-      'Nicaragua': '🇳🇮',
-      'Costa Rica': '🇨🇷',
-      'Panama': '🇵🇦',
-      
-      // Caribbean
-      'Cuba': '🇨🇺',
-      'Jamaica': '🇯🇲',
-      'Haiti': '🇭🇹',
-      'Dominican Republic': '🇩🇴',
-      'Puerto Rico': '🇵🇷',
-      'Bahamas': '🇧🇸',
-      'Barbados': '🇧🇧',
-      'Trinidad and Tobago': '🇹🇹',
-      'Grenada': '🇬🇩',
-      'Saint Vincent and the Grenadines': '🇻🇨',
-      'Saint Lucia': '🇱🇨',
-      'Dominica': '🇩🇲',
-      'Antigua and Barbuda': '🇦🇬',
-      'Saint Kitts and Nevis': '🇰🇳',
-      'Montserrat': '🇲🇸',
-      'Falkland Islands': '🇫🇰',
-      
-      // South America
-      'Brazil': '🇧🇷',
-      'Argentina': '🇦🇷',
-      'Chile': '🇨🇱',
-      'Peru': '🇵🇪',
-      'Colombia': '🇨🇴',
-      'Venezuela': '🇻🇪',
-      'Ecuador': '🇪🇨',
-      'Bolivia': '🇧🇴',
-      'Paraguay': '🇵🇾',
-      'Uruguay': '🇺🇾',
-      'Guyana': '🇬🇾',
-      'Suriname': '🇸🇷',
-      'French Guiana': '🇬🇫',
-      
-      // Europe
-      'United Kingdom': '🇬🇧',
-      'Germany': '🇩🇪',
-      'France': '🇫🇷',
-      'Italy': '🇮🇹',
-      'Spain': '🇪🇸',
-      'Portugal': '🇵🇹',
-      'Netherlands': '🇳🇱',
-      'Belgium': '🇧🇪',
-      'Luxembourg': '🇱🇺',
-      'Switzerland': '🇨🇭',
-      'Austria': '🇦🇹',
-      'Poland': '🇵🇱',
-      'Czech Republic': '🇨🇿',
-      'Czechia': '🇨🇿',
-      'Slovakia': '🇸🇰',
-      'Hungary': '🇭🇺',
-      'Romania': '🇷🇴',
-      'Bulgaria': '🇧🇬',
-      'Greece': '🇬🇷',
-      'Albania': '🇦🇱',
-      'North Macedonia': '🇲🇰',
-      'Serbia': '🇷🇸',
-      'Montenegro': '🇲🇪',
-      'Bosnia and Herzegovina': '🇧🇦',
-      'Croatia': '🇭🇷',
-      'Slovenia': '🇸🇮',
-      'Ukraine': '🇺🇦',
-      'Belarus': '🇧🇾',
-      'Moldova': '🇲🇩',
-      'Lithuania': '🇱🇹',
-      'Latvia': '🇱🇻',
-      'Estonia': '🇪🇪',
-      'Finland': '🇫🇮',
-      'Sweden': '🇸🇪',
-      'Norway': '🇳🇴',
-      'Denmark': '🇩🇰',
-      'Iceland': '🇮🇸',
-      'Ireland': '🇮🇪',
-      
-      // Asia
-      'China': '🇨🇳',
-      'Japan': '🇯🇵',
-      'South Korea': '🇰🇷',
-      'North Korea': '🇰🇵',
-      'India': '🇮🇳',
-      'Pakistan': '🇵🇰',
-      'Bangladesh': '🇧🇩',
-      'Sri Lanka': '🇱🇰',
-      'Nepal': '🇳🇵',
-      'Bhutan': '🇧🇹',
-      'Maldives': '🇲🇻',
-      'Afghanistan': '🇦🇫',
-      'Iran': '🇮🇷',
-      'Iraq': '🇮🇶',
-      'Syria': '🇸🇾',
-      'Lebanon': '🇱🇧',
-      'Jordan': '🇯🇴',
-      'Israel': '🇮🇱',
-      'Palestine': '🇵🇸',
-      'Saudi Arabia': '🇸🇦',
-      'Yemen': '🇾🇪',
-      'Oman': '🇴🇲',
-      'United Arab Emirates': '🇦🇪',
-      'Qatar': '🇶🇦',
-      'Kuwait': '🇰🇼',
-      'Bahrain': '🇧🇭',
-      'Kazakhstan': '🇰🇿',
-      'Uzbekistan': '🇺🇿',
-      'Turkmenistan': '🇹🇲',
-      'Kyrgyzstan': '🇰🇬',
-      'Tajikistan': '🇹🇯',
-      'Mongolia': '🇲🇳',
-      'Vietnam': '🇻🇳',
-      'Laos': '🇱🇦',
-      'Cambodia': '🇰🇭',
-      'Thailand': '🇹🇭',
-      'Myanmar': '🇲🇲',
-      'Malaysia': '🇲🇾',
-      'Singapore': '🇸🇬',
-      'Indonesia': '🇮🇩',
-      'Philippines': '🇵🇭',
-      'Brunei': '🇧🇳',
-      'East Timor': '🇹🇱',
-      'Taiwan': '🇹🇼',
-      'Hong Kong': '🇭🇰',
-      'Macau': '🇲🇴',
-      
-      // Oceania
-      'Australia': '🇦🇺',
-      'New Zealand': '🇳🇿',
-      'Papua New Guinea': '🇵🇬',
-      'Fiji': '🇫🇯',
-      'Solomon Islands': '🇸🇧',
-      'Vanuatu': '🇻🇺',
-      'New Caledonia': '🇳🇨',
-      'Samoa': '🇼🇸',
-      'American Samoa': '🇦🇸',
-      'Tonga': '🇹🇴',
-      'Tuvalu': '🇹🇻',
-      'Kiribati': '🇰🇮',
-      'Nauru': '🇳🇷',
-      'Palau': '🇵🇼',
-      'Micronesia': '🇫🇲',
-      'Marshall Islands': '🇲🇭',
-      'Cook Islands': '🇨🇰',
-      'Niue': '🇳🇺',
-      'Tokelau': '🇹🇰',
-      'French Polynesia': '🇵🇫',
-      'Wallis and Futuna': '🇼🇫',
-      'Pitcairn Islands': '🇵🇳',
-      'Guam': '🇬🇺',
-      'Northern Mariana Islands': '🇲🇵',
-      
-      // Africa
-      'South Africa': '🇿🇦',
-      'Egypt': '🇪🇬',
-      'Nigeria': '🇳🇬',
-      'Kenya': '🇰🇪',
-      'Morocco': '🇲🇦',
-      'Algeria': '🇩🇿',
-      'Tunisia': '🇹🇳',
-      'Libya': '🇱🇾',
-      'Sudan': '🇸🇩',
-      'South Sudan': '🇸🇸',
-      'Chad': '🇹🇩',
-      'Niger': '🇳🇪',
-      'Mali': '🇲🇱',
-      'Burkina Faso': '🇧🇫',
-      'Senegal': '🇸🇳',
-      'Guinea': '🇬🇳',
-      'Sierra Leone': '🇸🇱',
-      'Liberia': '🇱🇷',
-      'Ivory Coast': '🇨🇮',
-      'Ghana': '🇬🇭',
-      'Togo': '🇹🇬',
-      'Benin': '🇧🇯',
-      'Cameroon': '🇨🇲',
-      'Central African Republic': '🇨🇫',
-      'Equatorial Guinea': '🇬🇶',
-      'Gabon': '🇬🇦',
-      'Republic of the Congo': '🇨🇬',
-      'Democratic Republic of the Congo': '🇨🇩',
-      'Angola': '🇦🇴',
-      'Zambia': '🇿🇲',
-      'Zimbabwe': '🇿🇼',
-      'Botswana': '🇧🇼',
-      'Namibia': '🇳🇦',
-      'Mozambique': '🇲🇿',
-      'Malawi': '🇲🇼',
-      'Tanzania': '🇹🇿',
-      'United Republic of Tanzania': '🇹🇿',
-      'Uganda': '🇺🇬',
-      'Rwanda': '🇷🇼',
-      'Burundi': '🇧🇮',
-      'Ethiopia': '🇪🇹',
-      'Eritrea': '🇪🇷',
-      'Djibouti': '🇩🇯',
-      'Somalia': '🇸🇴',
-      'Madagascar': '🇲🇬',
-      'Comoros': '🇰🇲',
-      'Mauritius': '🇲🇺',
-      'Seychelles': '🇸🇨',
-      'Cape Verde': '🇨🇻',
-      'Guinea-Bissau': '🇬🇼',
-      'The Gambia': '🇬🇲',
-      'Mauritania': '🇲🇷',
-      'Western Sahara': '🇪🇭',
-      'Polisario Front': '🇪🇭',
-      'Sahrawi Arab Democratic Republic': '🇪🇭',
-      'Guinea-Bissau': '🇬🇼',
-      'São Tomé and Príncipe': '🇸🇹',
-      'Equatorial Guinea': '🇬🇶',
-      'Chad': '🇹🇩',
-      'Niger': '🇳🇪',
-      'Mali': '🇲🇱',
-      'Burkina Faso': '🇧🇫',
-      'Senegal': '🇸🇳',
-      'Guinea': '🇬🇳',
-      'Sierra Leone': '🇸🇱',
-      'Liberia': '🇱🇷',
-      'Ivory Coast': '🇨🇮',
-      'Ghana': '🇬🇭',
-      'Togo': '🇹🇬',
-      'Benin': '🇧🇯',
-      'Cameroon': '🇨🇲',
-      'Central African Republic': '🇨🇫',
-      'Gabon': '🇬🇦',
-      'Republic of the Congo': '🇨🇬',
-      'Democratic Republic of the Congo': '🇨🇩',
-      'Angola': '🇦🇴',
-      'Zambia': '🇿🇲',
-      'Zimbabwe': '🇿🇼',
-      'Botswana': '🇧🇼',
-      'Namibia': '🇳🇦',
-      'Mozambique': '🇲🇿',
-      'Malawi': '🇲🇼',
-      'Tanzania': '🇹🇿',
-      'Uganda': '🇺🇬',
-      'Rwanda': '🇷🇼',
-      'Burundi': '🇧🇮',
-      'Ethiopia': '🇪🇹',
-      'Eritrea': '🇪🇷',
-      'Djibouti': '🇩🇯',
-      'Somalia': '🇸🇴',
-      'Madagascar': '🇲🇬',
-      'Comoros': '🇰🇲',
-      'Mauritius': '🇲🇺',
-      'Seychelles': '🇸🇨',
-      'Cape Verde': '🇨🇻',
-      'The Gambia': '🇬🇲',
-      'Mauritania': '🇲🇷',
-      'Western Sahara': '🇪🇭',
-      'Polisario Front': '🇪🇭',
-      'Sahrawi Arab Democratic Republic': '🇪🇭',
-      
-      // Russia and former Soviet states
-      'Russia': '🇷🇺',
-      'Belarus': '🇧🇾',
-      'Ukraine': '🇺🇦',
-      'Moldova': '🇲🇩',
-      'Lithuania': '🇱🇹',
-      'Latvia': '🇱🇻',
-      'Estonia': '🇪🇪',
-      'Georgia': '🇬🇪',
-      'Armenia': '🇦🇲',
-      'Azerbaijan': '🇦🇿',
-      'Kazakhstan': '🇰🇿',
-      'Uzbekistan': '🇺🇿',
-      'Turkmenistan': '🇹🇲',
-      'Kyrgyzstan': '🇰🇬',
-      'Tajikistan': '🇹🇯',
-      
-      // Middle East
-      'Turkey': '🇹🇷',
-      'Cyprus': '🇨🇾',
-      'Northern Cyprus': '🇨🇾',
-      'Iraq': '🇮🇶',
-      'Iran': '🇮🇷',
-      'Afghanistan': '🇦🇫',
-      'Pakistan': '🇵🇰',
-      'India': '🇮🇳',
-      'Nepal': '🇳🇵',
-      'Bhutan': '🇧🇹',
-      'Bangladesh': '🇧🇩',
-      'Sri Lanka': '🇱🇰',
-      'Maldives': '🇲🇻',
-      'Myanmar': '🇲🇲',
-      'Thailand': '🇹🇭',
-      'Laos': '🇱🇦',
-      'Cambodia': '🇰🇭',
-      'Vietnam': '🇻🇳',
-      'Malaysia': '🇲🇾',
-      'Singapore': '🇸🇬',
-      'Brunei': '🇧🇳',
-      'Indonesia': '🇮🇩',
-      'Philippines': '🇵🇭',
-      'East Timor': '🇹🇱',
-      'Papua New Guinea': '🇵🇬',
-      'Australia': '🇦🇺',
-      'New Zealand': '🇳🇿',
-      'Fiji': '🇫🇯',
-      'Solomon Islands': '🇸🇧',
-      'Vanuatu': '🇻🇺',
-      'New Caledonia': '🇳🇨',
-      'Samoa': '🇼🇸',
-      'American Samoa': '🇦🇸',
-      'Tonga': '🇹🇴',
-      'Tuvalu': '🇹🇻',
-      'Kiribati': '🇰🇮',
-      'Nauru': '🇳🇷',
-      'Palau': '🇵🇼',
-      'Micronesia': '🇫🇲',
-      'Marshall Islands': '🇲🇭',
-      'Cook Islands': '🇨🇰',
-      'Niue': '🇳🇺',
-      'Tokelau': '🇹🇰',
-      'French Polynesia': '🇵🇫',
-      'Wallis and Futuna': '🇼🇫',
-      'Pitcairn Islands': '🇵🇳',
-      'Guam': '🇬🇺',
-      'Northern Mariana Islands': '🇲🇵',
-      'Lesotho': '🇱🇸',
-      'eSwatini': '🇸🇿'
-    };
-    
-    return countryFlags[countryName] || '🏳️'; // Return flag emoji or default flag
-  };
-
   // Calculate score based on time and guesses
   const calculateScore = (timeTaken, numGuesses) => {
     const baseScore = 1000;
@@ -933,7 +588,7 @@ const Game = () => {
       backgroundColor: '#2b2b2b',
       touchAction: 'none', // Prevent touch scrolling on the page
       WebkitOverflowScrolling: 'touch'
-    }} onMouseMove={handleMouseMove}>
+    }}>
       <Header />
       <Toolbar /> {/* This creates space for the fixed AppBar */}
       
@@ -1041,14 +696,6 @@ const Game = () => {
                   color: '#666',
                   weight: 1
                 }}
-                eventHandlers={{
-                  mouseover: (e) => {
-                    setHoveredCountry(country);
-                  },
-                  mouseout: () => {
-                    setHoveredCountry(null);
-                  }
-                }}
               />
             );
           })}
@@ -1065,51 +712,6 @@ const Game = () => {
           )}
         </MapContainer>
       </Box>
-
-      {/* Hover Tooltip */}
-      {hoveredCountry && (
-        <Box
-          sx={{
-            position: 'fixed',
-            left: { xs: 10, md: mousePosition.x + 10 },
-            right: { xs: 10, md: 'auto' },
-            top: { xs: 'auto', md: mousePosition.y - 40 },
-            bottom: { xs: 80, md: 'auto' },
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
-            padding: { xs: '12px 16px', md: '8px 12px' },
-            borderRadius: { xs: 2, md: '6px' },
-            fontSize: { xs: '16px', md: '14px' },
-            fontWeight: 'bold',
-            zIndex: 2000,
-            pointerEvents: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: { xs: 'center', md: 'flex-start' },
-            gap: { xs: '12px', md: '8px' },
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)',
-            maxWidth: { xs: 'calc(100vw - 20px)', md: 'auto' }
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: '12px', md: '8px' } }}>
-            <span style={{ fontSize: { xs: '20px', md: '16px' } }}>
-              {getCountryFlag(hoveredCountry.properties.name)}
-            </span>
-            <span style={{ fontSize: { xs: '18px', md: '14px' } }}>{hoveredCountry.properties.name}</span>
-          </Box>
-          {(() => {
-            const info = countryInfo[hoveredCountry.properties.name];
-            if (!info) return <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '14px', md: '12px' } }}>No info available.</Typography>;
-            return (
-              <Box sx={{ mt: { xs: 0, md: 1 }, textAlign: { xs: 'center', md: 'left' } }}>
-                <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '14px', md: '12px' } }}>Capital: <b>{info.capital}</b></Typography>
-                <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '14px', md: '12px' } }}>Population: <b>{info.population.toLocaleString()}</b></Typography>
-              </Box>
-            );
-          })()}
-        </Box>
-      )}
 
       {/* Game Info Panel */}
       <Paper

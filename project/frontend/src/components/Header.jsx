@@ -30,7 +30,8 @@ const Header = () => {
     { path: '/', label: 'Home' },
     { path: '/game', label: 'Globle' },
     { path: '/wordle', label: 'Wordle' },
-    { path: '/population', label: 'Population' }
+    { path: '/population', label: 'Population' },
+    { path: '/name', label: 'Findle' }
   ];
 
   const drawer = (

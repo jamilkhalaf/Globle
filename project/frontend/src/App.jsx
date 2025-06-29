@@ -5,6 +5,7 @@ import Home from './components/Home'
 import Game from './components/Game'
 import Wordle from './components/Wordle'
 import Population from './components/population'
+import Name from './components/name'
 import './App.css'
 
 const theme = createTheme({
@@ -24,6 +25,7 @@ function App() {
           <Route path="/game" element={<Game />} />
           <Route path="/wordle" element={<Wordle />} />
           <Route path="/population" element={<Population />} />
+          <Route path="/name" element={<Name />} />
         </Routes>
       </Router>
     </ThemeProvider>
