@@ -49,26 +49,33 @@ const Wordle = () => {
 
   // Prevent automatic scrolling and maintain page position
   useEffect(() => {
-    // Prevent any automatic scrolling when component mounts or state changes
-    const preventScroll = () => {
-      if (window.scrollY !== 0) {
-        window.scrollTo(0, 0);
-      }
-    };
-    
-    // Prevent scroll on state changes
-    preventScroll();
-    
-    // Add event listener to prevent scroll on mobile keyboard
-    const handleScroll = () => {
-      if (isMobile && window.scrollY > 0) {
-        window.scrollTo(0, 0);
-      }
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Remove scroll prevention - allow normal scrolling
+    // Only maintain viewport height adjustment for mobile keyboard
   }, [currentGuess, gameOver, isMobile]);
+
+  // Add viewport height adjustment for mobile keyboard
+  useEffect(() => {
+    if (isMobile) {
+      const setVH = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      };
+      
+      // Set initial viewport height
+      setVH();
+      
+      // Only update on orientation change, not on resize to prevent scroll jumping
+      const handleOrientationChange = () => {
+        setTimeout(setVH, 100); // Small delay to ensure orientation change is complete
+      };
+      
+      window.addEventListener('orientationchange', handleOrientationChange);
+      
+      return () => {
+        window.removeEventListener('orientationchange', handleOrientationChange);
+      };
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     const fetchRandomWord = async () => {
@@ -189,9 +196,6 @@ const Wordle = () => {
       return;
     }
 
-    // Prevent any automatic scrolling
-    const currentScrollPosition = window.scrollY;
-    
     // Check if the word is valid by fetching from dictionary API
     const checkWordValidity = async () => {
       try {
@@ -203,8 +207,6 @@ const Wordle = () => {
         
         if (!isValidWord) {
           setMessage('Not a valid word!');
-          // Maintain scroll position
-          window.scrollTo(0, currentScrollPosition);
           return;
         }
         
@@ -254,8 +256,6 @@ const Wordle = () => {
         setGameOver(true);
         setShowConfetti(true);
         setMessage('🎉 Amazing! You got it! 🎉');
-        // Maintain scroll position
-        window.scrollTo(0, currentScrollPosition);
         updateStreak(true);
         return;
       }
@@ -263,8 +263,6 @@ const Wordle = () => {
       if (currentGuess === MAX_GUESSES - 1) {
         setGameOver(true);
         setMessage(`Game Over! The word was ${targetWord}`);
-        // Maintain scroll position
-        window.scrollTo(0, currentScrollPosition);
         updateStreak(false);
       }
 
@@ -272,16 +270,15 @@ const Wordle = () => {
       setCurrentInput('');
       setMessage('Guess the word!');
       
-      // Maintain scroll position and refocus input on mobile
-      setTimeout(() => {
-        window.scrollTo(0, currentScrollPosition);
-        if (isMobile) {
+      // Refocus input on mobile without scroll manipulation
+      if (isMobile) {
+        setTimeout(() => {
           const input = document.getElementById('mobile-wordle-input');
           if (input) {
             input.focus();
           }
-        }
-      }, 100);
+        }, 100);
+      }
     };
 
     // Check word validity before submitting
@@ -332,13 +329,12 @@ const Wordle = () => {
 
   return (
     <Box sx={{ 
-      position: 'relative', 
-      width: '100vw', 
-      height: '100vh', 
+      minHeight: '100vh', // Use standard viewport height instead of CSS variable
+      display: 'flex', 
+      flexDirection: 'column',
       bgcolor: '#121213',
-      overflow: 'hidden', // Prevent scrolling issues
-      touchAction: 'manipulation', // Optimize touch handling
-      WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+      position: 'relative',
+      overflow: 'auto' // Allow scrolling
     }}>
       {showConfetti && (
         <Confetti
@@ -352,16 +348,18 @@ const Wordle = () => {
       <Toolbar />
       
       <Box sx={{ 
+        flex: 1,
         display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center',
-        pt: { xs: 2, md: 4 },
-        px: { xs: 2, md: 0 },
-        height: 'calc(100vh - 64px)', // Account for header
-        overflow: 'auto', // Allow scrolling if needed
-        WebkitOverflowScrolling: 'touch',
-        scrollBehavior: 'auto', // Prevent smooth scrolling
-        position: 'relative'
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: { xs: 'flex-start', md: 'center' },
+        pt: { xs: 2, md: 0 },
+        pb: { xs: isMobile ? 32 : 2, md: 4 }, // Increase bottom padding for mobile to account for fixed input
+        px: { xs: 2, md: 4 },
+        overflow: 'visible', // Allow content to scroll
+        position: 'relative',
+        zIndex: 1,
+        minHeight: { xs: 'auto', md: 'auto' } // Allow natural height
       }}>
         <Paper 
           elevation={3}
@@ -517,104 +515,6 @@ const Wordle = () => {
             {currentInput}
           </Typography>
           
-          {/* Mobile Input Box */}
-          {isMobile && (
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: 1,
-              width: '100%',
-              mb: 2,
-              position: 'relative',
-              zIndex: 10 // Ensure input stays above other elements
-            }}>
-              <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.9rem' }}>
-                Type your guess:
-              </Typography>
-              <Box sx={{
-                position: 'relative',
-                width: '100%',
-                maxWidth: '280px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}>
-                <input
-                  id="mobile-wordle-input"
-                  type="text"
-                  value={currentInput}
-                  onChange={(e) => {
-                    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, WORD_LENGTH);
-                    setCurrentInput(value);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault(); // Prevent default form submission
-                      handleSubmit();
-                    }
-                  }}
-                  onFocus={(e) => {
-                    // Prevent scrolling when input is focused
-                    e.target.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    fontSize: '16px', // Prevents zoom on iOS
-                    border: '2px solid #3a3a3c',
-                    borderRadius: '8px',
-                    backgroundColor: '#121213',
-                    color: 'white',
-                    textAlign: 'center',
-                    textTransform: 'uppercase',
-                    outline: 'none',
-                    transform: 'scale(1)', // Prevents zoom
-                    WebkitTransform: 'scale(1)', // Safari support
-                    WebkitAppearance: 'none', // Removes default styling
-                    appearance: 'none',
-                    boxSizing: 'border-box',
-                    '&:focus': {
-                      borderColor: '#1976d2',
-                      fontSize: '16px', // Maintains size on focus
-                      transform: 'scale(1)',
-                      WebkitTransform: 'scale(1)'
-                    }
-                  }}
-                  placeholder="Type 5 letters..."
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="characters"
-                  maxLength={WORD_LENGTH}
-                  autoFocus
-                  inputMode="text"
-                  spellCheck="false"
-                />
-                <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={currentInput.length !== WORD_LENGTH || gameOver}
-                  size="small"
-                  sx={{
-                    bgcolor: '#538d4e',
-                    minWidth: '48px',
-                    height: '48px',
-                    borderRadius: '8px',
-                    '&:hover': {
-                      bgcolor: '#4a7d45'
-                    },
-                    '&:disabled': {
-                      bgcolor: '#666',
-                      color: '#999'
-                    }
-                  }}
-                >
-                  ✓
-                </Button>
-              </Box>
-            </Box>
-          )}
-          
           <Button
             variant="contained"
             onClick={handleSubmit}
@@ -654,45 +554,109 @@ const Wordle = () => {
         )}
       </Box>
 
-      {/* Footer with ? button */}
-      <Box sx={{
-        position: 'fixed',
-        bottom: { xs: 20, md: 16 },
-        left: 0,
-        width: '100vw',
-        display: 'flex',
-        justifyContent: 'center',
-        zIndex: 2001
-      }}>
-        <Button
-          variant="outlined"
-          sx={{ 
-            borderRadius: '50%', 
-            minWidth: 0, 
-            width: { xs: 48, md: 40 }, 
-            height: { xs: 48, md: 40 }, 
-            fontSize: { xs: 28, md: 24 }, 
-            color: 'white', 
-            borderColor: 'white', 
-            backgroundColor: 'rgba(0,0,0,0.7)', 
-            '&:hover': { backgroundColor: 'rgba(0,0,0,0.9)' } 
-          }}
-          onClick={() => setContactOpen(true)}
-          aria-label="Contact Info"
-        >
-          ?
-        </Button>
-      </Box>
-      <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
-        <DialogTitle>Contact</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            For questions, contact: <br />
-            <b>Jamil Khalaf</b><br />
-            <a href="mailto:jamilkhalaf04@gmail.com">jamilkhalaf04@gmail.com</a>
-          </DialogContentText>
-        </DialogContent>
-      </Dialog>
+      {/* Mobile Input Box - Fixed at bottom */}
+      {isMobile && (
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          gap: 1,
+          width: '100%',
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          backgroundColor: '#121213',
+          paddingTop: 2,
+          paddingBottom: 2,
+          paddingX: 2,
+          zIndex: 10,
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.3)'
+        }}>
+          <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.9rem' }}>
+            Type your guess:
+          </Typography>
+          <Box sx={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '280px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}>
+            <input
+              id="mobile-wordle-input"
+              type="text"
+              value={currentInput}
+              onChange={(e) => {
+                const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, WORD_LENGTH);
+                setCurrentInput(value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault(); // Prevent default form submission
+                  handleSubmit();
+                }
+              }}
+              onFocus={(e) => {
+                // Don't force scroll on focus - let user control scrolling
+              }}
+              style={{
+                flex: 1,
+                padding: '12px',
+                fontSize: '16px', // Prevents zoom on iOS
+                border: '2px solid #3a3a3c',
+                borderRadius: '8px',
+                backgroundColor: '#121213',
+                color: 'white',
+                textAlign: 'center',
+                textTransform: 'uppercase',
+                outline: 'none',
+                transform: 'scale(1)', // Prevents zoom
+                WebkitTransform: 'scale(1)', // Safari support
+                WebkitAppearance: 'none', // Removes default styling
+                appearance: 'none',
+                boxSizing: 'border-box',
+                '&:focus': {
+                  borderColor: '#1976d2',
+                  fontSize: '16px', // Maintains size on focus
+                  transform: 'scale(1)',
+                  WebkitTransform: 'scale(1)'
+                }
+              }}
+              placeholder="Type 5 letters..."
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              maxLength={WORD_LENGTH}
+              autoFocus
+              inputMode="text"
+              spellCheck="false"
+            />
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              disabled={currentInput.length !== WORD_LENGTH || gameOver}
+              size="small"
+              sx={{
+                bgcolor: '#538d4e',
+                minWidth: '48px',
+                height: '48px',
+                borderRadius: '8px',
+                '&:hover': {
+                  bgcolor: '#4a7d45'
+                },
+                '&:disabled': {
+                  bgcolor: '#666',
+                  color: '#999'
+                }
+              }}
+            >
+              ✓
+            </Button>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };

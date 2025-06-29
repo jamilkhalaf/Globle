@@ -293,7 +293,7 @@ const Population = () => {
         bottom: { xs: 20, md: 16 },
         left: 0,
         width: '100vw',
-        display: 'flex',
+        display: { xs: 'none', md: 'flex' }, // Hide on mobile, show on desktop
         justifyContent: 'center',
         zIndex: 2001
       }}>
