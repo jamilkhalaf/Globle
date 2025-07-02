@@ -5,19 +5,19 @@ import countryInfo from './countryInfo';
 
 // Robust mapping from country name to ISO 3166-1 alpha-2 code
 const nameToCode = {
-  'Afghanistan': 'af', 'Albania': 'al', 'Algeria': 'dz', 'Andorra': 'ad', 'Angola': 'ao',
+  'Afghanistan': 'af', 'American Samoa': 'as', 'Albania': 'al', 'Algeria': 'dz', 'Andorra': 'ad', 'Angola': 'ao',
   'Antigua and Barbuda': 'ag', 'Argentina': 'ar', 'Armenia': 'am', 'Australia': 'au', 'Austria': 'at',
   'Azerbaijan': 'az', 'Bahamas, The': 'bs', 'Bahrain': 'bh', 'Bangladesh': 'bd', 'Barbados': 'bb',
   'Belarus': 'by', 'Belgium': 'be', 'Belize': 'bz', 'Benin': 'bj', 'Bhutan': 'bt',
   'Bolivia': 'bo', 'Bosnia and Herzegovina': 'ba', 'Botswana': 'bw', 'Brazil': 'br', 'Brunei Darussalam': 'bn',
   'Bulgaria': 'bg', 'Burkina Faso': 'bf', 'Burundi': 'bi', 'Cabo Verde': 'cv', 'Cambodia': 'kh',
-  'Cameroon': 'cm', 'Canada': 'ca', 'Central African Republic': 'cf', 'Chad': 'td', 'Chile': 'cl',
+  'Cameroon': 'cm', 'Canada': 'ca', 'Cayman Islands': 'ky', 'Central African Republic': 'cf', 'Chad': 'td', 'Chile': 'cl',
   'China': 'cn', 'Colombia': 'co', 'Comoros': 'km', 'Congo, Dem. Rep.': 'cd', 'Congo, Rep.': 'cg',
   'Costa Rica': 'cr', 'Cote dIvoire': 'ci', 'Croatia': 'hr', 'Cuba': 'cu', 'Cyprus': 'cy',
   'Czechia': 'cz', 'Denmark': 'dk', 'Djibouti': 'dj', 'Dominica': 'dm', 'Dominican Republic': 'do',
   'Ecuador': 'ec', 'Egypt, Arab Rep.': 'eg', 'El Salvador': 'sv', 'Equatorial Guinea': 'gq', 'Eritrea': 'er',
   'Estonia': 'ee', 'Eswatini': 'sz', 'Ethiopia': 'et', 'Fiji': 'fj', 'Finland': 'fi',
-  'France': 'fr', 'Gabon': 'ga', 'Gambia, The': 'gm', 'Georgia': 'ge', 'Germany': 'de',
+  'France': 'fr', 'Faroe Islands': 'fo', 'Gabon': 'ga', 'Gambia, The': 'gm', 'Georgia': 'ge', 'Germany': 'de',
   'Ghana': 'gh', 'Greece': 'gr', 'Grenada': 'gd', 'Guatemala': 'gt', 'Guinea': 'gn',
   'Guinea-Bissau': 'gw', 'Guyana': 'gy', 'Haiti': 'ht', 'Honduras': 'hn', 'Hungary': 'hu',
   'Iceland': 'is', 'India': 'in', 'Indonesia': 'id', 'Iran, Islamic Rep.': 'ir', 'Iraq': 'iq',
@@ -61,7 +61,7 @@ const NUM_PIECES = 8;
 const Flagle = () => {
   const [target, setTarget] = useState(() => getRandomCountry());
   const [guess, setGuess] = useState('');
-  const [revealed, setRevealed] = useState(0); // Start with all pieces hidden
+  const [revealedPieces, setRevealedPieces] = useState([]); // Array of revealed piece indices
   const [guesses, setGuesses] = useState([]);
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('Guess the country!');
@@ -81,12 +81,18 @@ const Flagle = () => {
       setMessage('🎉 Correct!');
       setGameOver(true);
       setStreak(s => s + 1);
-      setRevealed(NUM_PIECES);
+      setRevealedPieces(Array.from({length: NUM_PIECES}, (_, i) => i));
     } else {
-      if (revealed < NUM_PIECES) {
-        setRevealed(r => r + 1);
+      if (revealedPieces.length < NUM_PIECES - 1) {
+        // Reveal a random unrevealed piece
+        const unrevealed = Array.from({length: NUM_PIECES}, (_, i) => i).filter(i => !revealedPieces.includes(i));
+        const randomIdx = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+        setRevealedPieces(prev => [...prev, randomIdx]);
         setMessage('Incorrect!');
       } else {
+        // Reveal the last piece and end the game
+        const unrevealed = Array.from({length: NUM_PIECES}, (_, i) => i).filter(i => !revealedPieces.includes(i));
+        setRevealedPieces(prev => [...prev, ...unrevealed]);
         setMessage(`Out of guesses! The answer was ${target}`);
         setGameOver(true);
         setStreak(0);
@@ -97,7 +103,7 @@ const Flagle = () => {
   };
 
   const handleNext = () => {
-    setRevealed(0); // Hide all pieces immediately
+    setRevealedPieces([]); // Hide all pieces immediately
     setRound(r => r + 1); // Force remount of flag box
     setTimeout(() => {
       const next = getRandomCountry(target);
@@ -143,7 +149,7 @@ const Flagle = () => {
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
-                  display: revealed === 0 ? 'none' : 'block',
+                  display: revealedPieces.length === 0 ? 'none' : 'block',
                   userSelect: 'none',
                   position: 'absolute',
                   top: 0,
@@ -162,8 +168,8 @@ const Flagle = () => {
                     left: `${piece.col * 25}%`,
                     width: '25%',
                     height: '50%',
-                    bgcolor: idx < revealed ? 'transparent' : '#232a3b',
-                    border: idx < revealed ? 'none' : '2px solid #121213',
+                    bgcolor: revealedPieces.includes(idx) ? 'transparent' : '#232a3b',
+                    border: revealedPieces.includes(idx) ? 'none' : '2px solid #121213',
                     transition: 'background 0.4s',
                     pointerEvents: 'none',
                     zIndex: 2,
