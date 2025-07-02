@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
+import PublicIcon from '@mui/icons-material/Public';
 
 const Header = () => {
   const location = useLocation();
@@ -29,10 +30,11 @@ const Header = () => {
   const menuItems = [
     { path: '/', label: 'Home' },
     { path: '/game', label: 'Globle' },
-    { path: '/wordle', label: 'Wordle' },
+    { path: '/wordle', label: 'Wordle', icon: <PublicIcon sx={{ fontSize: 32, color: '#1976d2' }} /> },
     { path: '/population', label: 'Population' },
     { path: '/name', label: 'Findle' },
-    { path: '/flagle', label: 'Flagle' }
+    { path: '/flagle', label: 'Flagle' },
+    { path: '/worldle', label: 'Worldle', icon: <PublicIcon sx={{ fontSize: 32, color: '#43cea2' }} /> },
   ];
 
   const drawer = (

@@ -7,6 +7,7 @@ import Wordle from './components/Wordle'
 import Population from './components/population'
 import Name from './components/name'
 import Flagle from './components/Flagle'
+import Worldle from './components/Worldle'
 import './App.css'
 
 const theme = createTheme({
@@ -28,6 +29,7 @@ function App() {
           <Route path="/population" element={<Population />} />
           <Route path="/name" element={<Name />} />
           <Route path="/flagle" element={<Flagle />} />
+          <Route path="/worldle" element={<Worldle />} />
         </Routes>
       </Router>
     </ThemeProvider>
