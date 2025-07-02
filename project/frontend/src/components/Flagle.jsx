@@ -6,8 +6,8 @@ import countryInfo from './countryInfo';
 // Robust mapping from country name to ISO 3166-1 alpha-2 code
 const nameToCode = {
   'Afghanistan': 'af', 'American Samoa': 'as', 'Albania': 'al', 'Algeria': 'dz', 'Andorra': 'ad', 'Angola': 'ao',
-  'Antigua and Barbuda': 'ag', 'Argentina': 'ar', 'Armenia': 'am', 'Australia': 'au', 'Austria': 'at',
-  'Azerbaijan': 'az', 'Bahamas, The': 'bs', 'Bahrain': 'bh', 'Bangladesh': 'bd', 'Barbados': 'bb',
+  'Antigua and Barbuda': 'ag', 'Argentina': 'ar', 'Armenia': 'am', 'Australia': 'au', 'Austria': 'at', 
+  'Azerbaijan': 'az', 'Bahamas, The': 'bs', 'Bahrain': 'bh', 'Bangladesh': 'bd', 'Barbados': 'bb', "St. Vincent and the Grenadines": "vc", 
   'Belarus': 'by', 'Belgium': 'be', 'Belize': 'bz', 'Benin': 'bj', 'Bhutan': 'bt',
   'Bolivia': 'bo', 'Bosnia and Herzegovina': 'ba', 'Botswana': 'bw', 'Brazil': 'br', 'Brunei Darussalam': 'bn',
   'Bulgaria': 'bg', 'Burkina Faso': 'bf', 'Burundi': 'bi', 'Cabo Verde': 'cv', 'Cambodia': 'kh',
@@ -68,6 +68,7 @@ const Flagle = () => {
   const [streak, setStreak] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [round, setRound] = useState(0); // Used to force remount flag box
+  const [inputError, setInputError] = useState('');
 
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
@@ -76,6 +77,14 @@ const Flagle = () => {
   const handleGuess = () => {
     let guessToCheck = guess;
     if (!guessToCheck.trim()) return;
+    // Validate guess is a real country
+    const validCountry = countryOptions.some(opt => opt.label.toLowerCase() === guessToCheck.trim().toLowerCase());
+    if (!validCountry) {
+      setInputError('Invalid country name. Please select a valid country.');
+      return;
+    } else {
+      setInputError('');
+    }
     setGuesses(g => [...g, guessToCheck]);
     if (guessToCheck.trim().toLowerCase() === target.toLowerCase()) {
       setMessage('🎉 Correct!');
@@ -113,6 +122,7 @@ const Flagle = () => {
       setGuesses([]);
       setGameOver(false);
       setMessage('Guess the country!');
+      setInputError('');
     }, 0);
   };
 
@@ -186,17 +196,21 @@ const Flagle = () => {
               getOptionLabel={option => typeof option === 'string' ? option : option.label}
               value={guess}
               inputValue={inputValue}
-              onInputChange={(event, newInputValue) => {
+              onInputChange={(event, newInputValue, reason) => {
                 setInputValue(newInputValue);
                 setGuess(newInputValue);
               }}
-              onChange={(event, newValue) => {
+              onChange={(event, newValue, reason) => {
                 if (typeof newValue === 'string') {
                   setGuess(newValue);
                   setInputValue(newValue);
+                  // If user selects from menu, submit immediately
+                  handleGuess();
                 } else if (newValue && newValue.label) {
                   setGuess(newValue.label);
                   setInputValue(newValue.label);
+                  // If user selects from menu, submit immediately
+                  handleGuess();
                 }
               }}
               PopperProps={{
@@ -217,7 +231,17 @@ const Flagle = () => {
                   variant="outlined"
                   sx={{ bgcolor: 'white', borderRadius: 3, flex: 1, fontSize: { xs: 22, md: 28 }, input: { fontWeight: 700, fontSize: { xs: 22, md: 28 } } }}
                   inputProps={{ ...params.inputProps, style: { fontWeight: 700, fontSize: 24, padding: '18px 16px' } }}
-                  onKeyDown={e => { if (e.key === 'Enter' && !gameOver) handleGuess(); }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      if (!gameOver) {
+                        handleGuess();
+                      } else {
+                        handleNext();
+                      }
+                    }
+                  }}
+                  error={!!inputError}
+                  helperText={inputError}
                 />
               )}
               sx={{ flex: 1 }}
