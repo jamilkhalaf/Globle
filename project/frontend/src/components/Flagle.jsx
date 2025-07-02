@@ -23,7 +23,7 @@ const nameToCode = {
   'Iceland': 'is', 'India': 'in', 'Indonesia': 'id', 'Iran, Islamic Rep.': 'ir', 'Iraq': 'iq',
   'Ireland': 'ie', 'Israel': 'il', 'Italy': 'it', 'Jamaica': 'jm', 'Japan': 'jp',
   'Jordan': 'jo', 'Kazakhstan': 'kz', 'Kenya': 'ke', 'Kiribati': 'ki', 'Korea, Dem. Peoples Rep.': 'kp',
-  'Korea, Rep.': 'kr', 'Kuwait': 'kw', 'Kyrgyz Republic': 'kg', 'Lao PDR': 'la', 'Latvia': 'lv',
+  'Korea, Rep.': 'kr', 'Kuwait': 'kw', 'Kosovo': 'xk', 'Kyrgyz Republic': 'kg', 'Lao PDR': 'la', 'Latvia': 'lv',
   'Lebanon': 'lb', 'Lesotho': 'ls', 'Liberia': 'lr', 'Libya': 'ly', 'Liechtenstein': 'li',
   'Lithuania': 'lt', 'Luxembourg': 'lu', 'Madagascar': 'mg', 'Malawi': 'mw', 'Malaysia': 'my',
   'Maldives': 'mv', 'Mali': 'ml', 'Malta': 'mt', 'Marshall Islands': 'mh', 'Mauritania': 'mr',
