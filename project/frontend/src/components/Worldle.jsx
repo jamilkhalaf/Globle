@@ -104,6 +104,7 @@ const Worldle = () => {
   const [message, setMessage] = useState('Guess the country!');
   const [inputError, setInputError] = useState('');
   const [round, setRound] = useState(0);
+  const [scrollHint, setScrollHint] = useState(false);
 
   const country = countryInfo[target];
   const extra = countryExtra[target];
@@ -115,6 +116,9 @@ const Worldle = () => {
     const validCountry = countryOptions.some(opt => opt.label.toLowerCase() === guess.trim().toLowerCase());
     if (!validCountry) {
       setInputError('Invalid country name. Please select a valid country.');
+      return;
+    } else if (guesses.some(g => g.trim().toLowerCase() === guess.trim().toLowerCase())) {
+      setInputError('You already guessed that country. Try a different one.');
       return;
     } else {
       setInputError('');
@@ -150,6 +154,10 @@ const Worldle = () => {
 
   const hints = getHints(country, extra, revealed);
 
+  React.useEffect(() => {
+    setScrollHint(hints.length > 3);
+  }, [hints.length, round]);
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#232a3b', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Header />
@@ -164,6 +172,11 @@ const Worldle = () => {
             width: '100%',
             pb: 2,
           }}>
+            {scrollHint && (
+              <Typography variant="caption" sx={{ color: '#b0c4de', mb: 1, fontWeight: 500, textAlign: 'center', width: '100%' }}>
+                Scroll for more hints
+              </Typography>
+            )}
             {hints.map((hint, idx) => (
               <Paper key={idx} elevation={3} sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.2, md: 2 }, borderRadius: 3, background: 'rgba(255,255,255,0.08)', color: 'white', fontWeight: 600, fontSize: { xs: 16, md: 18 }, width: '100%', maxWidth: 420, textAlign: 'left', mb: 1 }}>
                 <b>{hint.label}:</b> {hint.value}
