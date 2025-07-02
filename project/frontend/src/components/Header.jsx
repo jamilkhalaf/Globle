@@ -31,7 +31,8 @@ const Header = () => {
     { path: '/game', label: 'Globle' },
     { path: '/wordle', label: 'Wordle' },
     { path: '/population', label: 'Population' },
-    { path: '/name', label: 'Findle' }
+    { path: '/name', label: 'Findle' },
+    { path: '/flagle', label: 'Flagle' }
   ];
 
   const drawer = (

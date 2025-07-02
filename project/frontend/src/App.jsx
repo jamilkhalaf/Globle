@@ -6,6 +6,7 @@ import Game from './components/Game'
 import Wordle from './components/Wordle'
 import Population from './components/population'
 import Name from './components/name'
+import Flagle from './components/Flagle'
 import './App.css'
 
 const theme = createTheme({
@@ -26,6 +27,7 @@ function App() {
           <Route path="/wordle" element={<Wordle />} />
           <Route path="/population" element={<Population />} />
           <Route path="/name" element={<Name />} />
+          <Route path="/flagle" element={<Flagle />} />
         </Routes>
       </Router>
     </ThemeProvider>

@@ -27,7 +27,7 @@ const Game = () => {
   const [lastDistance, setLastDistance] = useState(null);
   const [countryOptions, setCountryOptions] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const mapRef = useRef(null);
   
   // Game state
@@ -790,6 +790,12 @@ const Game = () => {
                     style: {
                       fontSize: '16px', // Prevents zoom on iOS
                       transform: 'scale(1)', // Prevents zoom
+                    },
+                    onKeyDown: (e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleGuess();
+                      }
                     }
                   }}
                   sx={{
