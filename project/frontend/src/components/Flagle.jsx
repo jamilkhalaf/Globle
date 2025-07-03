@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autocomplete } from '@mui/material';
+import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
+import NotificationModal from './NotificationModal';
 
 // Robust mapping from country name to ISO 3166-1 alpha-2 code
 const nameToCode = {
@@ -69,6 +70,7 @@ const Flagle = () => {
   const [inputValue, setInputValue] = useState('');
   const [round, setRound] = useState(0); // Used to force remount flag box
   const [inputError, setInputError] = useState('');
+  const [showIntro, setShowIntro] = useState(true);
 
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
@@ -143,8 +145,15 @@ const Flagle = () => {
     <Box sx={{ minHeight: '100vh', bgcolor: '#232a3b', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Header />
       <Toolbar />
+      <NotificationModal
+        open={showIntro}
+        onClose={() => setShowIntro(false)}
+        title="How to Play Flagle"
+        description={"Guess the country by its flag! Each wrong guess reveals a new part of the flag. You have 8 tries. Type or select a country and press Guess. Good luck!"}
+        color="warning"
+      />
       <Fade in timeout={600}>
-        <Paper elevation={8} sx={{ mt: 6, p: { xs: 3, md: 5 }, borderRadius: 5, maxWidth: 600, width: '100%', textAlign: 'center', position: 'relative', background: 'rgba(30,34,44,0.98)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
+        <Paper elevation={8} sx={{ mt: { xs: 2, md: 6 }, p: { xs: 1.5, md: 5 }, borderRadius: 4, maxWidth: { xs: 320, sm: 380, md: 600 }, width: '100%', textAlign: 'center', position: 'relative', background: 'rgba(30,34,44,0.98)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)', display: showIntro ? 'none' : 'block' }}>
           <Typography variant="h3" sx={{ mb: 3, fontWeight: 900, color: 'transparent', background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Flagle</Typography>
           <Typography variant="h5" sx={{ mb: 3, color: '#b0c4de', fontWeight: 700, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{message}</Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 4 }}>

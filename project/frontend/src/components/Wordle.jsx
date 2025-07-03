@@ -7,6 +7,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import NotificationModal from './NotificationModal';
 
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
@@ -34,6 +35,8 @@ const Wordle = () => {
 
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
+
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     const handleResize = () => {
@@ -326,6 +329,22 @@ const Wordle = () => {
       }
     };
   };
+
+  if (showIntro) {
+    return (
+      <>
+        <Header />
+        <Toolbar />
+        <NotificationModal
+          open={showIntro}
+          onClose={() => setShowIntro(false)}
+          title="How to Play Wordle"
+          description={"Guess the 5-letter word in 6 tries. Each guess must be a valid word. After each guess, the color of the tiles will show how close your guess was to the word. Good luck!"}
+          color="secondary"
+        />
+      </>
+    );
+  }
 
   return (
     <Box sx={{ 

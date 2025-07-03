@@ -7,6 +7,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import NotificationModal from './NotificationModal';
 
 const getRandomCountry = (exclude) => {
   const keys = Object.keys(countryInfo).filter(k => k !== exclude);
@@ -30,6 +31,9 @@ const Population = () => {
 
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
+
+  // Add state for notification modal
+  const [showIntro, setShowIntro] = useState(true);
 
   // Memoize the random country generation to prevent unnecessary re-renders
   const generateNewCountries = useCallback(() => {
@@ -77,6 +81,22 @@ const Population = () => {
     }
   }, [countries, isLoading, generateNewCountries]);
 
+  if (showIntro) {
+    return (
+      <>
+        <Header />
+        <Toolbar />
+        <NotificationModal
+          open={showIntro}
+          onClose={() => setShowIntro(false)}
+          title="How to Play Population Showdown"
+          description={"Choose which country has the higher population. Each correct answer increases your score. Try to get the highest streak!"}
+          color="info"
+        />
+      </>
+    );
+  }
+
   if (countries.length < 2) return null;
   const [left, right] = countries;
 
@@ -107,10 +127,10 @@ const Population = () => {
           <Paper 
             elevation={6} 
             sx={{ 
-              p: { xs: 3, md: 4 }, 
-              borderRadius: { xs: 3, md: 4 }, 
-              width: { xs: '100%', md: 480 }, 
-              maxWidth: { xs: '100%', md: 480 },
+              p: { xs: 1.5, md: 4 }, 
+              borderRadius: { xs: 2, md: 4 }, 
+              width: { xs: '100%', md: 400 }, 
+              maxWidth: { xs: 300, sm: 340, md: 480 },
               textAlign: 'center', 
               background: 'rgba(30,34,44,0.95)', 
               color: 'white', 

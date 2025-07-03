@@ -12,6 +12,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import NotificationModal from './NotificationModal';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -46,6 +47,9 @@ const Game = () => {
 
   // Add state to track recently used countries for better variety
   const [recentlyUsedCountries, setRecentlyUsedCountries] = useState([]);
+
+  // Add state for showing the intro modal
+  const [showIntro, setShowIntro] = useState(true);
 
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
@@ -576,6 +580,22 @@ const Game = () => {
       localStorage.setItem('globleBestScore', attempts.toString());
     }
   };
+
+  if (showIntro) {
+    return (
+      <>
+        <Header />
+        <Toolbar />
+        <NotificationModal
+          open={showIntro}
+          onClose={() => setShowIntro(false)}
+          title="How to Play Globle"
+          description={"Guess the secret country! Each guess shows how close you are. The color indicates distance: red (close), yellow (far). Try to find the country in as few guesses as possible!"}
+          color="primary"
+        />
+      </>
+    );
+  }
 
   return (
     <Box sx={{ 

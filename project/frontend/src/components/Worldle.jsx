@@ -3,6 +3,7 @@ import { Box, Typography, Paper, Button, Stack, Fade, Autocomplete, TextField, T
 import Header from './Header';
 import countryInfo from './countryInfo';
 import countryExtra from './countryExtra';
+import NotificationModal from './NotificationModal';
 
 const NUM_TRIES = 5;
 
@@ -105,6 +106,7 @@ const Worldle = () => {
   const [inputError, setInputError] = useState('');
   const [round, setRound] = useState(0);
   const [scrollHint, setScrollHint] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   const country = countryInfo[target];
   const extra = countryExtra[target];
@@ -158,12 +160,28 @@ const Worldle = () => {
     setScrollHint(hints.length > 3);
   }, [hints.length, round]);
 
+  if (showIntro) {
+    return (
+      <>
+        <Header />
+        <Toolbar />
+        <NotificationModal
+          open={showIntro}
+          onClose={() => setShowIntro(false)}
+          title="How to Play Worldle"
+          description={"Guess the country based on hints! Each wrong guess reveals a new hint: population, capital, famous places, borders, hemisphere, and flag. You have 5 tries. Good luck!"}
+          color="success"
+        />
+      </>
+    );
+  }
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#232a3b', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Header />
       <Toolbar />
       <Fade in timeout={600}>
-        <Paper elevation={8} sx={{ mt: 6, p: { xs: 3, md: 5 }, borderRadius: 5, maxWidth: 600, width: '100%', textAlign: 'center', position: 'relative', background: 'rgba(30,34,44,0.98)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
+        <Paper elevation={8} sx={{ mt: { xs: 2, md: 6 }, p: { xs: 1.5, md: 5 }, borderRadius: 4, maxWidth: { xs: 320, sm: 380, md: 600 }, width: '100%', textAlign: 'center', position: 'relative', background: 'rgba(30,34,44,0.98)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
           <Typography variant="h3" sx={{ mb: 3, fontWeight: 900, color: 'transparent', background: 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Worldle</Typography>
           <Typography variant="h5" sx={{ mb: 3, color: '#b0c4de', fontWeight: 700, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{message}</Typography>
           <Stack spacing={2} sx={{ mb: 3, alignItems: 'center',

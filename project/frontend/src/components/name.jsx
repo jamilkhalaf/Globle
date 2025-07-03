@@ -10,6 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import NotificationModal from './NotificationModal';
 
 const Name = () => {
   const navigate = useNavigate();
@@ -28,6 +29,9 @@ const Name = () => {
 
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
+
+  // Add state for notification modal
+  const [showIntro, setShowIntro] = useState(true);
 
   // Load countries data
   useEffect(() => {
@@ -259,6 +263,22 @@ const Name = () => {
     setGameOver(false);
     startNewRound(countries);
   };
+
+  if (showIntro) {
+    return (
+      <>
+        <Header />
+        <Toolbar />
+        <NotificationModal
+          open={showIntro}
+          onClose={() => setShowIntro(false)}
+          title="How to Play Findle (Name Game)"
+          description={"Find the country on the map! Each round, a country is named and you must click it on the map. Try to keep your streak going!"}
+          color="primary"
+        />
+      </>
+    );
+  }
 
   return (
     <Box sx={{ 

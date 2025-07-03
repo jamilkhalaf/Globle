@@ -64,12 +64,12 @@ const Home = () => {
         <Paper
           elevation={8}
           sx={{
-            mt: { xs: 2, md: 6 },
-            mb: { xs: 2, md: 3 },
-            px: { xs: 2, md: 6 },
-            py: { xs: 3, md: 6 },
+            mt: { xs: 1, md: 6 },
+            mb: { xs: 1, md: 3 },
+            px: { xs: 1, md: 6 },
+            py: { xs: 2, md: 6 },
             borderRadius: 6,
-            maxWidth: 600,
+            maxWidth: { xs: 340, sm: 400, md: 600 },
             width: '100%',
             textAlign: 'center',
             background: 'rgba(30,34,44,0.98)',
@@ -78,27 +78,27 @@ const Home = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            minHeight: { xs: '80vh', md: '70vh' },
+            minHeight: { xs: 'auto', md: '70vh' },
             justifyContent: 'space-between',
           }}
         >
           <Box
             sx={{
-              width: 100,
-              height: 100,
+              width: { xs: 64, md: 100 },
+              height: { xs: 64, md: 100 },
               borderRadius: '50%',
               background: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 32px',
+              margin: { xs: '0 auto 18px', md: '0 auto 32px' },
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
             }}
           >
-            <PublicIcon sx={{ fontSize: 56, color: 'white', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
+            <PublicIcon sx={{ fontSize: { xs: 36, md: 56 }, color: 'white', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
           </Box>
           <Typography
-            variant={isMobile ? 'h4' : 'h2'}
+            variant={isMobile ? 'h5' : 'h2'}
             component="h1"
             sx={{
               fontWeight: 900,
@@ -106,9 +106,10 @@ const Home = () => {
               background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              mb: 2,
+              mb: { xs: 1, md: 2 },
               letterSpacing: 2,
               textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              fontSize: { xs: '1.3rem', sm: '1.7rem', md: '2.5rem' },
             }}
           >
             Welcome to my games collection
@@ -301,29 +302,31 @@ const Home = () => {
           )}
 
           {/* Contact Section */}
-          <Box sx={{ mt: 3, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Typography variant="subtitle1" sx={{ color: '#b0c4de', fontWeight: 600, mb: 1 }}>
-              Contact Information -- Reach out for help or concerns
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center' }}>
-              <Button
-                href="https://instagram.com/jamillkhalaf"
-                target="_blank"
-                rel="noopener noreferrer"
-                startIcon={<img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/instagram.svg" alt="Instagram" style={{ width: 24, height: 24, filter: 'invert(0.6)' }} />}
-                sx={{ color: '#fff', fontWeight: 700, textTransform: 'none', fontSize: 16, background: 'linear-gradient(90deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)', borderRadius: 3, px: 2, py: 1, boxShadow: '0 2px 8px rgba(131,58,180,0.10)' }}
-              >
-                @jamillkhalaf
-              </Button>
-              <Button
-                href="mailto:jamilkhalaf04@gmail.com"
-                startIcon={<EmailIcon sx={{ color: '#d93025', background: '#fff', borderRadius: '4px', fontSize: 28, p: '2px' }} />}
-                sx={{ color: '#222', fontWeight: 700, textTransform: 'none', fontSize: 16, background: '#fff', borderRadius: 3, px: 2, py: 1, boxShadow: '0 2px 8px rgba(66,133,244,0.10)', '&:hover': { background: '#f5f5f5' } }}
-              >
-                jamilkhalaf04@gmail.com
-              </Button>
+          {!isMobile && (
+            <Box sx={{ mt: 2, width: '100%', maxWidth: 420, mx: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 0, px: 0 }}>
+              <Typography variant="subtitle2" sx={{ color: '#b0c4de', fontWeight: 600, mb: 0.5, fontSize: 16 }}>
+                Contact Information
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
+                <Button
+                  href="https://instagram.com/jamillkhalaf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/instagram.svg" alt="Instagram" style={{ width: 18, height: 18, filter: 'invert(0.6)' }} />}
+                  sx={{ color: '#fff', fontWeight: 600, textTransform: 'none', fontSize: 16, background: 'linear-gradient(90deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)', borderRadius: 2, px: 2, py: 1, minWidth: 0, boxShadow: '0 2px 8px rgba(131,58,180,0.10)' }}
+                >
+                  @jamillkhalaf
+                </Button>
+                <Button
+                  href="mailto:jamilkhalaf04@gmail.com"
+                  startIcon={<EmailIcon sx={{ color: '#d93025', background: '#fff', borderRadius: '3px', fontSize: 28, p: '2px' }} />}
+                  sx={{ color: '#222', fontWeight: 600, textTransform: 'none', fontSize: 16, background: '#fff', borderRadius: 2, px: 2, py: 1, minWidth: 0, boxShadow: '0 2px 8px rgba(66,133,244,0.10)', '&:hover': { background: '#f5f5f5' } }}
+                >
+                  jamilkhalaf04@gmail.com
+                </Button>
+              </Box>
             </Box>
-          </Box>
+          )}
         </Paper>
       </Fade>
     </Box>
