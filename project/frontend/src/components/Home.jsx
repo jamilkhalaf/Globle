@@ -132,7 +132,7 @@ const Home = () => {
               textShadow: '0 1px 3px rgba(0,0,0,0.2)',
             }}
           >
-            Globle is a collection of geography games designed to challenge your knowledge of countries, capitals, populations, and flags. Whether you're a casual explorer or a competitive globetrotter, you'll find something to enjoy. Sharpen your skills, learn new facts, and have fun discovering the world!
+            This is a collection of geography games + wordle designed to challenge your knowledge of countries, capitals, populations, flags, and pattern recognition. Whether you're a casual explorer or a competitive globetrotter, you'll find something to enjoy. Sharpen your skills, learn new facts, and have fun discovering the world!
           </Typography>
           <Button
             variant="contained"
