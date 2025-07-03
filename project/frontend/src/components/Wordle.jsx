@@ -59,16 +59,16 @@ const Wordle = () => {
       const setVH = () => {
         const vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty('--vh', `${vh}px`);
-      };
-      
+    };
+    
       // Set initial viewport height
       setVH();
-      
+    
       // Only update on orientation change, not on resize to prevent scroll jumping
       const handleOrientationChange = () => {
         setTimeout(setVH, 100); // Small delay to ensure orientation change is complete
-      };
-      
+    };
+    
       window.addEventListener('orientationchange', handleOrientationChange);
       
       return () => {
@@ -195,7 +195,7 @@ const Wordle = () => {
       setMessage('Word must be 5 letters!');
       return;
     }
-
+    
     // Check if the word is valid by fetching from dictionary API
     const checkWordValidity = async () => {
       try {
@@ -272,13 +272,13 @@ const Wordle = () => {
       
       // Refocus input on mobile without scroll manipulation
       if (isMobile) {
-        setTimeout(() => {
+      setTimeout(() => {
           const input = document.getElementById('mobile-wordle-input');
           if (input) {
             input.focus();
           }
         }, 100);
-      }
+        }
     };
 
     // Check word validity before submitting
@@ -350,8 +350,8 @@ const Wordle = () => {
       <Box sx={{ 
         flex: 1,
         display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
+        flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: { xs: 'flex-start', md: 'center' },
         pt: { xs: 2, md: 0 },
         pb: { xs: isMobile ? 32 : 2, md: 4 }, // Increase bottom padding for mobile to account for fixed input
@@ -555,13 +555,13 @@ const Wordle = () => {
       </Box>
 
       {/* Mobile Input Box - Fixed at bottom */}
-      {isMobile && (
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          gap: 1,
-          width: '100%',
+          {isMobile && (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: 1,
+              width: '100%',
           position: 'fixed',
           bottom: 0,
           left: 0,
@@ -572,71 +572,71 @@ const Wordle = () => {
           zIndex: 10,
           borderTop: '1px solid rgba(255, 255, 255, 0.1)',
           boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.3)'
-        }}>
-          <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.9rem' }}>
-            Type your guess:
-          </Typography>
-          <Box sx={{
-            position: 'relative',
-            width: '100%',
+            }}>
+              <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.9rem' }}>
+                Type your guess:
+              </Typography>
+              <Box sx={{
+                position: 'relative',
+                width: '100%',
             maxWidth: '280px',
             display: 'flex',
             alignItems: 'center',
             gap: 1
-          }}>
-            <input
-              id="mobile-wordle-input"
-              type="text"
-              value={currentInput}
-              onChange={(e) => {
-                const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, WORD_LENGTH);
-                setCurrentInput(value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault(); // Prevent default form submission
-                  handleSubmit();
-                }
-              }}
-              onFocus={(e) => {
+              }}>
+                <input
+                  id="mobile-wordle-input"
+                  type="text"
+                  value={currentInput}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, WORD_LENGTH);
+                    setCurrentInput(value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault(); // Prevent default form submission
+                      handleSubmit();
+                    }
+                  }}
+                  onFocus={(e) => {
                 // Don't force scroll on focus - let user control scrolling
-              }}
-              style={{
+                  }}
+                  style={{
                 flex: 1,
-                padding: '12px',
-                fontSize: '16px', // Prevents zoom on iOS
-                border: '2px solid #3a3a3c',
-                borderRadius: '8px',
-                backgroundColor: '#121213',
-                color: 'white',
-                textAlign: 'center',
-                textTransform: 'uppercase',
-                outline: 'none',
-                transform: 'scale(1)', // Prevents zoom
-                WebkitTransform: 'scale(1)', // Safari support
-                WebkitAppearance: 'none', // Removes default styling
-                appearance: 'none',
-                boxSizing: 'border-box',
-                '&:focus': {
-                  borderColor: '#1976d2',
-                  fontSize: '16px', // Maintains size on focus
-                  transform: 'scale(1)',
-                  WebkitTransform: 'scale(1)'
-                }
-              }}
-              placeholder="Type 5 letters..."
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="characters"
-              maxLength={WORD_LENGTH}
-              autoFocus
-              inputMode="text"
-              spellCheck="false"
-            />
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={currentInput.length !== WORD_LENGTH || gameOver}
+                    padding: '12px',
+                    fontSize: '16px', // Prevents zoom on iOS
+                    border: '2px solid #3a3a3c',
+                    borderRadius: '8px',
+                    backgroundColor: '#121213',
+                    color: 'white',
+                    textAlign: 'center',
+                    textTransform: 'uppercase',
+                    outline: 'none',
+                    transform: 'scale(1)', // Prevents zoom
+                    WebkitTransform: 'scale(1)', // Safari support
+                    WebkitAppearance: 'none', // Removes default styling
+                    appearance: 'none',
+                    boxSizing: 'border-box',
+                    '&:focus': {
+                      borderColor: '#1976d2',
+                      fontSize: '16px', // Maintains size on focus
+                      transform: 'scale(1)',
+                      WebkitTransform: 'scale(1)'
+                    }
+                  }}
+                  placeholder="Type 5 letters..."
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="characters"
+                  maxLength={WORD_LENGTH}
+                  autoFocus
+                  inputMode="text"
+                  spellCheck="false"
+                />
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={currentInput.length !== WORD_LENGTH || gameOver}
               size="small"
               sx={{
                 bgcolor: '#538d4e',
@@ -656,7 +656,7 @@ const Wordle = () => {
             </Button>
           </Box>
         </Box>
-      )}
+        )}
     </Box>
   );
 };

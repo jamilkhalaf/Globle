@@ -7,6 +7,7 @@ import SpellcheckIcon from '@mui/icons-material/Spellcheck';
 import GroupsIcon from '@mui/icons-material/Groups';
 import FlagIcon from '@mui/icons-material/Flag';
 import CloseIcon from '@mui/icons-material/Close';
+import EmailIcon from '@mui/icons-material/Email';
 import { useNavigate } from 'react-router-dom';
 
 const gameList = [
@@ -63,10 +64,10 @@ const Home = () => {
         <Paper
           elevation={8}
           sx={{
-            mt: { xs: 6, md: 10 },
-            mb: 4,
-            px: { xs: 3, md: 8 },
-            py: { xs: 5, md: 8 },
+            mt: { xs: 2, md: 6 },
+            mb: { xs: 2, md: 3 },
+            px: { xs: 2, md: 6 },
+            py: { xs: 3, md: 6 },
             borderRadius: 6,
             maxWidth: 600,
             width: '100%',
@@ -77,6 +78,8 @@ const Home = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            minHeight: { xs: '80vh', md: '70vh' },
+            justifyContent: 'space-between',
           }}
         >
           <Box
@@ -296,6 +299,31 @@ const Home = () => {
               </Box>
             </Dialog>
           )}
+
+          {/* Contact Section */}
+          <Box sx={{ mt: 3, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography variant="subtitle1" sx={{ color: '#b0c4de', fontWeight: 600, mb: 1 }}>
+              Contact Information -- Reach out for help or concerns
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center' }}>
+              <Button
+                href="https://instagram.com/jamillkhalaf"
+                target="_blank"
+                rel="noopener noreferrer"
+                startIcon={<img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/instagram.svg" alt="Instagram" style={{ width: 24, height: 24, filter: 'invert(0.6)' }} />}
+                sx={{ color: '#fff', fontWeight: 700, textTransform: 'none', fontSize: 16, background: 'linear-gradient(90deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)', borderRadius: 3, px: 2, py: 1, boxShadow: '0 2px 8px rgba(131,58,180,0.10)' }}
+              >
+                @jamillkhalaf
+              </Button>
+              <Button
+                href="mailto:jamilkhalaf04@gmail.com"
+                startIcon={<EmailIcon sx={{ color: '#d93025', background: '#fff', borderRadius: '4px', fontSize: 28, p: '2px' }} />}
+                sx={{ color: '#222', fontWeight: 700, textTransform: 'none', fontSize: 16, background: '#fff', borderRadius: 3, px: 2, py: 1, boxShadow: '0 2px 8px rgba(66,133,244,0.10)', '&:hover': { background: '#f5f5f5' } }}
+              >
+                jamilkhalaf04@gmail.com
+              </Button>
+            </Box>
+          </Box>
         </Paper>
       </Fade>
     </Box>

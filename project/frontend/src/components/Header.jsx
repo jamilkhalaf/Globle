@@ -40,9 +40,27 @@ const Header = () => {
   const drawer = (
     <Box sx={{ width: 250, bgcolor: '#121213', height: '100%' }}>
       <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+        <Box
+          component="a"
+          href="https://jamilweb.click"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1.15rem',
+            textDecoration: 'none',
+            letterSpacing: 1.5,
+            transition: 'color 0.2s',
+            cursor: 'pointer',
+            '&:hover': {
+              color: '#43cea2',
+              textDecoration: 'underline',
+            },
+          }}
+        >
           JAMIL KHALAF
-        </Typography>
+        </Box>
       </Box>
       <List>
         {menuItems.map((item) => (
@@ -79,17 +97,27 @@ const Header = () => {
     <>
       <AppBar position="fixed" sx={{ bgcolor: '#121213', zIndex: theme.zIndex.drawer + 1 }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography 
-            variant="h6" 
-            component="div" 
-            sx={{ 
-              color: 'white', 
+          <Box
+            component="a"
+            href="https://jamilweb.click"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              color: 'white',
               fontWeight: 'bold',
-              fontSize: { xs: '1rem', sm: '1.25rem' }
+              fontSize: { xs: '1rem', sm: '1.25rem' },
+              textDecoration: 'none',
+              letterSpacing: 1.5,
+              transition: 'color 0.2s',
+              cursor: 'pointer',
+              '&:hover': {
+                color: '#43cea2',
+                textDecoration: 'underline',
+              },
             }}
           >
             JAMIL KHALAF
-          </Typography>
+          </Box>
           
           {isMobile ? (
             <IconButton
