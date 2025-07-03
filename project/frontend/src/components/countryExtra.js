@@ -8,6 +8,7 @@ const countryExtra = {
         "Bushiribana Gold Mine Ruins",
         "Fort Zoutman"
     ],
+    imageLink: "/country-images/aruba.png",
     bordering: [], 
     landlocked: false,
     island: true,
@@ -22,6 +23,7 @@ const countryExtra = {
     "Bamyan Valley (UNESCO/Buddha niches)",
     "Wakhan Corridor"
   ],
+  imageLink: "/country-images/afghanistan.png",
   bordering: ["Pakistan", "Iran", "Turkmenistan", "Uzbekistan", "Tajikistan", "China"],
   landlocked: true,
   island: false,
@@ -38,6 +40,7 @@ const countryExtra = {
     "Fortress of Kambambe",
     "4 de Abril Bridge"
   ],
+  imageLink: "/country-images/angola.png",
   bordering: ["Namibia", "Zambia", "Democratic Republic of the Congo", "Republic of the Congo"],
   landlocked: false,
   island: false,
@@ -53,6 +56,7 @@ const countryExtra = {
     "Mesi Bridge",
     "Blue Eye Spring"
   ],
+  imageLink: "/country-images/albania.png",
   bordering: ["Montenegro", "Kosovo", "North Macedonia", "Greece"],
   landlocked: false,
   island: false,
@@ -67,6 +71,7 @@ const countryExtra = {
     "Madriu-Perafita-Claror Valley (UNESCO)",
     "Casa de la Vall"
   ],
+  imageLink: "/country-images/andorra.png",
   bordering: ["France", "Spain"],
   landlocked: true,
   island: false,
@@ -81,6 +86,7 @@ const countryExtra = {
     "Dubai Mall",
     "Louvre Abu Dhabi"
   ],
+  imageLink: "/country-images/uae.png",
   bordering: ["Saudi Arabia", "Oman"],
   landlocked: false,
   island: false,
@@ -95,6 +101,7 @@ const countryExtra = {
     "La Boca",
     "Teatro Colón"
   ],
+  imageLink: "/country-images/argentina.png",
   bordering: ["Bolivia", "Brazil", "Chile", "Paraguay", "Uruguay"],
   landlocked: false,
   island: false,
@@ -109,6 +116,7 @@ const countryExtra = {
     "Republic Square",
     "Khor Virap"
   ],
+  imageLink: "/country-images/armenia.png",
   bordering: ["Georgia", "Azerbaijan", "Iran", "Turkey"],
   landlocked: true,
   island: false,
@@ -123,6 +131,7 @@ const countryExtra = {
     "Two Dollar Beach",
     "Blunts Point Trail"
   ],
+  imageLink: "/country-images/american-samoa.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -131,6 +140,7 @@ const countryExtra = {
 "Australia": {
   famousCities: ["Sydney", "Melbourne", "Brisbane"],
   famousPlaces: ["Sydney Opera House", "Great Barrier Reef", "Uluru"],
+  imageLink: "/country-images/australia.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -141,6 +151,7 @@ const countryExtra = {
   "France": {
     famousCities: ["Paris", "Lyon", "Marseille"],
     famousPlaces: ["Eiffel Tower", "Louvre Museum", "Mont Saint-Michel"],
+    imageLink: "/country-images/france.png",
     bordering: ["Belgium", "Luxembourg", "Germany", "Switzerland", "Italy", "Spain", "Andorra", "Monaco"],
     landlocked: false,
     island: false,
@@ -149,6 +160,7 @@ const countryExtra = {
   "Brazil": {
     famousCities: ["Rio de Janeiro", "São Paulo", "Brasília"],
     famousPlaces: ["Christ the Redeemer", "Sugarloaf Mountain", "Amazon Rainforest"],
+    imageLink: "/country-images/brazil.png",
     bordering: ["Argentina", "Bolivia", "Colombia", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela", "French Guiana"],
     landlocked: false,
     island: false,
@@ -158,6 +170,7 @@ const countryExtra = {
   "Switzerland": {
     famousCities: ["Zurich", "Geneva", "Bern"],
     famousPlaces: ["Matterhorn", "Lake Geneva", "Jungfrau"],
+    imageLink: "/country-images/switzerland.png",
     bordering: ["Austria", "France", "Germany", "Italy", "Liechtenstein"],
     landlocked: true,
     island: false,
@@ -166,6 +179,7 @@ const countryExtra = {
   "Egypt": {
     famousCities: ["Cairo", "Alexandria", "Giza"],
     famousPlaces: ["Pyramids of Giza", "Sphinx", "Valley of the Kings"],
+    imageLink: "/country-images/egypt.png",
     bordering: ["Libya", "Sudan", "Israel"],
     landlocked: false,
     island: false,
@@ -174,6 +188,7 @@ const countryExtra = {
   "Canada": {
     famousCities: ["Toronto", "Vancouver", "Montreal"],
     famousPlaces: ["Niagara Falls", "Banff National Park", "CN Tower"],
+    imageLink: "/country-images/canada.png",
     bordering: ["United States"],
     landlocked: false,
     island: false,
@@ -181,7 +196,8 @@ const countryExtra = {
   },
   "Japan": {
     famousCities: ["Tokyo", "Osaka", "Kyoto"],
-    famousPlaces: ["Mount Fuji", "Fushimi Inari Shrine", "Himeji Castle"],
+    famousPlaces: ["Mount Fuji", "Fushimi Inari Shrine", "Himeji Castle"],  
+    imageLink: "/country-images/japan.png",
     bordering: [],
     landlocked: false,
     island: true,
@@ -189,7 +205,8 @@ const countryExtra = {
   },
   "South Africa": {
     famousCities: ["Cape Town", "Johannesburg", "Durban"],
-    famousPlaces: ["Table Mountain", "Kruger National Park", "Robben Island"],
+    famousPlaces: ["Table Mountain", "Kruger National Park", "Robben Island"],  
+    imageLink: "/country-images/south-africa.png",
     bordering: ["Botswana", "Lesotho", "Mozambique", "Namibia", "Eswatini", "Zimbabwe"],
     landlocked: false,
     island: false,
@@ -197,7 +214,8 @@ const countryExtra = {
   },
   "United Kingdom": {
     famousCities: ["London", "Manchester", "Edinburgh"],
-    famousPlaces: ["Big Ben", "Stonehenge", "Buckingham Palace"],
+    famousPlaces: ["Big Ben", "Stonehenge", "Buckingham Palace"],   
+    imageLink: "/country-images/united-kingdom.png",
     bordering: ["Ireland"],
     landlocked: false,
     island: true,
@@ -205,7 +223,8 @@ const countryExtra = {
   },
   "India": {
     famousCities: ["Mumbai", "Delhi", "Bangalore"],
-    famousPlaces: ["Taj Mahal", "Red Fort", "Gateway of India"],
+    famousPlaces: ["Taj Mahal", "Red Fort", "Gateway of India"],        
+    imageLink: "/country-images/india.png",
     bordering: ["Bangladesh", "Bhutan", "China", "Myanmar", "Nepal", "Pakistan"],
     landlocked: false,
     island: false,
@@ -214,6 +233,7 @@ const countryExtra = {
   "United States": {
     famousCities: ["New York", "Los Angeles", "Chicago"],
     famousPlaces: ["Statue of Liberty", "Grand Canyon", "Yellowstone"],
+    imageLink: "/country-images/united-states.png",
     bordering: ["Canada", "Mexico"],
     landlocked: false,
     island: false,
@@ -222,6 +242,7 @@ const countryExtra = {
   "Russia": {
     famousCities: ["Moscow", "Saint Petersburg", "Novosibirsk"],
     famousPlaces: ["Red Square", "Lake Baikal", "Kremlin"],
+    imageLink: "/country-images/russia.png",
     bordering: ["Azerbaijan", "Belarus", "China", "Estonia", "Finland", "Georgia", "Kazakhstan", "North Korea", "Latvia", "Lithuania", "Mongolia", "Norway", "Poland", "Ukraine"],
     landlocked: false,
     island: false,
@@ -230,6 +251,7 @@ const countryExtra = {
   "Argentina": {
     famousCities: ["Buenos Aires", "Córdoba", "Rosario"],
     famousPlaces: ["Iguazu Falls", "Perito Moreno Glacier", "Aconcagua"],
+    imageLink: "/country-images/argentina.png",
     bordering: ["Bolivia", "Brazil", "Chile", "Paraguay", "Uruguay"],
     landlocked: false,
     island: false,
@@ -238,6 +260,7 @@ const countryExtra = {
   "Indonesia": {
     famousCities: ["Jakarta", "Surabaya", "Bali"],
     famousPlaces: ["Borobudur", "Komodo National Park", "Bali Beaches"],
+    imageLink: "/country-images/indonesia.png",
     bordering: ["East Timor", "Malaysia", "Papua New Guinea"],
     landlocked: false,
     island: true,
@@ -245,7 +268,8 @@ const countryExtra = {
   },
   "Nigeria": {
     famousCities: ["Lagos", "Abuja", "Kano"],
-    famousPlaces: ["Zuma Rock", "Olumo Rock", "Yankari National Park"],
+    famousPlaces: ["Zuma Rock", "Olumo Rock", "Yankari National Park"], 
+    imageLink: "/country-images/nigeria.png",
     bordering: ["Benin", "Cameroon", "Chad", "Niger"],
     landlocked: false,
     island: false,
@@ -254,6 +278,7 @@ const countryExtra = {
   "Turkey": {
     famousCities: ["Istanbul", "Ankara", "Izmir"],
     famousPlaces: ["Hagia Sophia", "Cappadocia", "Pamukkale"],
+    imageLink: "/country-images/turkey.png",
     bordering: ["Armenia", "Azerbaijan", "Bulgaria", "Georgia", "Greece", "Iran", "Iraq", "Syria"],
     landlocked: false,
     island: false,
@@ -262,6 +287,7 @@ const countryExtra = {
   "Mexico": {
     famousCities: ["Mexico City", "Guadalajara", "Monterrey"],
     famousPlaces: ["Chichen Itza", "Teotihuacan", "Cancun Beaches"],
+    imageLink: "/country-images/mexico.png",
     bordering: ["Belize", "Guatemala", "United States"],
     landlocked: false,
     island: false,
@@ -270,6 +296,7 @@ const countryExtra = {
   "Saudi Arabia": {
     famousCities: ["Riyadh", "Jeddah", "Mecca"],
     famousPlaces: ["Masjid al-Haram", "Al-Masjid an-Nabawi", "Edge of the World"],
+    imageLink: "/country-images/saudi-arabia.png",
     bordering: ["Iraq", "Jordan", "Kuwait", "Oman", "Qatar", "United Arab Emirates", "Yemen", "Bahrain (bridge)"],
     landlocked: false,
     island: false,
@@ -278,6 +305,7 @@ const countryExtra = {
   "Italy": {
     famousCities: ["Rome", "Milan", "Venice"],
     famousPlaces: ["Colosseum", "Leaning Tower of Pisa", "Venice Canals"],
+    imageLink: "/country-images/italy.png",
     bordering: ["Austria", "France", "San Marino", "Slovenia", "Switzerland", "Vatican City"],
     landlocked: false,
     island: false,
@@ -286,6 +314,7 @@ const countryExtra = {
   "Spain": {
     famousCities: ["Madrid", "Barcelona", "Seville"],
     famousPlaces: ["Sagrada Familia", "Alhambra", "Park Güell"],
+    imageLink: "/country-images/spain.png",
     bordering: ["Andorra", "France", "Gibraltar", "Portugal", "Morocco (Ceuta/Melilla)"],
     landlocked: false,
     island: false,
@@ -300,6 +329,7 @@ const countryExtra = {
     "Shirley Heights",
     "Half Moon Bay"
   ],
+  imageLink: "/country-images/antigua-and-barbuda.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -308,6 +338,7 @@ const countryExtra = {
 "Azerbaijan": {
   famousCities: ["Baku", "Sumqayit", "Ganja"],
   famousPlaces: ["Baku Old City", "Goygol Lake", "Gobustan Rock Art"],
+  imageLink: "/country-images/azerbaijan.png",
   bordering: ["Armenia", "Georgia", "Iran", "Russia", "Turkey"],
   landlocked: false,
   island: false,
@@ -322,6 +353,7 @@ const countryExtra = {
     "Grossglockner",
     "Belvedere Palace"
   ],
+  imageLink: "/country-images/austria.png",
   bordering: ["Germany", "Czechia", "Slovakia", "Hungary", "Slovenia", "Italy", "Switzerland", "Liechtenstein"],
   landlocked: true,
   island: false,
@@ -336,6 +368,7 @@ const countryExtra = {
     "Karera Waterfalls",
     "Livingstone–Stanley Monument"
   ],
+  imageLink: "/country-images/burundi.png",
   bordering: ["Rwanda", "Tanzania", "Democratic Republic of the Congo"],
   landlocked: true,
   island: false,
@@ -350,6 +383,7 @@ const countryExtra = {
     "Belfry of Bruges",
     "Cathedral of Our Lady (Antwerp)"
   ],
+  imageLink: "/country-images/belgium.png",
   bordering: ["France", "Germany", "Luxembourg", "Netherlands"],
   landlocked: false,
   island: false,
@@ -364,6 +398,7 @@ const countryExtra = {
     "Lake Nokoué",
     "Python Temple"
   ],
+  imageLink: "/country-images/benin.png",
   bordering: ["Togo", "Nigeria", "Burkina Faso", "Niger"],
   landlocked: false,
   island: false,
@@ -378,6 +413,7 @@ const countryExtra = {
     "Moro-Naba Palace",
     "Sindou Peaks"
   ],
+  imageLink: "/country-images/burkina-faso.png",
   bordering: ["Mali", "Niger", "Benin", "Togo", "Ghana", "Côte d'Ivoire"],
   landlocked: true,
   island: false,
@@ -390,8 +426,9 @@ const countryExtra = {
     "Sixty Dome Mosque",
     "Ahsan Manzil",
     "Lalbagh Fort",
-    "Cox’s Bazar Beach"
+    "Cox's Bazar Beach"
   ],
+  imageLink: "/country-images/bangladesh.png",
   bordering: ["India", "Myanmar"],
   landlocked: false,
   island: false,
@@ -406,6 +443,7 @@ const countryExtra = {
     "Boyana Church",
     "Sunny Beach"
   ],
+  imageLink: "/country-images/bulgaria.png",
   bordering: ["Romania", "Serbia", "North Macedonia", "Greece", "Turkey"],
   landlocked: false,
   island: false,
@@ -420,6 +458,7 @@ const countryExtra = {
     "Tree of Life",
     "Amwaj Islands"
   ],
+  imageLink: "/country-images/bahrain.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -432,8 +471,9 @@ const countryExtra = {
     "Blue Hole",
     "Exuma Cays",
     "Pink Sands Beach",
-    "Dean’s Blue Hole"
+    "Dean's Blue Hole"
   ],
+  imageLink: "/country-images/bahamas.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -448,6 +488,7 @@ const countryExtra = {
     "Vrelo Bosne",
     "Mehmed Paša Sokolović Bridge"
   ],
+  imageLink: "/country-images/bosnia-and-herzegovina.png",
   bordering: ["Croatia", "Serbia", "Montenegro"],
   landlocked: false,
   island: false,
@@ -462,6 +503,7 @@ const countryExtra = {
     "Belovezhskaya Pushcha",
     "National Library of Belarus"
   ],
+  imageLink: "/country-images/belarus.png",
   bordering: ["Latvia", "Lithuania", "Poland", "Russia", "Ukraine"],
   landlocked: true,
   island: false,
@@ -476,6 +518,7 @@ const countryExtra = {
     "Caye Caulker",
     "Altun Ha"
   ],
+  imageLink: "/country-images/belize.png",
   bordering: ["Mexico", "Guatemala"],
   landlocked: false,
   island: false,
@@ -490,6 +533,7 @@ const countryExtra = {
     "Gibb's Hill Lighthouse",
     "St. Peter's Church"
   ],
+  imageLink: "/country-images/bermuda.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -504,6 +548,7 @@ const countryExtra = {
     "Death Road",
     "Tiwanaku Ruins"
   ],
+  imageLink: "/country-images/bolivia.png",
   bordering: ["Argentina", "Brazil", "Chile", "Paraguay", "Peru"],
   landlocked: true,
   island: false,
@@ -518,6 +563,7 @@ const countryExtra = {
     "Kensington Oval",
     "Animal Flower Cave"
   ],
+  imageLink: "/country-images/barbados.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -532,6 +578,7 @@ const countryExtra = {
     "Royal Regalia Museum",
     "Jerudong Park"
   ],
+  imageLink: "/country-images/brunei.png",
   bordering: ["Malaysia"],
   landlocked: false,
   island: false,
@@ -546,6 +593,7 @@ const countryExtra = {
     "Buddha Dordenma Statue",
     "Phobjikha Valley"
   ],
+  imageLink: "/country-images/bhutan.png",
   bordering: ["China", "India"],
   landlocked: true,
   island: false,
@@ -560,6 +608,7 @@ const countryExtra = {
     "Makgadikgadi Pans",
     "Tsodilo Hills"
   ],
+  imageLink: "/country-images/botswana.png",
   bordering: ["Namibia", "South Africa", "Zimbabwe", "Zambia"],
   landlocked: true,
   island: false,
@@ -574,6 +623,7 @@ const countryExtra = {
     "Manovo-Gounda St Floris National Park",
     "Kembé Falls"
   ],
+  imageLink: "/country-images/central-african-republic.png",
   bordering: ["Cameroon", "Chad", "Congo", "Democratic Republic of the Congo", "South Sudan", "Sudan"],
   landlocked: true,
   island: false,
@@ -588,6 +638,7 @@ const countryExtra = {
     "Valle de la Luna",
     "La Moneda Palace"
   ],
+  imageLink: "/country-images/chile.png",
   bordering: ["Argentina", "Bolivia", "Peru"],
   landlocked: false,
   island: false,
@@ -602,6 +653,7 @@ const countryExtra = {
     "Potala Palace",
     "Li River"
   ],
+  imageLink: "/country-images/china.png",
   bordering: ["Afghanistan", "Bhutan", "India", "Kazakhstan", "Kyrgyzstan", "Laos", "Mongolia", "Myanmar", "Nepal", "North Korea", "Pakistan", "Russia", "Tajikistan", "Vietnam"],
   landlocked: false,
   island: false,
@@ -616,6 +668,7 @@ const countryExtra = {
     "St. Paul's Cathedral Abidjan",
     "Assinie Beach"
   ],
+  imageLink: "/country-images/cote-divoire.png",
   bordering: ["Burkina Faso", "Ghana", "Guinea", "Liberia", "Mali"],
   landlocked: false,
   island: false,
@@ -630,6 +683,7 @@ const countryExtra = {
     "Foumban Royal Palace",
     "Kribi Beach"
   ],
+  imageLink: "/country-images/cameroon.png",
   bordering: ["Central African Republic", "Chad", "Congo", "Equatorial Guinea", "Gabon", "Nigeria"],
   landlocked: false,
   island: false,
@@ -644,6 +698,7 @@ const countryExtra = {
     "Lola ya Bonobo Sanctuary",
     "Zongo Falls"
   ],
+  imageLink: "/country-images/congo.png",
   bordering: ["Angola", "Burundi", "Central African Republic", "Congo", "Rwanda", "South Sudan", "Tanzania", "Uganda", "Zambia"],
   landlocked: false,
   island: false,
@@ -658,6 +713,7 @@ const countryExtra = {
     "Marché Total",
     "Les Rapides"
   ],
+  imageLink: "/country-images/congo.png",
   bordering: ["Angola", "Cameroon", "Central African Republic", "Democratic Republic of the Congo", "Gabon"],
   landlocked: false,
   island: false,
@@ -672,6 +728,7 @@ const countryExtra = {
     "Caño Cristales",
     "Salt Cathedral of Zipaquirá"
   ],
+  imageLink: "/country-images/colombia.png",
   bordering: ["Brazil", "Ecuador", "Panama", "Peru", "Venezuela"],
   landlocked: false,
   island: false,
@@ -686,6 +743,7 @@ const countryExtra = {
     "Badjanani Mosque",
     "Lac Sale"
   ],
+  imageLink: "/country-images/comoros.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -700,6 +758,7 @@ const countryExtra = {
     "Monte Verde",
     "Tarrafal Beach"
   ],
+  imageLink: "/country-images/cabo-verde.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -714,6 +773,7 @@ const countryExtra = {
     "Poás Volcano",
     "Tamarindo Beach"
   ],
+  imageLink: "/country-images/costa-rica.png",
   bordering: ["Nicaragua", "Panama"],
   landlocked: false,
   island: false,
@@ -728,6 +788,7 @@ const countryExtra = {
     "Viñales Valley",
     "Castillo del Morro"
   ],
+  imageLink: "/country-images/cuba.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -742,6 +803,7 @@ const countryExtra = {
     "Pedro St. James",
     "Cayman Turtle Centre"
   ],
+  imageLink: "/country-images/cayman-islands.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -756,6 +818,7 @@ const countryExtra = {
     "Petra tou Romiou",
     "Ancient Kourion"
   ],
+  imageLink: "/country-images/cyprus.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -770,6 +833,7 @@ const countryExtra = {
     "Kutná Hora",
     "Karlštejn Castle"
   ],
+  imageLink: "/country-images/czechia.png",
   bordering: ["Austria", "Germany", "Poland", "Slovakia"],
   landlocked: true,
   island: false,
@@ -784,6 +848,7 @@ const countryExtra = {
     "Cologne Cathedral",
     "Black Forest"
   ],
+  imageLink: "/country-images/germany.png",
   bordering: ["Austria", "Belgium", "Czechia", "Denmark", "France", "Luxembourg", "Netherlands", "Poland", "Switzerland"],
   landlocked: false,
   island: false,
@@ -798,6 +863,7 @@ const countryExtra = {
     "Khor Ambado Beach",
     "Grand Bara Desert"
   ],
+  imageLink: "/country-images/djibouti.png",
   bordering: ["Eritrea", "Ethiopia", "Somalia"],
   landlocked: false,
   island: false,
@@ -812,6 +878,7 @@ const countryExtra = {
     "Morne Trois Pitons National Park",
     "Champagne Reef"
   ],
+  imageLink: "/country-images/dominica.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -826,6 +893,7 @@ const countryExtra = {
     "Legoland Billund",
     "Kronborg Castle"
   ],
+  imageLink: "/country-images/denmark.png",
   bordering: ["Germany"],
   landlocked: false,
   island: false,
@@ -840,6 +908,7 @@ const countryExtra = {
     "Saona Island",
     "Bahía de las Águilas"
   ],
+  imageLink: "/country-images/dominican-republic.png",
   bordering: ["Haiti"],
   landlocked: false,
   island: false,
@@ -854,6 +923,7 @@ const countryExtra = {
     "Monument of the Martyrs",
     "Ghardaïa"
   ],
+  imageLink: "/country-images/algeria.png",
   bordering: ["Libya", "Mali", "Mauritania", "Morocco", "Niger", "Tunisia", "Western Sahara"],
   landlocked: false,
   island: false,
@@ -868,6 +938,7 @@ const countryExtra = {
     "Basilica del Voto Nacional",
     "Cajas National Park"
   ],
+  imageLink: "/country-images/ecuador.png",
   bordering: ["Colombia", "Peru"],
   landlocked: false,
   island: false,
@@ -882,6 +953,7 @@ const countryExtra = {
     "Karnak Temple",
     "Abu Simbel"
   ],
+  imageLink: "/country-images/egypt.png",
   bordering: ["Libya", "Sudan", "Israel"],
   landlocked: false,
   island: false,
@@ -896,6 +968,7 @@ const countryExtra = {
     "Debre Bizen Monastery",
     "Fiat Tagliero Building"
   ],
+  imageLink: "/country-images/eritrea.png",
   bordering: ["Djibouti", "Ethiopia", "Sudan"],
   landlocked: false,
   island: false,
@@ -910,6 +983,7 @@ const countryExtra = {
     "Prado Museum",
     "La Rambla"
   ],
+  imageLink: "/country-images/spain.png",
   bordering: ["Andorra", "France", "Gibraltar", "Portugal", "Morocco (Ceuta/Melilla)"],
   landlocked: false,
   island: false,
@@ -924,6 +998,7 @@ const countryExtra = {
     "Pärnu Beach",
     "Saaremaa Island"
   ],
+  imageLink: "/country-images/estonia.png",
   bordering: ["Latvia", "Russia"],
   landlocked: false,
   island: false,
@@ -938,6 +1013,7 @@ const countryExtra = {
     "Harar Jugol",
     "Erta Ale Volcano"
   ],
+  imageLink: "/country-images/ethiopia.png",
   bordering: ["Djibouti", "Eritrea", "Kenya", "Somalia", "South Sudan", "Sudan"],
   landlocked: true,
   island: false,
@@ -952,6 +1028,7 @@ const countryExtra = {
     "Temppeliaukio Church",
     "Aurora Borealis"
   ],
+  imageLink: "/country-images/finland.png",
   bordering: ["Norway", "Russia", "Sweden"],
   landlocked: false,
   island: false,
@@ -966,6 +1043,7 @@ const countryExtra = {
     "Navala Village",
     "Sabeto Hot Springs"
   ],
+  imageLink: "/country-images/fiji.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -980,6 +1058,7 @@ const countryExtra = {
     "Palace of Versailles",
     "Notre-Dame Cathedral"
   ],
+  imageLink: "/country-images/france.png",
   bordering: ["Belgium", "Luxembourg", "Germany", "Switzerland", "Italy", "Spain", "Andorra", "Monaco"],
   landlocked: false,
   island: false,
@@ -994,6 +1073,7 @@ const countryExtra = {
     "Vestmanna Sea Cliffs",
     "Gjógv"
   ],
+  imageLink: "/country-images/faroe-islands.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1008,6 +1088,7 @@ const countryExtra = {
     "Lelu Ruins",
     "Pohnpei Lagoon"
   ],
+  imageLink: "/country-images/micronesia.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1022,6 +1103,7 @@ const countryExtra = {
     "Lékédi Park",
     "St. Michael Cathedral"
   ],
+  imageLink: "/country-images/gabon.png",
   bordering: ["Cameroon", "Equatorial Guinea", "Republic of the Congo"],
   landlocked: false,
   island: false,
@@ -1036,6 +1118,7 @@ const countryExtra = {
     "Batumi Boulevard",
     "Uplistsikhe"
   ],
+  imageLink: "/country-images/georgia.png",
   bordering: ["Armenia", "Azerbaijan", "Russia", "Turkey"],
   landlocked: false,
   island: false,
@@ -1050,6 +1133,7 @@ const countryExtra = {
     "Mole National Park",
     "Independence Arch"
   ],
+  imageLink: "/country-images/ghana.png",
   bordering: ["Burkina Faso", "Côte d'Ivoire", "Togo"],
   landlocked: false,
   island: false,
@@ -1064,6 +1148,7 @@ const countryExtra = {
     "Fouta Djallon Highlands",
     "Soumba Waterfalls"
   ],
+  imageLink: "/country-images/guinea.png",
   bordering: ["Côte d'Ivoire", "Guinea-Bissau", "Liberia", "Mali", "Senegal", "Sierra Leone"],
   landlocked: false,
   island: false,
@@ -1078,6 +1163,7 @@ const countryExtra = {
     "Bijilo Forest Park",
     "Albert Market"
   ],
+  imageLink: "/country-images/gambia.png",
   bordering: ["Senegal"],
   landlocked: false,
   island: false,
@@ -1092,6 +1178,7 @@ const countryExtra = {
     "Fortaleza d'Amura",
     "Cacheu"
   ],
+  imageLink: "/country-images/guinea-bissau.png",
   bordering: ["Guinea", "Senegal"],
   landlocked: false,
   island: false,
@@ -1106,6 +1193,7 @@ const countryExtra = {
     "Monte Alen National Park",
     "Equatorial Guinea Cultural Centre"
   ],
+  imageLink: "/country-images/equatorial-guinea.png",
   bordering: ["Cameroon", "Gabon"],
   landlocked: false,
   island: false,
@@ -1120,6 +1208,7 @@ const countryExtra = {
     "Meteora Monasteries",
     "Parthenon"
   ],
+  imageLink: "/country-images/greece.png",
   bordering: ["Albania", "Bulgaria", "North Macedonia", "Turkey"],
   landlocked: false,
   island: false,
@@ -1134,6 +1223,7 @@ const countryExtra = {
     "Underwater Sculpture Park",
     "Belmont Estate"
   ],
+  imageLink: "/country-images/grenada.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1148,6 +1238,7 @@ const countryExtra = {
     "Qaqortoq",
     "Kangerlussuaq"
   ],
+  imageLink: "/country-images/greenland.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1162,6 +1253,7 @@ const countryExtra = {
     "Antigua Guatemala",
     "Semuc Champey"
   ],
+  imageLink: "/country-images/guatemala.png",
   bordering: ["Belize", "El Salvador", "Honduras", "Mexico"],
   landlocked: false,
   island: false,
@@ -1176,6 +1268,7 @@ const countryExtra = {
     "Latte Stone Park",
     "Cetti Bay Overlook"
   ],
+  imageLink: "/country-images/guam.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1190,6 +1283,7 @@ const countryExtra = {
     "Iwokrama Forest",
     "Orinduik Falls"
   ],
+  imageLink: "/country-images/guyana.png",
   bordering: ["Brazil", "Suriname", "Venezuela"],
   landlocked: false,
   island: false,
@@ -1204,6 +1298,7 @@ const countryExtra = {
     "La Tigra National Park",
     "Lake Yojoa"
   ],
+  imageLink: "/country-images/honduras.png",
   bordering: ["El Salvador", "Guatemala", "Nicaragua"],
   landlocked: false,
   island: false,
@@ -1218,6 +1313,7 @@ const countryExtra = {
     "Krka National Park",
     "Hvar Island"
   ],
+  imageLink: "/country-images/croatia.png",
   bordering: ["Bosnia and Herzegovina", "Hungary", "Montenegro", "Serbia", "Slovenia"],
   landlocked: false,
   island: false,
@@ -1232,6 +1328,7 @@ const countryExtra = {
     "Bassin Bleu",
     "Iron Market"
   ],
+  imageLink: "/country-images/haiti.png",
   bordering: ["Dominican Republic"],
   landlocked: false,
   island: false,
@@ -1246,6 +1343,7 @@ const countryExtra = {
     "Fisherman's Bastion",
     "Heroes' Square"
   ],
+  imageLink: "/country-images/hungary.png",
   bordering: ["Austria", "Croatia", "Romania", "Serbia", "Slovakia", "Slovenia", "Ukraine"],
   landlocked: true,
   island: false,
@@ -1260,6 +1358,7 @@ const countryExtra = {
     "Tanah Lot",
     "Lake Toba"
   ],
+  imageLink: "/country-images/indonesia.png",
   bordering: ["East Timor", "Malaysia", "Papua New Guinea"],
   landlocked: false,
   island: true,
@@ -1274,6 +1373,7 @@ const countryExtra = {
     "TT Mountain Course",
     "Gaiety Theatre"
   ],
+  imageLink: "/country-images/isle-of-man.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1288,6 +1388,7 @@ const countryExtra = {
     "Trinity College",
     "Blarney Castle"
   ],
+  imageLink: "/country-images/ireland.png",
   bordering: ["United Kingdom"],
   landlocked: false,
   island: true,
@@ -1302,6 +1403,7 @@ const countryExtra = {
     "Golestan Palace",
     "Naqsh-e Jahan Square"
   ],
+  imageLink: "/country-images/iran.png",
   bordering: ["Afghanistan", "Armenia", "Azerbaijan", "Iraq", "Pakistan", "Turkey", "Turkmenistan"],
   landlocked: false,
   island: false,
@@ -1316,6 +1418,7 @@ const countryExtra = {
     "Erbil Citadel",
     "Al-Shaheed Monument"
   ],
+  imageLink: "/country-images/iraq.png",
   bordering: ["Iran", "Jordan", "Kuwait", "Saudi Arabia", "Syria", "Turkey"],
   landlocked: false,
   island: false,
@@ -1330,6 +1433,7 @@ const countryExtra = {
     "Hallgrímskirkja",
     "Thingvellir National Park"
   ],
+  imageLink: "/country-images/iceland.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1344,6 +1448,7 @@ const countryExtra = {
     "Baháʼí Gardens",
     "Masada"
   ],
+  imageLink: "/country-images/israel.png",
   bordering: ["Egypt", "Jordan", "Lebanon", "Syria"],
   landlocked: false,
   island: false,
@@ -1358,6 +1463,7 @@ const countryExtra = {
     "Florence Cathedral",
     "Pompeii"
   ],
+  imageLink: "/country-images/italy.png",
   bordering: ["Austria", "France", "San Marino", "Slovenia", "Switzerland", "Vatican City"],
   landlocked: false,
   island: false,
@@ -1372,6 +1478,7 @@ const countryExtra = {
     "Seven Mile Beach",
     "Port Royal"
   ],
+  imageLink: "/country-images/jamaica.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1386,6 +1493,7 @@ const countryExtra = {
     "Jerash Ruins",
     "Amman Citadel"
   ],
+  imageLink: "/country-images/jordan.png",
   bordering: ["Iraq", "Israel", "Saudi Arabia", "Syria"],
   landlocked: true,
   island: false,
@@ -1400,6 +1508,7 @@ const countryExtra = {
     "Tokyo Skytree",
     "Itsukushima Shrine"
   ],
+  imageLink: "/country-images/japan.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1414,6 +1523,7 @@ const countryExtra = {
     "Hazrat Sultan Mosque",
     "Medeu Ice Rink"
   ],
+  imageLink: "/country-images/kazakhstan.png",
   bordering: ["China", "Kyrgyzstan", "Russia", "Turkmenistan", "Uzbekistan"],
   landlocked: true,
   island: false,
@@ -1428,6 +1538,7 @@ const countryExtra = {
     "Nairobi National Park",
     "Lake Nakuru"
   ],
+  imageLink: "/country-images/kenya.png",
   bordering: ["Ethiopia", "Somalia", "South Sudan", "Tanzania", "Uganda"],
   landlocked: false,
   island: false,
@@ -1442,6 +1553,7 @@ const countryExtra = {
     "Osh Bazaar",
     "Tash Rabat"
   ],
+  imageLink: "/country-images/kyrgyzstan.png",
   bordering: ["China", "Kazakhstan", "Tajikistan", "Uzbekistan"],
   landlocked: true,
   island: false,
@@ -1456,6 +1568,7 @@ const countryExtra = {
     "Ta Prohm",
     "Bayon Temple"
   ],
+  imageLink: "/country-images/cambodia.png",
   bordering: ["Laos", "Thailand", "Vietnam"],
   landlocked: false,
   island: false,
@@ -1470,6 +1583,7 @@ const countryExtra = {
     "Bikeman Island",
     "Lagoon Viewpoints"
   ],
+  imageLink: "/country-images/kiribati.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1484,6 +1598,7 @@ const countryExtra = {
     "Nevis Peak",
     "Romney Manor"
   ],
+  imageLink: "/country-images/korea.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1498,6 +1613,7 @@ const countryExtra = {
     "Jeju Island",
     "Changdeokgung"
   ],
+  imageLink: "/country-images/korea.png",
   bordering: ["North Korea"],
   landlocked: false,
   island: false,
@@ -1512,6 +1628,7 @@ const countryExtra = {
     "Failaka Island",
     "Al Shaheed Park"
   ],
+  imageLink: "/country-images/kuwait.png",
   bordering: ["Iraq", "Saudi Arabia"],
   landlocked: false,
   island: false,
@@ -1526,6 +1643,7 @@ const countryExtra = {
     "Pigeon Rocks",
     "National Museum of Beirut"
   ],
+  imageLink: "/country-images/lebanon.png",
   bordering: ["Israel", "Syria"],
   landlocked: false,
   island: false,
@@ -1540,6 +1658,7 @@ const countryExtra = {
     "Centennial Pavilion",
     "Ce Ce Beach"
   ],
+  imageLink: "/country-images/liberia.png",
   bordering: ["Côte d'Ivoire", "Guinea", "Sierra Leone"],
   landlocked: false,
   island: false,
@@ -1554,6 +1673,7 @@ const countryExtra = {
     "Ghadames",
     "Jebel Akhdar"
   ],
+  imageLink: "/country-images/libya.png",
   bordering: ["Algeria", "Chad", "Egypt", "Niger", "Sudan", "Tunisia"],
   landlocked: false,
   island: false,
@@ -1568,6 +1688,7 @@ const countryExtra = {
     "Pigeon Island",
     "Anse Chastanet Beach"
   ],
+  imageLink: "/country-images/st-lucia.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1582,6 +1703,7 @@ const countryExtra = {
     "Malbun Ski Resort",
     "Red House"
   ],
+  imageLink: "/country-images/liechtenstein.png",
   bordering: ["Austria", "Switzerland"],
   landlocked: true,
   island: false,
@@ -1596,6 +1718,7 @@ const countryExtra = {
     "Galle Fort",
     "Adam's Peak"
   ],
+  imageLink: "/country-images/sri-lanka.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1610,6 +1733,7 @@ const countryExtra = {
     "Sani Pass",
     "Kome Cave Dwellings"
   ],
+  imageLink: "/country-images/lesotho.png",
   bordering: ["South Africa"],
   landlocked: true,
   island: false,
@@ -1624,6 +1748,7 @@ const countryExtra = {
     "Vilnius Old Town",
     "Curonian Spit"
   ],
+  imageLink: "/country-images/lithuania.png",
   bordering: ["Belarus", "Latvia", "Poland", "Russia"],
   landlocked: false,
   island: false,
@@ -1638,6 +1763,7 @@ const countryExtra = {
     "Mullerthal Trail",
     "Notre-Dame Cathedral"
   ],
+  imageLink: "/country-images/luxembourg.png",
   bordering: ["Belgium", "France", "Germany"],
   landlocked: true,
   island: false,
@@ -1652,6 +1778,7 @@ const countryExtra = {
     "Turaida Castle",
     "Freedom Monument"
   ],
+  imageLink: "/country-images/latvia.png",
   bordering: ["Belarus", "Estonia", "Lithuania", "Russia"],
   landlocked: false,
   island: false,
@@ -1666,6 +1793,7 @@ const countryExtra = {
     "Pinel Island",
     "Loterie Farm"
   ],
+  imageLink: "/country-images/st-martin.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1680,6 +1808,7 @@ const countryExtra = {
     "Ait Benhaddou",
     "Atlas Mountains"
   ],
+  imageLink: "/country-images/morocco.png",
   bordering: ["Algeria", "Spain (Ceuta/Melilla)"],
   landlocked: false,
   island: false,
@@ -1694,6 +1823,7 @@ const countryExtra = {
     "Monaco Grand Prix",
     "Larvotto Beach"
   ],
+  imageLink: "/country-images/monaco.png",
   bordering: ["France"],
   landlocked: false,
   island: false,
@@ -1708,6 +1838,7 @@ const countryExtra = {
     "Capriana Monastery",
     "National Museum of History"
   ],
+  imageLink: "/country-images/moldova.png",
   bordering: ["Romania", "Ukraine"],
   landlocked: true,
   island: false,
@@ -1722,6 +1853,7 @@ const countryExtra = {
     "Nosy Be Island",
     "Royal Hill of Ambohimanga"
   ],
+  imageLink: "/country-images/madagascar.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1736,6 +1868,7 @@ const countryExtra = {
     "Sun Island",
     "Veligandu Island Beach"
   ],
+  imageLink: "/country-images/maldives.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1750,6 +1883,7 @@ const countryExtra = {
     "Copper Canyon",
     "Frida Kahlo Museum"
   ],
+  imageLink: "/country-images/mexico.png",
   bordering: ["Belize", "Guatemala", "United States"],
   landlocked: false,
   island: false,
@@ -1764,6 +1898,7 @@ const countryExtra = {
     "Alele Museum",
     "Laura Beach"
   ],
+  imageLink: "/country-images/marshall-islands.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1778,6 +1913,7 @@ const countryExtra = {
     "Millennium Cross",
     "Matka Canyon"
   ],
+  imageLink: "/country-images/north-macedonia.png",
   bordering: ["Albania", "Bulgaria", "Greece", "Kosovo", "Serbia"],
   landlocked: true,
   island: false,
@@ -1792,6 +1928,7 @@ const countryExtra = {
     "Bandiagara Escarpment",
     "National Museum of Mali"
   ],
+  imageLink: "/country-images/mali.png",
   bordering: ["Algeria", "Burkina Faso", "Côte d'Ivoire", "Guinea", "Mauritania", "Niger", "Senegal"],
   landlocked: true,
   island: false,
@@ -1806,6 +1943,7 @@ const countryExtra = {
     "Hagar Qim",
     "Grand Harbour"
   ],
+  imageLink: "/country-images/malta.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1820,6 +1958,7 @@ const countryExtra = {
     "U Bein Bridge",
     "Ngapali Beach"
   ],
+  imageLink: "/country-images/myanmar.png",
   bordering: ["Bangladesh", "China", "India", "Laos", "Thailand"],
   landlocked: false,
   island: false,
@@ -1834,6 +1973,7 @@ const countryExtra = {
     "Ostrog Monastery",
     "Biogradska Gora"
   ],
+  imageLink: "/country-images/montenegro.png",
   bordering: ["Albania", "Bosnia and Herzegovina", "Croatia", "Kosovo", "Serbia"],
   landlocked: false,
   island: false,
@@ -1848,6 +1988,7 @@ const countryExtra = {
     "Orkhon Valley",
     "Erdene Zuu Monastery"
   ],
+  imageLink: "/country-images/mongolia.png",
   bordering: ["China", "Russia"],
   landlocked: true,
   island: false,
@@ -1862,6 +2003,7 @@ const countryExtra = {
     "Grotto Dive Site",
     "Suicide Cliff"
   ],
+  imageLink: "/country-images/northern-mariana-islands.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1876,6 +2018,7 @@ const countryExtra = {
     "Ilha de Mozambique",
     "Maputo Railway Station"
   ],
+  imageLink: "/country-images/mozambique.png",
   bordering: ["Eswatini", "Malawi", "South Africa", "Tanzania", "Zambia", "Zimbabwe"],
   landlocked: false,
   island: false,
@@ -1890,6 +2033,7 @@ const countryExtra = {
     "Atar Market",
     "Richat Structure (Eye of the Sahara)"
   ],
+  imageLink: "/country-images/mauritania.png",
   bordering: ["Algeria", "Mali", "Senegal", "Western Sahara"],
   landlocked: false,
   island: false,
@@ -1904,6 +2048,7 @@ const countryExtra = {
     "Black River Gorges",
     "Grand Bassin"
   ],
+  imageLink: "/country-images/mauritius.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -1918,6 +2063,7 @@ const countryExtra = {
     "Cape Maclear",
     "Nyika Plateau"
   ],
+  imageLink: "/country-images/malawi.png",
   bordering: ["Mozambique", "Tanzania", "Zambia"],
   landlocked: true,
   island: false,
@@ -1932,6 +2078,7 @@ const countryExtra = {
     "Cameron Highlands",
     "Penang Street Art"
   ],
+  imageLink: "/country-images/malaysia.png",
   bordering: ["Brunei", "Indonesia", "Thailand"],
   landlocked: false,
   island: false,
@@ -1946,6 +2093,7 @@ const countryExtra = {
     "Fish River Canyon",
     "Cape Cross"
   ],
+  imageLink: "/country-images/namibia.png",
   bordering: ["Angola", "Botswana", "South Africa", "Zambia"],
   landlocked: false,
   island: false,
@@ -1960,6 +2108,7 @@ const countryExtra = {
     "Tenere Desert",
     "Zinder Sultan's Palace"
   ],
+  imageLink: "/country-images/niger.png",
   bordering: ["Algeria", "Benin", "Burkina Faso", "Chad", "Libya", "Mali", "Nigeria"],
   landlocked: true,
   island: false,
@@ -1974,6 +2123,7 @@ const countryExtra = {
     "Nike Art Gallery",
     "Erin Ijesha Waterfall"
   ],
+  imageLink: "/country-images/nigeria.png",
   bordering: ["Benin", "Cameroon", "Chad", "Niger"],
   landlocked: false,
   island: false,
@@ -1988,6 +2138,7 @@ const countryExtra = {
     "Granada Cathedral",
     "Corn Islands"
   ],
+  imageLink: "/country-images/nicaragua.png",
   bordering: ["Costa Rica", "Honduras"],
   landlocked: false,
   island: false,
@@ -2002,6 +2153,7 @@ const countryExtra = {
     "Anne Frank House",
     "Van Gogh Museum"
   ],
+  imageLink: "/country-images/netherlands.png",
   bordering: ["Belgium", "Germany"],
   landlocked: false,
   island: false,
@@ -2016,6 +2168,7 @@ const countryExtra = {
     "Bryggen Wharf",
     "Preikestolen (Pulpit Rock)"
   ],
+  imageLink: "/country-images/norway.png",
   bordering: ["Finland", "Russia", "Sweden"],
   landlocked: false,
   island: false,
@@ -2030,6 +2183,7 @@ const countryExtra = {
     "Boudhanath Stupa",
     "Bhaktapur Durbar Square"
   ],
+  imageLink: "/country-images/nepal.png",
   bordering: ["China", "India"],
   landlocked: true,
   island: false,
@@ -2044,6 +2198,7 @@ const countryExtra = {
     "Moqua Caves",
     "Nauru Civic Center"
   ],
+  imageLink: "/country-images/nauru.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2058,6 +2213,7 @@ const countryExtra = {
     "Bay of Islands",
     "Franz Josef Glacier"
   ],
+  imageLink: "/country-images/new-zealand.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2072,6 +2228,7 @@ const countryExtra = {
     "Nizwa Fort",
     "Jebel Shams"
   ],
+  imageLink: "/country-images/oman.png",
   bordering: ["Saudi Arabia", "United Arab Emirates", "Yemen"],
   landlocked: false,
   island: false,
@@ -2086,6 +2243,7 @@ const countryExtra = {
     "Lahore Fort",
     "Hunza Valley"
   ],
+  imageLink: "/country-images/pakistan.png",
   bordering: ["Afghanistan", "China", "India", "Iran"],
   landlocked: false,
   island: false,
@@ -2100,6 +2258,7 @@ const countryExtra = {
     "Hisham's Palace",
     "Wadi Qelt"
   ],
+  imageLink: "/country-images/palestine.png",
   bordering: ["Egypt", "Israel", "Jordan"],
   landlocked: false,
   island: false,
@@ -2114,6 +2273,7 @@ const countryExtra = {
     "Biomuseo",
     "Bocas del Toro"
   ],
+  imageLink: "/country-images/panama.png",
   bordering: ["Colombia", "Costa Rica"],
   landlocked: false,
   island: false,
@@ -2128,6 +2288,7 @@ const countryExtra = {
     "Lake Titicaca",
     "Colca Canyon"
   ],
+  imageLink: "/country-images/peru.png",
   bordering: ["Bolivia", "Brazil", "Chile", "Colombia", "Ecuador"],
   landlocked: false,
   island: false,
@@ -2142,6 +2303,7 @@ const countryExtra = {
     "Mayon Volcano",
     "Taal Volcano"
   ],
+  imageLink: "/country-images/philippines.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2156,6 +2318,7 @@ const countryExtra = {
     "Belau National Museum",
     "Bai of Aimeliik"
   ],
+  imageLink: "/country-images/palau.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2170,6 +2333,7 @@ const countryExtra = {
     "National Museum Port Moresby",
     "Rabaul Volcano"
   ],
+  imageLink: "/country-images/papua-new-guinea.png",
   bordering: ["Indonesia"],
   landlocked: false,
   island: false,
@@ -2184,6 +2348,7 @@ const countryExtra = {
     "Białowieża Forest",
     "Malbork Castle"
   ],
+  imageLink: "/country-images/poland.png",
   bordering: ["Belarus", "Czechia", "Germany", "Lithuania", "Russia", "Slovakia", "Ukraine"],
   landlocked: false,
   island: false,
@@ -2198,6 +2363,7 @@ const countryExtra = {
     "Culebra Island",
     "Camuy Caves"
   ],
+  imageLink: "/country-images/puerto-rico.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2212,6 +2378,7 @@ const countryExtra = {
     "Mount Paektu",
     "Victorious Fatherland War Museum"
   ],
+  imageLink: "/country-images/north-korea.png",
   bordering: ["China", "Russia", "South Korea"],
   landlocked: false,
   island: false,
@@ -2226,6 +2393,7 @@ const countryExtra = {
     "Jerónimos Monastery",
     "Madeira"
   ],
+  imageLink: "/country-images/portugal.png",
   bordering: ["Spain"],
   landlocked: false,
   island: false,
@@ -2240,6 +2408,7 @@ const countryExtra = {
     "Palacio de los López",
     "Ñacunday Falls"
   ],
+  imageLink: "/country-images/paraguay.png",
   bordering: ["Argentina", "Bolivia", "Brazil"],
   landlocked: true,
   island: false,
@@ -2254,6 +2423,7 @@ const countryExtra = {
     "Matira Beach",
     "Fautaua Waterfall"
   ],
+  imageLink: "/country-images/french-polynesia.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2268,6 +2438,7 @@ const countryExtra = {
     "Katara Cultural Village",
     "Aspire Park"
   ],
+  imageLink: "/country-images/qatar.png",
   bordering: ["Saudi Arabia"],
   landlocked: false,
   island: false,
@@ -2282,6 +2453,7 @@ const countryExtra = {
     "Painted Monasteries of Bucovina",
     "Sighisoara"
   ],
+  imageLink: "/country-images/romania.png",
   bordering: ["Bulgaria", "Hungary", "Moldova", "Serbia", "Ukraine"],
   landlocked: false,
   island: false,
@@ -2296,6 +2468,7 @@ const countryExtra = {
     "Hermitage Museum",
     "St. Basil's Cathedral"
   ],
+  imageLink: "/country-images/russia.png",
   bordering: ["Azerbaijan", "Belarus", "China", "Estonia", "Finland", "Georgia", "Kazakhstan", "North Korea", "Latvia", "Lithuania", "Mongolia", "Norway", "Poland", "Ukraine"],
   landlocked: false,
   island: false,
@@ -2310,6 +2483,7 @@ const countryExtra = {
     "Nyungwe Forest",
     "Akagera National Park"
   ],
+  imageLink: "/country-images/rwanda.png",
   bordering: ["Burundi", "Congo, Dem. Rep.", "Tanzania", "Uganda"],
   landlocked: true,
   island: false,
@@ -2324,6 +2498,7 @@ const countryExtra = {
     "Diriyah",
     "Al-Ula"
   ],
+  imageLink: "/country-images/saudi-arabia.png",
   bordering: ["Iraq", "Jordan", "Kuwait", "Oman", "Qatar", "UAE", "Yemen"],
   landlocked: false,
   island: false,
@@ -2338,6 +2513,7 @@ const countryExtra = {
     "Jebel Barkal",
     "Suakin"
   ],
+  imageLink: "/country-images/sudan.png",
   bordering: ["Central African Republic", "Chad", "Egypt", "Eritrea", "Ethiopia", "Libya", "South Sudan"],
   landlocked: false,
   island: false,
@@ -2352,6 +2528,7 @@ const countryExtra = {
     "Niokolo-Koba Park",
     "Djoudj Bird Sanctuary"
   ],
+  imageLink: "/country-images/senegal.png",
   bordering: ["Gambia", "Guinea", "Guinea-Bissau", "Mali", "Mauritania"],
   landlocked: false,
   island: false,
@@ -2366,6 +2543,7 @@ const countryExtra = {
     "Merlion Park",
     "Singapore Zoo"
   ],
+  imageLink: "/country-images/singapore.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2380,6 +2558,7 @@ const countryExtra = {
     "Skull Island",
     "Tenaru Falls"
   ],
+  imageLink: "/country-images/solomon-islands.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2394,6 +2573,7 @@ const countryExtra = {
     "National Museum",
     "Outamba-Kilimi Park"
   ],
+  imageLink: "/country-images/sierra-leone.png",
   bordering: ["Guinea", "Liberia"],
   landlocked: false,
   island: false,
@@ -2408,6 +2588,7 @@ const countryExtra = {
     "El Tunco Beach",
     "San Salvador Cathedral"
   ],
+  imageLink: "/country-images/el-salvador.png",
   bordering: ["Guatemala", "Honduras"],
   landlocked: false,
   island: false,
@@ -2422,6 +2603,7 @@ const countryExtra = {
     "Piazza della Libertà",
     "Monte Titano"
   ],
+  imageLink: "/country-images/san-marino.png",
   bordering: ["Italy"],
   landlocked: true,
   island: false,
@@ -2436,6 +2618,7 @@ const countryExtra = {
     "Mogadishu Cathedral",
     "Bakaara Market"
   ],
+  imageLink: "/country-images/somalia.png",
   bordering: ["Djibouti", "Ethiopia", "Kenya"],
   landlocked: false,
   island: false,
@@ -2450,6 +2633,7 @@ const countryExtra = {
     "Petrovaradin Fortress",
     "Studenica Monastery"
   ],
+  imageLink: "/country-images/serbia.png",
   bordering: ["Bosnia and Herzegovina", "Bulgaria", "Croatia", "Hungary", "Kosovo", "Montenegro", "North Macedonia", "Romania"],
   landlocked: true,
   island: false,
@@ -2464,6 +2648,7 @@ const countryExtra = {
     "Sudd Wetlands",
     "Mount Kinyeti"
   ],
+  imageLink: "/country-images/south-sudan.png",
   bordering: ["Central African Republic", "Democratic Republic of the Congo", "Ethiopia", "Kenya", "Sudan", "Uganda"],
   landlocked: true,
   island: false,
@@ -2478,6 +2663,7 @@ const countryExtra = {
     "Praia Jale",
     "São Sebastião Museum"
   ],
+  imageLink: "/country-images/sao-tome-and-principe.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2492,6 +2678,7 @@ const countryExtra = {
     "Commewijne Plantations",
     "Fort Zeelandia"
   ],
+  imageLink: "/country-images/suriname.png",
   bordering: ["Brazil", "French Guiana", "Guyana"],
   landlocked: false,
   island: false,
@@ -2506,6 +2693,7 @@ const countryExtra = {
     "Bojnice Castle",
     "Demänovská Cave of Liberty"
   ],
+  imageLink: "/country-images/slovakia.png",
   bordering: ["Austria", "Czechia", "Hungary", "Poland", "Ukraine"],
   landlocked: true,
   island: false,
@@ -2520,6 +2708,7 @@ const countryExtra = {
     "Triglav National Park",
     "Ljubljana Castle"
   ],
+  imageLink: "/country-images/slovenia.png",
   bordering: ["Austria", "Croatia", "Hungary", "Italy"],
   landlocked: false,
   island: false,
@@ -2534,6 +2723,7 @@ const countryExtra = {
     "Abisko National Park",
     "Icehotel Jukkasjärvi"
   ],
+  imageLink: "/country-images/sweden.png",
   bordering: ["Finland", "Norway"],
   landlocked: false,
   island: false,
@@ -2548,6 +2738,7 @@ const countryExtra = {
     "Sibebe Rock",
     "Swazi Market"
   ],
+  imageLink: "/country-images/eswatini.png",
   bordering: ["Mozambique", "South Africa"],
   landlocked: true,
   island: false,
@@ -2562,6 +2753,7 @@ const countryExtra = {
     "Guana Bay",
     "Yoda Guy Movie Exhibit"
   ],
+  imageLink: "/country-images/united-states.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2576,6 +2768,7 @@ const countryExtra = {
     "Morne Seychellois",
     "Anse Lazio"
   ],
+  imageLink: "/country-images/seychelles.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2590,6 +2783,7 @@ const countryExtra = {
     "Aleppo Citadel",
     "Bosra Roman Theatre"
   ],
+  imageLink: "/country-images/syria.png",
   bordering: ["Iraq", "Israel", "Jordan", "Lebanon", "Turkey"],
   landlocked: false,
   island: false,
@@ -2604,6 +2798,7 @@ const countryExtra = {
     "Salt Cay",
     "Conch Bar Caves"
   ],
+  imageLink: "/country-images/turks-and-caicos-islands.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2618,6 +2813,7 @@ const countryExtra = {
     "Gaoui Village",
     "Chari River"
   ],
+  imageLink: "/country-images/chad.png",
   bordering: ["Cameroon", "Central African Republic", "Libya", "Niger", "Nigeria", "Sudan"],
   landlocked: true,
   island: false,
@@ -2632,6 +2828,7 @@ const countryExtra = {
     "Cascade de Womé",
     "Tamberma Valley"
   ],
+  imageLink: "/country-images/togo.png",
   bordering: ["Benin", "Burkina Faso", "Ghana"],
   landlocked: false,
   island: false,
@@ -2646,6 +2843,7 @@ const countryExtra = {
     "Chiang Mai Temples",
     "Railay Beach"
   ],
+  imageLink: "/country-images/thailand.png",
   bordering: ["Cambodia", "Laos", "Malaysia", "Myanmar"],
   landlocked: false,
   island: false,
@@ -2660,6 +2858,7 @@ const countryExtra = {
     "Pamir Highway",
     "Dushanbe Flagpole"
   ],
+  imageLink: "/country-images/tajikistan.png",
   bordering: ["Afghanistan", "China", "Kyrgyzstan", "Uzbekistan"],
   landlocked: true,
   island: false,
@@ -2674,6 +2873,7 @@ const countryExtra = {
     "Independence Monument",
     "Erbent Desert"
   ],
+  imageLink: "/country-images/turkmenistan.png",
   bordering: ["Afghanistan", "Iran", "Kazakhstan", "Uzbekistan"],
   landlocked: true,
   island: false,
@@ -2688,6 +2888,7 @@ const countryExtra = {
     "Tatamailau",
     "Dili Cathedral"
   ],
+  imageLink: "/country-images/timor-leste.png",
   bordering: ["Indonesia"],
   landlocked: false,
   island: false,
@@ -2702,6 +2903,7 @@ const countryExtra = {
     "Anahulu Cave",
     "Fafa Island"
   ],
+  imageLink: "/country-images/tonga.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2716,6 +2918,7 @@ const countryExtra = {
     "Fort George",
     "Nylon Pool"
   ],
+  imageLink: "/country-images/trinidad-and-tobago.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2730,6 +2933,7 @@ const countryExtra = {
     "Sidi Bou Said",
     "Bardo Museum"
   ],
+  imageLink: "/country-images/tunisia.png",
   bordering: ["Algeria", "Libya"],
   landlocked: false,
   island: false,
@@ -2744,6 +2948,7 @@ const countryExtra = {
     "Topkapi Palace",
     "Ephesus"
   ],
+  imageLink: "/country-images/turkiye.png",
   bordering: ["Armenia", "Azerbaijan", "Bulgaria", "Georgia", "Greece", "Iran", "Iraq", "Syria"],
   landlocked: false,
   island: false,
@@ -2758,6 +2963,7 @@ const countryExtra = {
     "Lagoon Views",
     "Fongafale Island"
   ],
+  imageLink: "/country-images/tuvalu.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2772,6 +2978,7 @@ const countryExtra = {
     "Ngorongoro Crater",
     "Lake Victoria"
   ],
+  imageLink: "/country-images/tanzania.png",
   bordering: ["Burundi", "Congo, Dem. Rep.", "Kenya", "Malawi", "Mozambique", "Rwanda", "Uganda", "Zambia"],
   landlocked: false,
   island: false,
@@ -2786,6 +2993,7 @@ const countryExtra = {
     "Queen Elizabeth National Park",
     "Source of the Nile"
   ],
+  imageLink: "/country-images/uganda.png",
   bordering: ["Congo, Dem. Rep.", "Kenya", "Rwanda", "South Sudan", "Tanzania"],
   landlocked: true,
   island: false,
@@ -2800,6 +3008,7 @@ const countryExtra = {
     "Carpathian Mountains",
     "St. Sophia's Cathedral"
   ],
+  imageLink: "/country-images/ukraine.png",
   bordering: ["Belarus", "Hungary", "Moldova", "Poland", "Romania", "Russia", "Slovakia"],
   landlocked: false,
   island: false,
@@ -2814,6 +3023,7 @@ const countryExtra = {
     "Mercado del Puerto",
     "Palacio Salvo"
   ],
+  imageLink: "/country-images/uruguay.png",
   bordering: ["Argentina", "Brazil"],
   landlocked: false,
   island: false,
@@ -2828,6 +3038,7 @@ const countryExtra = {
     "Mount Rushmore",
     "Golden Gate Bridge"
   ],
+  imageLink: "/country-images/united-states.png",
   bordering: ["Canada", "Mexico"],
   landlocked: false,
   island: false,
@@ -2842,6 +3053,7 @@ const countryExtra = {
     "Khiva Old Town",
     "Amir Timur Museum"
   ],
+  imageLink: "/country-images/uzbekistan.png",
   bordering: ["Afghanistan", "Kazakhstan", "Kyrgyzstan", "Tajikistan", "Turkmenistan"],
   landlocked: true,
   island: false,
@@ -2856,6 +3068,7 @@ const countryExtra = {
     "Tobago Cays",
     "Dark View Falls"
   ],
+  imageLink: "/country-images/st-vincent-and-the-grenadines.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2870,6 +3083,7 @@ const countryExtra = {
     "Los Roques",
     "Roraima Tepui"
   ],
+  imageLink: "/country-images/venezuela.png",
   bordering: ["Brazil", "Colombia", "Guyana"],
   landlocked: false,
   island: false,
@@ -2884,6 +3098,7 @@ const countryExtra = {
     "Anegada Island",
     "Willy T Ship"
   ],
+  imageLink: "/country-images/united-states.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2895,9 +3110,10 @@ const countryExtra = {
     "Magens Bay",
     "Trunk Bay",
     "Coral World",
-    "Blackbeard’s Castle",
+    "Blackbeard's Castle",
     "Buck Island"
   ],
+  imageLink: "/country-images/united-states.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2912,6 +3128,7 @@ const countryExtra = {
     "My Son Sanctuary",
     "Cu Chi Tunnels"
   ],
+  imageLink: "/country-images/vietnam.png",
   bordering: ["Cambodia", "China", "Laos"],
   landlocked: false,
   island: false,
@@ -2926,6 +3143,7 @@ const countryExtra = {
     "Million Dollar Point",
     "Mele Cascades"
   ],
+  imageLink: "/country-images/vanuatu.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2940,6 +3158,7 @@ const countryExtra = {
     "Robert Louis Stevenson Museum",
     "Piula Cave Pool"
   ],
+  imageLink: "/country-images/samoa.png",
   bordering: [],
   landlocked: false,
   island: true,
@@ -2954,6 +3173,7 @@ const countryExtra = {
     "Ethnological Museum",
     "Sharr Mountains"
   ],
+  imageLink: "/country-images/kosovo.png",
   bordering: ["Albania", "Montenegro", "North Macedonia", "Serbia"],
   landlocked: true,
   island: false,
@@ -2968,6 +3188,7 @@ const countryExtra = {
     "Al Saleh Mosque",
     "Dar al-Hajar"
   ],
+  imageLink: "/country-images/yemen.png",
   bordering: ["Oman", "Saudi Arabia"],
   landlocked: false,
   island: false,
@@ -2982,6 +3203,7 @@ const countryExtra = {
     "Garden Route",
     "Blyde River Canyon"
   ],
+  imageLink: "/country-images/south-africa.png",
   bordering: ["Botswana", "Lesotho", "Mozambique", "Namibia", "Eswatini", "Zimbabwe"],
   landlocked: false,
   island: false,
@@ -2996,6 +3218,7 @@ const countryExtra = {
     "Kafue National Park",
     "Lake Kariba"
   ],
+  imageLink: "/country-images/zambia.png",
   bordering: ["Angola", "Botswana", "Congo, Dem. Rep.", "Malawi", "Mozambique", "Namibia", "Tanzania", "Zimbabwe"],
   landlocked: true,
   island: false,
@@ -3010,6 +3233,7 @@ const countryExtra = {
     "Lake Kariba",
     "Matobo Hills"
   ],
+  imageLink: "/country-images/zimbabwe.png",
   bordering: ["Botswana", "Mozambique", "South Africa", "Zambia"],
   landlocked: true,
   island: false,
@@ -3026,6 +3250,7 @@ const countryExtra = {
     "Grand Canyon",
     "Yellowstone"
   ],
+  imageLink: "/country-images/united-states.png",
   "bordering": [
     "Canada",
     "Mexico"
@@ -3045,6 +3270,7 @@ const countryExtra = {
     "Grand Canyon",
     "Yellowstone"
   ],
+  imageLink: "/country-images/united-states.png",
   "bordering": [
     "Canada",
     "Mexico"
@@ -3064,6 +3290,7 @@ const countryExtra = {
     "Grand Canyon",
     "Yellowstone"
   ],
+  imageLink: "/country-images/united-states.png",
   "bordering": [
     "Canada",
     "Mexico"
@@ -3083,6 +3310,7 @@ const countryExtra = {
     "Cappadocia",
     "Pamukkale"
   ],
+  imageLink: "/country-images/turkiye.png",
   "bordering": [
     "Armenia",
     "Azerbaijan",
@@ -3108,6 +3336,7 @@ const countryExtra = {
     "Cappadocia",
     "Pamukkale"
   ],
+  imageLink: "/country-images/turkey.png",
   "bordering": [
     "Armenia",
     "Azerbaijan",

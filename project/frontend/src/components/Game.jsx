@@ -13,6 +13,7 @@ import DialogActions from '@mui/material/DialogActions';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import NotificationModal from './NotificationModal';
+import officialCountries from './officialCountries';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -118,12 +119,12 @@ const Game = () => {
   };
 
   const selectRandomCountry = (countryList) => {
-    // Filter out countries that are too small, have invalid coordinates, or aren't in the official 196 countries
+    // Filter out countries that are too small, have invalid coordinates, or aren't in the official 195 countries
     const validCountries = countryList.filter(country => {
       try {
         const center = getCountryCenter(country);
         const hasValidCoordinates = center.lat !== 0 && center.lon !== 0;
-        const isOfficialCountry = countryInfo[country.properties.name];
+        const isOfficialCountry = countryInfo[country.properties.name] && officialCountries.includes(country.properties.name);
         return hasValidCoordinates && isOfficialCountry;
       } catch (e) {
         return false;

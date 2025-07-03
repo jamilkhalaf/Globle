@@ -3,6 +3,7 @@ import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autoco
 import Header from './Header';
 import countryInfo from './countryInfo';
 import NotificationModal from './NotificationModal';
+import officialCountries from './officialCountries';
 
 // Robust mapping from country name to ISO 3166-1 alpha-2 code
 const nameToCode = {
@@ -48,7 +49,7 @@ const nameToCode = {
 };
 
 const allCountries = Object.keys(countryInfo).filter(
-  name => name.length > 2 // crude filter for real countries
+  name => name.length > 2 && officialCountries.includes(name)
 );
 const countryOptions = allCountries.map(name => ({ label: name, code: nameToCode[name] || name.slice(0,2).toLowerCase() }));
 

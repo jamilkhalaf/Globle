@@ -1,13 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography, Paper, Button, Stack, Fade, Autocomplete, TextField, Toolbar } from '@mui/material';
+import { Box, Typography, Paper, Button, Stack, Fade, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
 import countryExtra from './countryExtra';
 import NotificationModal from './NotificationModal';
+import CloseIcon from '@mui/icons-material/Close';
+import officialCountries from './officialCountries';
 
-const NUM_TRIES = 5;
+const NUM_TRIES = 6;
 
-const allCountries = Object.keys(countryInfo).filter(name => name.length > 2);
+const allCountries = Object.keys(countryInfo).filter(name => name.length > 2 && officialCountries.includes(name));
 const countryOptions = allCountries.map(name => ({ label: name }));
 
 function getRandomCountry(exclude) {
@@ -22,6 +24,7 @@ function getFlagCode(name) {
     'Antigua and Barbuda': 'ag', 'Argentina': 'ar', 'Armenia': 'am', 'Australia': 'au', 'Austria': 'at', 
     'Azerbaijan': 'az', 'Bahamas, The': 'bs', 'Bahrain': 'bh', 'Bangladesh': 'bd', 'Barbados': 'bb', "St. Vincent and the Grenadines": "vc", 
     'Belarus': 'by', 'Belgium': 'be', 'Belize': 'bz', 'Benin': 'bj', 'Bhutan': 'bt',
+    'Bermuda': 'bm',
     'Bolivia': 'bo', 'Bosnia and Herzegovina': 'ba', 'Botswana': 'bw', 'Brazil': 'br', 'Brunei Darussalam': 'bn', 'Comoros': 'km',
     'Bulgaria': 'bg', 'Burkina Faso': 'bf', 'Burundi': 'bi', 'Cabo Verde': 'cv', 'Cambodia': 'kh',
     'Cameroon': 'cm', 'Canada': 'ca', 'Cayman Islands': 'ky', 'Central African Republic': 'cf', 'Chad': 'td', 'Chile': 'cl',
@@ -82,14 +85,17 @@ function getHints(country, extra, revealed) {
     const places = extra.famousPlaces?.join(', ');
     hints.push({ label: 'Famous city/place', value: [cities, places].filter(Boolean).join(' / ') });
   }
-  if (revealed >= 4 && extra) {
+  if (revealed >= 4 && extra && extra.imageLink) {
+    hints.push({ label: 'Image', value: extra.imageLink });
+  }
+  if (revealed >= 5 && extra) {
     let border = 'None';
     if (extra.island) border = 'Island';
     else if (extra.landlocked) border = 'Landlocked';
     else if (extra.bordering && extra.bordering.length > 0) border = extra.bordering.join(', ');
     hints.push({ label: 'Bordering/Island', value: border });
   }
-  if (revealed >= 5 && extra) {
+  if (revealed >= 6 && extra) {
     hints.push({ label: 'Hemisphere', value: extra.hemisphere ? extra.hemisphere.charAt(0).toUpperCase() + extra.hemisphere.slice(1) : '' });
   }
   return hints;
@@ -107,6 +113,7 @@ const Worldle = () => {
   const [round, setRound] = useState(0);
   const [scrollHint, setScrollHint] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [openImage, setOpenImage] = useState(null); // null | { type: 'image' | 'flag', src: string }
 
   const country = countryInfo[target];
   const extra = countryExtra[target];
@@ -129,13 +136,13 @@ const Worldle = () => {
     if (guess.trim().toLowerCase() === target.toLowerCase()) {
       setMessage('🎉 Correct!');
       setGameOver(true);
-      setRevealed(5);
+      setRevealed(6);
     } else if (guesses.length + 1 >= NUM_TRIES) {
       setMessage(`Out of guesses! The answer was ${target}`);
       setGameOver(true);
-      setRevealed(5);
+      setRevealed(6);
     } else {
-      setRevealed(r => Math.min(r + 1, 5));
+      setRevealed(r => Math.min(r + 1, 6));
       setMessage('Incorrect!');
     }
     setGuess('');
@@ -196,13 +203,29 @@ const Worldle = () => {
               </Typography>
             )}
             {hints.map((hint, idx) => (
-              <Paper key={idx} elevation={3} sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.2, md: 2 }, borderRadius: 3, background: 'rgba(255,255,255,0.08)', color: 'white', fontWeight: 600, fontSize: { xs: 16, md: 18 }, width: '100%', maxWidth: 420, textAlign: 'left', mb: 1 }}>
-                <b>{hint.label}:</b> {hint.value}
-              </Paper>
+              hint.label === 'Image' ? (
+                <Box key={idx} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2, mb: 1 }}>
+                  <img
+                    src={hint.value}
+                    alt="country"
+                    style={{ width: 160, height: 100, objectFit: 'cover', borderRadius: 6, border: '2px solid #1976d2', background: '#fff', cursor: 'pointer' }}
+                    onClick={() => setOpenImage({ type: 'image', src: hint.value })}
+                  />
+                </Box>
+              ) : (
+                <Paper key={idx} elevation={3} sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.2, md: 2 }, borderRadius: 3, background: 'rgba(255,255,255,0.08)', color: 'white', fontWeight: 600, fontSize: { xs: 16, md: 18 }, width: '100%', maxWidth: 420, textAlign: 'left', mb: 1 }}>
+                  <b>{hint.label}:</b> {hint.value}
+                </Paper>
+              )
             ))}
-            {revealed === 5 && (
+            {revealed === 6 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2, mb: 1 }}>
-                <img src={flagSrc} alt="flag" style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 6, border: '2px solid #1976d2', background: '#fff' }} />
+                <img
+                  src={flagSrc}
+                  alt="flag"
+                  style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 6, border: '2px solid #1976d2', background: '#fff', cursor: 'pointer' }}
+                  onClick={() => setOpenImage({ type: 'flag', src: flagSrc })}
+                />
               </Box>
             )}
           </Stack>
@@ -261,6 +284,24 @@ const Worldle = () => {
           )}
         </Paper>
       </Fade>
+      {/* Image/Flag Dialog */}
+      <Dialog open={!!openImage} onClose={() => setOpenImage(null)} maxWidth="md" PaperProps={{ sx: { borderRadius: 3, bgcolor: '#232a3b' } }}>
+        <DialogTitle sx={{ color: 'white', background: 'rgba(30,34,44,0.98)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+          <span>{openImage?.type === 'flag' ? 'Flag' : 'Country Image'}</span>
+          <IconButton onClick={() => setOpenImage(null)} sx={{ color: 'white' }} aria-label="close">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(30,34,44,0.98)', p: 3 }}>
+          {openImage && (
+            <img
+              src={openImage.src}
+              alt={openImage.type}
+              style={{ maxWidth: '80vw', maxHeight: '60vh', borderRadius: 8, border: '3px solid #1976d2', background: '#fff', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
