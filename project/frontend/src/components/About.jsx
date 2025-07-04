@@ -82,7 +82,7 @@ const About = () => {
         background: isMobile
           ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
           : 'radial-gradient(ellipse at 60% 40%, #232a3b 60%, #121213 100%)',
-        overflow: 'hidden',
+        overflowY: 'auto',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
