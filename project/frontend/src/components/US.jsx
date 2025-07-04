@@ -6,6 +6,7 @@ import NotificationModal from './NotificationModal';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import 'leaflet/dist/leaflet.css';
 import stateList from './stateList.json';
+import statesGeoData from './states.json';
 
 const US = () => {
   const [statesGeo, setStatesGeo] = useState(null);
@@ -23,9 +24,7 @@ const US = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
-    fetch('/states.json')
-      .then(res => res.json())
-      .then(data => setStatesGeo(data));
+    setStatesGeo(statesGeoData);
   }, []);
 
   useEffect(() => {
