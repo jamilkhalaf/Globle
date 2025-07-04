@@ -5,7 +5,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
-const JWT_SECRET = 'your-super-secret-jwt-key-change-this-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
 
 // Generate JWT Token
 const generateToken = (userId) => {
