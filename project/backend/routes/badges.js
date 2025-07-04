@@ -9,7 +9,9 @@ const router = express.Router();
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
+    console.log('Badges request received for user:', req.user.id);
     const badges = await Badge.find({ userId: req.user.id });
+    console.log('Found badges:', badges.length);
     
     // Group badges by category
     const badgesByCategory = {
@@ -26,8 +28,9 @@ router.get('/', auth, async (req, res) => {
 
     res.json(badgesByCategory);
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Badges error:', error.message);
+    console.error('Full error:', error);
+    res.status(500).json({ message: 'Server error', details: error.message });
   }
 });
 

@@ -83,8 +83,11 @@ router.post('/login', [
     .withMessage('Password is required')
 ], async (req, res) => {
   try {
+    console.log('Login attempt received:', { identifier: req.body.identifier });
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
@@ -99,14 +102,20 @@ router.post('/login', [
     });
     
     if (!user) {
+      console.log('User not found for identifier:', identifier);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    console.log('User found:', { id: user._id, username: user.username });
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      console.log('Password mismatch for user:', user.username);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
+
+    console.log('Password verified for user:', user.username);
 
     // Update last login
     user.lastLogin = new Date();
@@ -114,6 +123,8 @@ router.post('/login', [
 
     // Generate token
     const token = generateToken(user._id);
+
+    console.log('Login successful for user:', user.username);
 
     res.json({
       token,
@@ -128,8 +139,9 @@ router.post('/login', [
       }
     });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', error.message);
+    console.error('Full error:', error);
+    res.status(500).json({ message: 'Server error', details: error.message });
   }
 });
 
