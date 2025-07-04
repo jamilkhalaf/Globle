@@ -77,7 +77,7 @@ const Login = () => {
     setAlert({ show: false, message: '', severity: 'error' });
 
     try {
-      const response = await fetch('http://136.36.59.111:5051/api/auth/login', {
+      const response = await fetch('http://api.jamilweb.click/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

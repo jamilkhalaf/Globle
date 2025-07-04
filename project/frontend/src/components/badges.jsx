@@ -62,7 +62,7 @@ const Badges = () => {
         return;
       }
 
-      const response = await fetch('http://136.36.59.111:5051/api/games/stats', {
+      const response = await fetch('http://api.jamilweb.click/api/games/stats', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -93,7 +93,7 @@ const Badges = () => {
         return; // Don't show error here, it's handled in fetchUserData
       }
 
-      const response = await fetch('http://136.36.59.111:5051/api/badges', {
+      const response = await fetch('http://api.jamilweb.click/api/badges', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

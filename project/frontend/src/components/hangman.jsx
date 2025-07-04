@@ -181,7 +181,7 @@ const Hangman = () => {
         won
       });
 
-      const response = await fetch('http://136.36.59.111:5051/api/games/update-stats', {
+      const response = await fetch('http://api.jamilweb.click/api/games/update-stats', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -223,7 +223,7 @@ const Hangman = () => {
         streak
       });
 
-      const response = await fetch('http://136.36.59.111:5051/api/badges/update', {
+      const response = await fetch('http://api.jamilweb.click/api/badges/update', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
