@@ -41,7 +41,7 @@ const Name = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://api.jamilweb.click/api/games/update-stats', {
+      const response = await fetch('https://api.jamilweb.click/api/games/update-stats', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -70,7 +70,7 @@ const Name = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://api.jamilweb.click/api/badges/update', {
+      const response = await fetch('https://api.jamilweb.click/api/badges/update', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

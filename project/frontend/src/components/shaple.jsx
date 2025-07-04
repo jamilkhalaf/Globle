@@ -74,7 +74,7 @@ const updateGameStats = async (finalScore, streak, attempts) => {
   try {
     const token = localStorage.getItem('token');
     if (!token) return;
-    await fetch('http://api.jamilweb.click/api/games/update-stats', {
+    await fetch('https://api.jamilweb.click/api/games/update-stats', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -87,7 +87,7 @@ const updateGameStats = async (finalScore, streak, attempts) => {
         attempts: attempts
       }),
     });
-    await fetch('http://api.jamilweb.click/api/badges/update', {
+    await fetch('https://api.jamilweb.click/api/badges/update', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

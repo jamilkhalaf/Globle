@@ -98,7 +98,7 @@ const Signup = () => {
     setAlert({ show: false, message: '', severity: 'error' });
 
     try {
-      const response = await fetch('http://api.jamilweb.click/api/auth/signup', {
+      const response = await fetch('https://api.jamilweb.click/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

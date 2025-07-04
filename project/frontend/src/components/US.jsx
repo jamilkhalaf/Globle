@@ -108,7 +108,7 @@ const US = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      await fetch('http://api.jamilweb.click/api/games/update-stats', {
+      await fetch('https://api.jamilweb.click/api/games/update-stats', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -121,7 +121,7 @@ const US = () => {
           attempts: 1 // One round per guess
         }),
       });
-      await fetch('http://api.jamilweb.click/api/badges/update', {
+      await fetch('https://api.jamilweb.click/api/badges/update', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
