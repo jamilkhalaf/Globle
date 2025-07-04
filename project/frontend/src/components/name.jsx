@@ -27,12 +27,73 @@ const Name = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showContinueButton, setShowContinueButton] = useState(false);
   const mapRef = useRef(null);
+  const [bestScore, setBestScore] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState(null);
 
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
 
   // Add state for notification modal
   const [showIntro, setShowIntro] = useState(true);
+
+  const updateGameStats = async (finalScore, gameTime, bestStreak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/games/update-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'findle',
+          score: finalScore,
+          gameTime,
+          bestStreak,
+          attempts: 1 // Findle is one country per game
+        }),
+      });
+
+      if (response.ok) {
+        // Update badge progress
+        await updateBadgeProgress('findle', finalScore, 1, bestStreak);
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
+
+  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/badges/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId,
+          score,
+          attempts,
+          streak
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.totalNewBadges > 0) {
+          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
+    }
+  };
 
   // Load countries data
   useEffect(() => {
@@ -41,6 +102,7 @@ const Name = () => {
       .then(data => {
         setCountries(data.features);
         startNewRound(data.features);
+        setGameStartTime(Date.now());
       })
       .catch(error => {
         console.error('Error loading countries:', error);
@@ -218,11 +280,17 @@ const Name = () => {
     
     if (clickedName === targetName) {
       // Correct guess
-      setStreak(prev => prev + 1);
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      setBestScore(prev => Math.max(prev, newStreak));
       setMessage(`🎉 Correct! +1 point!`);
       setShowTarget(true);
       setShowContinueButton(true);
       setIsLoading(false);
+      
+      // Update stats after each correct answer
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      updateGameStats(newStreak, gameTime, newStreak);
       
       // Zoom in to the correct country
       zoomToCountry(targetCountry);
@@ -234,6 +302,10 @@ const Name = () => {
       setShowContinueButton(true);
       setIsLoading(false);
       
+      // Update stats when game ends (wrong answer)
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      updateGameStats(0, gameTime, 0);
+      
       // Zoom in to the correct country
       zoomToCountry(targetCountry);
     }
@@ -241,6 +313,7 @@ const Name = () => {
 
   const continueToNextRound = () => {
     startNewRound(countries);
+    setGameStartTime(Date.now()); // Reset timer for new round
   };
 
   const zoomToCountry = (country) => {
@@ -261,7 +334,9 @@ const Name = () => {
 
   const resetGame = () => {
     setStreak(0);
+    setBestScore(0);
     setGameOver(false);
+    setGameStartTime(Date.now());
     startNewRound(countries);
   };
 

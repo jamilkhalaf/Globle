@@ -72,9 +72,69 @@ const Flagle = () => {
   const [round, setRound] = useState(0); // Used to force remount flag box
   const [inputError, setInputError] = useState('');
   const [showIntro, setShowIntro] = useState(true);
+  const [bestScore, setBestScore] = useState(0);
 
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
+
+  const updateGameStats = async (finalScore, gameTime, bestStreak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/games/update-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'flagle',
+          score: finalScore,
+          gameTime,
+          bestStreak,
+          attempts: 6 // Flagle has 6 attempts
+        }),
+      });
+
+      if (response.ok) {
+        // Update badge progress
+        await updateBadgeProgress('flagle', finalScore, 6, bestStreak);
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
+
+  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/badges/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId,
+          score,
+          attempts,
+          streak
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.totalNewBadges > 0) {
+          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
+    }
+  };
 
   // For guess checking, always use the selected country from autocomplete if available
   const handleGuess = () => {
@@ -92,8 +152,12 @@ const Flagle = () => {
     if (guessToCheck.trim().toLowerCase() === target.toLowerCase()) {
       setMessage('🎉 Correct!');
       setGameOver(true);
-      setStreak(s => s + 1);
-      setRevealedPieces(Array.from({length: NUM_PIECES}, (_, i) => i));
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      setBestScore(prev => Math.max(prev, newStreak));
+      
+      // Update stats when game is won
+      updateGameStats(newStreak, 0, newStreak);
     } else {
       if (revealedPieces.length < NUM_PIECES - 1) {
         // Reveal a random unrevealed piece
@@ -108,6 +172,9 @@ const Flagle = () => {
         setMessage(`Out of guesses! The answer was ${target}`);
         setGameOver(true);
         setStreak(0);
+        
+        // Update stats when game is lost
+        updateGameStats(0, 0, 0);
       }
     }
     setGuess('');

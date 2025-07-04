@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AppBar, 
   Toolbar, 
@@ -11,40 +11,98 @@ import {
   ListItem, 
   ListItemText,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Avatar,
+  Divider
 } from '@mui/material';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import PublicIcon from '@mui/icons-material/Public';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import GroupsIcon from '@mui/icons-material/Groups';
+import FlagIcon from '@mui/icons-material/Flag';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SchoolIcon from '@mui/icons-material/School';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [gamesAnchorEl, setGamesAnchorEl] = useState(null);
+  const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (token && userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const menuItems = [
+  const handleGamesMenuOpen = (event) => {
+    setGamesAnchorEl(event.currentTarget);
+  };
+
+  const handleGamesMenuClose = () => {
+    setGamesAnchorEl(null);
+  };
+
+  const handleUserMenuOpen = (event) => {
+    setUserMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setUserMenuAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setUserMenuAnchorEl(null);
+    navigate('/');
+  };
+
+  const games = [
+    { path: '/game', label: 'Globle', icon: <PublicIcon sx={{ fontSize: 20, color: '#1976d2' }} /> },
+    { path: '/population', label: 'Population', icon: <GroupsIcon sx={{ fontSize: 20, color: '#4caf50' }} /> },
+    { path: '/name', label: 'Findle', icon: <SportsEsportsIcon sx={{ fontSize: 20, color: '#9c27b0' }} /> },
+    { path: '/flagle', label: 'Flagle', icon: <FlagIcon sx={{ fontSize: 20, color: '#ff9800' }} /> },
+    { path: '/worldle', label: 'Worldle', icon: <PublicIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
+    { path: '/capitals', label: 'Capitals', icon: <SchoolIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
+  ];
+
+  const mainMenuItems = [
     { path: '/', label: 'Home' },
-    { path: '/game', label: 'Globle' },
-    { path: '/wordle', label: 'Wordle', icon: <PublicIcon sx={{ fontSize: 32, color: '#1976d2' }} /> },
-    { path: '/population', label: 'Population' },
-    { path: '/name', label: 'Findle' },
-    { path: '/flagle', label: 'Flagle' },
-    { path: '/worldle', label: 'Worldle', icon: <PublicIcon sx={{ fontSize: 32, color: '#43cea2' }} /> },
+    { path: '/about', label: 'About' },
+    { path: '/badges', label: 'Badges' },
+    { path: '/contact', label: 'Contact' },
+  ];
+
+  const allMenuItems = [
+    ...mainMenuItems,
+    ...games.map(game => ({ ...game, isGame: true }))
   ];
 
   const drawer = (
     <Box sx={{ width: 250, bgcolor: '#121213', height: '100%' }}>
       <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <Box
-          component="a"
-          href="https://jamilweb.click"
-          target="_blank"
-          rel="noopener noreferrer"
           sx={{
             color: 'white',
             fontWeight: 'bold',
@@ -53,17 +111,83 @@ const Header = () => {
             letterSpacing: 1.5,
             transition: 'color 0.2s',
             cursor: 'pointer',
+            fontFamily: '"Playfair Display", serif',
+            fontStyle: 'italic',
             '&:hover': {
               color: '#43cea2',
-              textDecoration: 'underline',
             },
           }}
         >
-          JAMIL KHALAF
+          Designed by Jamil
         </Box>
       </Box>
+      
+      {/* User section in mobile drawer */}
+      {user ? (
+        <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: '#43cea2', width: 40, height: 40 }}>
+              <PersonIcon />
+            </Avatar>
+            <Box>
+              <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                {user.username}
+              </Typography>
+              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+                {user.email}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      ) : (
+        <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', mb: 1 }}>
+            Welcome to Globle
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              component={RouterLink}
+              to="/login"
+              variant="outlined"
+              size="small"
+              sx={{
+                color: 'white',
+                borderColor: 'rgba(255,255,255,0.3)',
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                },
+                fontSize: '0.8rem',
+                py: 0.5,
+                px: 1.5,
+              }}
+            >
+              Login
+            </Button>
+            <Button
+              component={RouterLink}
+              to="/signup"
+              variant="contained"
+              size="small"
+              sx={{
+                backgroundColor: '#43cea2',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: '#3bb08f',
+                },
+                fontSize: '0.8rem',
+                py: 0.5,
+                px: 1.5,
+              }}
+            >
+              Sign Up
+            </Button>
+          </Box>
+        </Box>
+      )}
+
       <List>
-        {menuItems.map((item) => (
+        {mainMenuItems.map((item) => (
           <ListItem 
             key={item.path} 
             component={RouterLink} 
@@ -89,6 +213,89 @@ const Header = () => {
             />
           </ListItem>
         ))}
+        <ListItem 
+          sx={{
+            color: 'white',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            backgroundColor: games.some(game => location.pathname === game.path) ? 'rgba(255,255,255,0.1)' : 'transparent',
+            '&:hover': {
+              backgroundColor: 'rgba(255,255,255,0.05)',
+            }
+          }}
+        >
+          <ListItemText 
+            primary="Games" 
+            sx={{
+              '& .MuiListItemText-primary': {
+                fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
+                fontSize: '1.1rem',
+                color: '#43cea2'
+              }
+            }}
+          />
+        </ListItem>
+        {games.map((game) => (
+          <ListItem 
+            key={game.path} 
+            component={RouterLink} 
+            to={game.path}
+            onClick={handleDrawerToggle}
+            sx={{
+              color: 'white',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
+              backgroundColor: location.pathname === game.path ? 'rgba(255,255,255,0.1)' : 'transparent',
+              pl: 4,
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.05)',
+              }
+            }}
+          >
+            <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+              {game.icon}
+            </ListItemIcon>
+            <ListItemText 
+              primary={game.label} 
+              sx={{
+                '& .MuiListItemText-primary': {
+                  fontWeight: location.pathname === game.path ? 'bold' : 'normal',
+                  fontSize: '1rem'
+                }
+              }}
+            />
+          </ListItem>
+        ))}
+        
+        {/* Logout option in mobile drawer */}
+        {user && (
+          <>
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 1 }} />
+            <ListItem 
+              onClick={() => {
+                handleLogout();
+                handleDrawerToggle();
+              }}
+              sx={{
+                color: 'white',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                }
+              }}
+            >
+              <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Logout" 
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    fontSize: '1.1rem'
+                  }
+                }}
+              />
+            </ListItem>
+          </>
+        )}
       </List>
     </Box>
   );
@@ -98,10 +305,6 @@ const Header = () => {
       <AppBar position="fixed" sx={{ bgcolor: '#121213', zIndex: theme.zIndex.drawer + 1 }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box
-            component="a"
-            href="https://jamilweb.click"
-            target="_blank"
-            rel="noopener noreferrer"
             sx={{
               color: 'white',
               fontWeight: 'bold',
@@ -110,13 +313,14 @@ const Header = () => {
               letterSpacing: 1.5,
               transition: 'color 0.2s',
               cursor: 'pointer',
+              fontFamily: '"Playfair Display", serif',
+              fontStyle: 'italic',
               '&:hover': {
                 color: '#43cea2',
-                textDecoration: 'underline',
               },
             }}
           >
-            JAMIL KHALAF
+            Designed by Jamil
           </Box>
           
           {isMobile ? (
@@ -130,8 +334,8 @@ const Header = () => {
               <MenuIcon />
             </IconButton>
           ) : (
-            <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 } }}>
-              {menuItems.map((item) => (
+            <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, alignItems: 'center' }}>
+              {mainMenuItems.map((item) => (
                 <Button 
                   key={item.path}
                   color="inherit" 
@@ -148,10 +352,154 @@ const Header = () => {
                   {item.label}
                 </Button>
               ))}
+              <Button 
+                color="inherit"
+                onClick={handleGamesMenuOpen}
+                endIcon={<ExpandMoreIcon />}
+                sx={{ 
+                  color: games.some(game => location.pathname === game.path) ? '#43cea2' : 'white',
+                  fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
+                  borderBottom: games.some(game => location.pathname === game.path) ? '2px solid #43cea2' : 'none',
+                  fontSize: { xs: '0.8rem', md: '1rem' },
+                  px: { xs: 1, md: 2 }
+                }}
+              >
+                Games
+              </Button>
+
+              {/* Authentication buttons */}
+              {user ? (
+                <IconButton
+                  onClick={handleUserMenuOpen}
+                  sx={{ color: 'white', ml: 1 }}
+                >
+                  <Avatar sx={{ bgcolor: '#43cea2', width: 32, height: 32 }}>
+                    <PersonIcon />
+                  </Avatar>
+                </IconButton>
+              ) : (
+                <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/login"
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      color: 'white',
+                      borderColor: 'rgba(255,255,255,0.3)',
+                      '&:hover': {
+                        borderColor: 'white',
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                      },
+                      fontSize: '0.8rem',
+                      py: 0.5,
+                      px: 1.5,
+                    }}
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    component={RouterLink}
+                    to="/signup"
+                    variant="contained"
+                    size="small"
+                    sx={{
+                      backgroundColor: '#43cea2',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: '#3bb08f',
+                      },
+                      fontSize: '0.8rem',
+                      py: 0.5,
+                      px: 1.5,
+                    }}
+                  >
+                    Sign Up
+                  </Button>
+                </Box>
+              )}
             </Box>
           )}
         </Toolbar>
       </AppBar>
+
+      {/* Games Menu */}
+      <Menu
+        anchorEl={gamesAnchorEl}
+        open={Boolean(gamesAnchorEl)}
+        onClose={handleGamesMenuClose}
+        PaperProps={{
+          sx: {
+            bgcolor: '#121213',
+            color: 'white',
+            mt: 1,
+            minWidth: 200,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          }
+        }}
+      >
+        {games.map((game) => (
+          <MenuItem 
+            key={game.path}
+            component={RouterLink}
+            to={game.path}
+            onClick={handleGamesMenuClose}
+            sx={{
+              color: 'white',
+              backgroundColor: location.pathname === game.path ? 'rgba(255,255,255,0.1)' : 'transparent',
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.05)',
+              }
+            }}
+          >
+            <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+              {game.icon}
+            </ListItemIcon>
+            <Typography sx={{ fontWeight: location.pathname === game.path ? 'bold' : 'normal' }}>
+              {game.label}
+            </Typography>
+          </MenuItem>
+        ))}
+      </Menu>
+
+      {/* User Menu */}
+      <Menu
+        anchorEl={userMenuAnchorEl}
+        open={Boolean(userMenuAnchorEl)}
+        onClose={handleUserMenuClose}
+        PaperProps={{
+          sx: {
+            bgcolor: '#121213',
+            color: 'white',
+            mt: 1,
+            minWidth: 200,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          }
+        }}
+      >
+        <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.9rem' }}>
+            {user?.username}
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+            {user?.email}
+          </Typography>
+        </Box>
+        <MenuItem 
+          onClick={handleLogout}
+          sx={{
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255,255,255,0.05)',
+            }
+          }}
+        >
+          <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+            <LogoutIcon />
+          </ListItemIcon>
+          <Typography>Logout</Typography>
+        </MenuItem>
+      </Menu>
       
       <Drawer
         variant="temporary"

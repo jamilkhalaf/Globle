@@ -435,6 +435,9 @@ const Game = () => {
       setScore(finalScore);
       saveBestScore(newGuessedCountries.length);
       
+      // Update stats when game is won
+      updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
+      
       setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
       setGameOver(true);
     } else {
@@ -479,6 +482,9 @@ const Game = () => {
           setGameEndTime(endTime);
           setScore(finalScore);
           saveBestScore(newGuessedCountries.length);
+          
+          // Update stats when game is won
+          updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
           
           setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
           setGameOver(true);
@@ -547,6 +553,9 @@ const Game = () => {
     setScore(finalScore);
     saveBestScore(guessedCountries.length);
     
+    // Update stats when game is given up
+    updateGameStats(finalScore, Math.round(timeTaken / 1000), guessedCountries.length);
+    
     setMessage(`Game Over! The secret country was ${secretCountry.properties.name}`);
   };
 
@@ -579,6 +588,65 @@ const Game = () => {
     if (bestScore === 0 || attempts < bestScore) {
       setBestScore(attempts);
       localStorage.setItem('globleBestScore', attempts.toString());
+    }
+  };
+
+  const updateGameStats = async (finalScore, gameTime, bestStreak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/games/update-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'globle',
+          score: finalScore,
+          gameTime,
+          bestStreak,
+          attempts: guessedCountries.length
+        }),
+      });
+
+      if (response.ok) {
+        // Update badge progress
+        await updateBadgeProgress('globle', finalScore, guessedCountries.length, bestStreak);
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
+
+  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/badges/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId,
+          score,
+          attempts,
+          streak
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.totalNewBadges > 0) {
+          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
     }
   };
 

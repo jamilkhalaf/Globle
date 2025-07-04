@@ -114,11 +114,71 @@ const Worldle = () => {
   const [scrollHint, setScrollHint] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [openImage, setOpenImage] = useState(null); // null | { type: 'image' | 'flag', src: string }
+  const [bestScore, setBestScore] = useState(0);
 
   const country = countryInfo[target];
   const extra = countryExtra[target];
   const flagCode = getFlagCode(target);
   const flagSrc = `/flags/${flagCode}.png`;
+
+  const updateGameStats = async (finalScore, gameTime, bestStreak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/games/update-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'worldle',
+          score: finalScore,
+          gameTime,
+          bestStreak,
+          attempts: 6 // Worldle has 6 attempts
+        }),
+      });
+
+      if (response.ok) {
+        // Update badge progress
+        await updateBadgeProgress('worldle', finalScore, 6, bestStreak);
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
+
+  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/badges/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId,
+          score,
+          attempts,
+          streak
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.totalNewBadges > 0) {
+          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
+    }
+  };
 
   const handleGuess = () => {
     if (!guess.trim()) return;
@@ -137,10 +197,20 @@ const Worldle = () => {
       setMessage('🎉 Correct!');
       setGameOver(true);
       setRevealed(6);
+      
+      // Calculate score based on number of guesses (fewer guesses = higher score)
+      const score = Math.max(1, NUM_TRIES - guesses.length);
+      setBestScore(prev => Math.max(prev, score));
+      
+      // Update stats when game is won
+      updateGameStats(score, 0, 0);
     } else if (guesses.length + 1 >= NUM_TRIES) {
       setMessage(`Out of guesses! The answer was ${target}`);
       setGameOver(true);
       setRevealed(6);
+      
+      // Update stats when game is lost
+      updateGameStats(0, 0, 0);
     } else {
       setRevealed(r => Math.min(r + 1, 6));
       setMessage('Incorrect!');

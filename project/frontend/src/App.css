@@ -1,11 +1,10 @@
 #root {
   max-width: none;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
   text-align: center;
-  overflow: hidden;
   background-color: #2b2b2b;
 }
 
@@ -70,7 +69,6 @@
   body {
     touch-action: manipulation;
     -webkit-overflow-scrolling: touch;
-    overflow: hidden !important;
   }
   
   /* Prevent zoom on input focus */

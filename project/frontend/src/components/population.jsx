@@ -28,12 +28,74 @@ const Population = () => {
   const [message, setMessage] = useState('');
   const [fadeKey, setFadeKey] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [bestScore, setBestScore] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState(null);
+  const [streak, setStreak] = useState(0); // Add streak tracking
 
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
 
   // Add state for notification modal
   const [showIntro, setShowIntro] = useState(true);
+
+  const updateGameStats = async (finalScore, gameTime, currentStreak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/games/update-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'population',
+          score: finalScore,
+          gameTime,
+          streak: currentStreak,
+          attempts: 10 // Population has 10 questions
+        }),
+      });
+
+      if (response.ok) {
+        // Update badge progress
+        await updateBadgeProgress('population', finalScore, 10, currentStreak);
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
+
+  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('http://localhost:5051/api/badges/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId,
+          score,
+          attempts,
+          streak
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.totalNewBadges > 0) {
+          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
+    }
+  };
 
   // Memoize the random country generation to prevent unnecessary re-renders
   const generateNewCountries = useCallback(() => {
@@ -46,6 +108,7 @@ const Population = () => {
     // Initial two random countries
     setCountries(generateNewCountries());
     setMessage('Which country has a higher population?');
+    setGameStartTime(Date.now());
   }, [generateNewCountries]);
 
   const handleGuess = useCallback((guessIdx) => {
@@ -58,8 +121,16 @@ const Population = () => {
     const correct = (guessIdx === 0 && popLeft >= popRight) || (guessIdx === 1 && popRight > popLeft);
     
     if (correct) {
-      setScore(prev => prev + 1);
+      const newScore = score + 1;
+      const newStreak = streak + 1;
+      setScore(newScore);
+      setBestScore(prev => Math.max(prev, newScore));
+      setStreak(newStreak);
       setMessage('Correct! 🎉');
+      
+      // Update stats after each correct answer
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      updateGameStats(newScore, gameTime, newStreak);
       
       // Faster transition for correct answers
       setTimeout(() => {
@@ -70,16 +141,22 @@ const Population = () => {
       }, 600);
     } else {
       setScore(0);
+      setStreak(0); // Reset streak on wrong answer
       setMessage(`Wrong! The answer was ${popLeft > popRight ? left : right}.`);
+      
+      // Update stats when game ends (wrong answer)
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      updateGameStats(0, gameTime, 0);
       
       setTimeout(() => {
         setCountries(generateNewCountries());
         setMessage('Which country has a higher population?');
         setFadeKey(prev => prev + 1);
         setIsLoading(false);
+        setGameStartTime(Date.now()); // Reset timer for new game
       }, 1000);
     }
-  }, [countries, isLoading, generateNewCountries]);
+  }, [countries, isLoading, generateNewCountries, score, gameStartTime, bestScore, streak]);
 
   if (showIntro) {
     return (

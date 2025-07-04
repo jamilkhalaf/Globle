@@ -3,20 +3,21 @@ import { Box, Typography, Paper, Fade, useTheme, useMediaQuery, Toolbar, Button,
 import Header from './Header';
 import PublicIcon from '@mui/icons-material/Public';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import SpellcheckIcon from '@mui/icons-material/Spellcheck';
 import GroupsIcon from '@mui/icons-material/Groups';
 import FlagIcon from '@mui/icons-material/Flag';
 import CloseIcon from '@mui/icons-material/Close';
 import EmailIcon from '@mui/icons-material/Email';
+import SchoolIcon from '@mui/icons-material/School';
 import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 
 const gameList = [
   { label: 'Globle', path: '/game', icon: <PublicIcon sx={{ fontSize: 40, color: '#1976d2' }} />, color: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)' },
-  { label: 'Wordle', path: '/wordle', icon: <SpellcheckIcon sx={{ fontSize: 40, color: '#f093fb' }} />, color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
   { label: 'Population', path: '/population', icon: <GroupsIcon sx={{ fontSize: 40, color: '#4caf50' }} />, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
   { label: 'Findle', path: '/name', icon: <SportsEsportsIcon sx={{ fontSize: 40, color: '#9c27b0' }} />, color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
   { label: 'Flagle', path: '/flagle', icon: <FlagIcon sx={{ fontSize: 40, color: '#ff9800' }} />, color: 'linear-gradient(135deg, #ff9800 0%, #ff5e62 100%)' },
   { label: 'Worldle', path: '/worldle', icon: <PublicIcon sx={{ fontSize: 40, color: '#1976d2' }} />, color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)' },
+  { label: 'Capitals', path: '/capitals', icon: <SchoolIcon sx={{ fontSize: 40, color: '#43cea2' }} />, color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)' },
 ];
 
 const Home = () => {
@@ -119,45 +120,59 @@ const Home = () => {
             sx={{
               color: '#b0c4de',
               fontWeight: 600,
-              mb: 3,
+              mb: 4,
               textShadow: '0 1px 3px rgba(0,0,0,0.5)',
             }}
           >
             Explore the world. Play. Learn. Compete.
           </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'rgba(255,255,255,0.92)',
-              fontWeight: 400,
-              fontSize: { xs: '1.1rem', md: '1.25rem' },
-              lineHeight: 1.7,
-              mb: 4,
-              textShadow: '0 1px 3px rgba(0,0,0,0.2)',
-            }}
-          >
-            This is a collection of geography games + wordle designed to challenge your knowledge of countries, capitals, populations, flags, and pattern recognition. Whether you're a casual explorer or a competitive globetrotter, you'll find something to enjoy. Sharpen your skills, learn new facts, and have fun discovering the world!
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            sx={{
-              fontWeight: 700,
-              fontSize: 22,
-              borderRadius: 3,
-              px: 5,
-              py: 2,
-              mb: 2,
-              boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
-              background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
-              textTransform: 'none',
-            }}
-            onClick={handleExploreClick}
-            id="explore-btn"
-          >
-            Explore
-          </Button>
+          
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, alignItems: 'center' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              sx={{
+                fontWeight: 700,
+                fontSize: 22,
+                borderRadius: 3,
+                px: 5,
+                py: 2,
+                boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
+                background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
+                textTransform: 'none',
+              }}
+              onClick={handleExploreClick}
+              id="explore-btn"
+            >
+              Explore
+            </Button>
+            
+            <Button
+              variant="outlined"
+              color="primary"
+              size="large"
+              component={RouterLink}
+              to="/contact"
+              sx={{
+                fontWeight: 700,
+                fontSize: 22,
+                borderRadius: 3,
+                px: 5,
+                py: 2,
+                borderColor: '#1976d2',
+                color: '#1976d2',
+                textTransform: 'none',
+                '&:hover': {
+                  borderColor: '#00bcd4',
+                  color: '#00bcd4',
+                  backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                }
+              }}
+            >
+              Contact
+            </Button>
+          </Box>
 
           {/* Desktop Popper */}
           {!isMobile && (
