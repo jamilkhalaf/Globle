@@ -8,6 +8,7 @@ import Name from './components/name'
 import Flagle from './components/Flagle'
 import Worldle from './components/Worldle'
 import Capitals from './components/capitals'
+import Hangman from './components/hangman'
 import About from './components/About'
 import Contact from './components/Contact'
 import Badges from './components/badges'
@@ -53,6 +54,7 @@ function App() {
           <Route path="/flagle" element={<Flagle />} />
           <Route path="/worldle" element={<Worldle />} />
           <Route path="/capitals" element={<Capitals />} />
+          <Route path="/hangman" element={<Hangman />} />
         </Routes>
       </Router>
     </ThemeProvider>

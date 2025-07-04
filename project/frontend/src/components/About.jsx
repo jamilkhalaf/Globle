@@ -7,6 +7,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import FlagIcon from '@mui/icons-material/Flag';
 import EmailIcon from '@mui/icons-material/Email';
 import SchoolIcon from '@mui/icons-material/School';
+import HelpIcon from '@mui/icons-material/Help';
 import { Link as RouterLink } from 'react-router-dom';
 
 const About = () => {
@@ -49,6 +50,12 @@ const About = () => {
       description: 'Test your knowledge of world capitals.',
       icon: <SchoolIcon sx={{ fontSize: 32, color: '#43cea2' }} />,
       color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)'
+    },
+    {
+      name: 'Hangman',
+      description: 'Guess the country name letter by letter.',
+      icon: <HelpIcon sx={{ fontSize: 32, color: '#f44336' }} />,
+      color: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)'
     }
   ];
 

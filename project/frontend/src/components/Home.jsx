@@ -1,49 +1,21 @@
-import React, { useState } from 'react';
-import { Box, Typography, Paper, Fade, useTheme, useMediaQuery, Toolbar, Button, Popper, ClickAwayListener, IconButton, Dialog, Slide } from '@mui/material';
+import React, { useRef } from 'react';
+import { Box, Typography, Paper, Fade, useTheme, useMediaQuery, Toolbar, Button } from '@mui/material';
 import Header from './Header';
 import PublicIcon from '@mui/icons-material/Public';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import GroupsIcon from '@mui/icons-material/Groups';
-import FlagIcon from '@mui/icons-material/Flag';
-import CloseIcon from '@mui/icons-material/Close';
 import EmailIcon from '@mui/icons-material/Email';
-import SchoolIcon from '@mui/icons-material/School';
-import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
-
-const gameList = [
-  { label: 'Globle', path: '/game', icon: <PublicIcon sx={{ fontSize: 40, color: '#1976d2' }} />, color: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)' },
-  { label: 'Population', path: '/population', icon: <GroupsIcon sx={{ fontSize: 40, color: '#4caf50' }} />, color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
-  { label: 'Findle', path: '/name', icon: <SportsEsportsIcon sx={{ fontSize: 40, color: '#9c27b0' }} />, color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
-  { label: 'Flagle', path: '/flagle', icon: <FlagIcon sx={{ fontSize: 40, color: '#ff9800' }} />, color: 'linear-gradient(135deg, #ff9800 0%, #ff5e62 100%)' },
-  { label: 'Worldle', path: '/worldle', icon: <PublicIcon sx={{ fontSize: 40, color: '#1976d2' }} />, color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)' },
-  { label: 'Capitals', path: '/capitals', icon: <SchoolIcon sx={{ fontSize: 40, color: '#43cea2' }} />, color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)' },
-];
 
 const Home = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const headerRef = useRef(null);
 
-  const handleExploreClick = (event) => {
-    if (isMobile) {
-      setMobileMenuOpen(true);
-    } else {
-      setAnchorEl(anchorEl ? null : event.currentTarget);
+  const handleExploreClick = () => {
+    // Trigger the header's games menu
+    if (headerRef.current && headerRef.current.openGamesMenu) {
+      headerRef.current.openGamesMenu();
     }
   };
-  const handleClose = () => {
-    setAnchorEl(null);
-    setMobileMenuOpen(false);
-  };
-  const handleGameSelect = (path) => {
-    setAnchorEl(null);
-    setMobileMenuOpen(false);
-    navigate(path);
-  };
-  const open = Boolean(anchorEl);
 
   return (
     <Box
@@ -59,7 +31,7 @@ const Home = () => {
         alignItems: 'center',
       }}
     >
-      <Header />
+      <Header ref={headerRef} />
       <Toolbar />
       <Fade in timeout={800}>
         <Paper
@@ -173,148 +145,6 @@ const Home = () => {
               Contact
             </Button>
           </Box>
-
-          {/* Desktop Popper */}
-          {!isMobile && (
-            <Popper
-              open={open}
-              anchorEl={anchorEl}
-              placement="top"
-              sx={{
-                zIndex: 2000,
-                position: 'fixed',
-                left: '50vw',
-                top: { xs: 60, md: 80 },
-                transform: 'translateX(-50%)',
-                width: '100vw',
-                display: 'flex',
-                justifyContent: 'center',
-                pointerEvents: open ? 'auto' : 'none',
-              }}
-            >
-              <ClickAwayListener onClickAway={(e) => {
-                if (anchorEl && anchorEl.contains(e.target)) return;
-                handleClose();
-              }}>
-                <Paper
-                  elevation={16}
-                  sx={{
-                    px: { xs: 1.5, md: 4 },
-                    py: { xs: 2.5, md: 4 },
-                    borderRadius: 5,
-                    background: 'rgba(30,34,44,0.99)',
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    gap: { xs: 2.5, md: 3 },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 12px 40px 0 rgba(31,38,135,0.45)',
-                    minWidth: { xs: 260, md: 600 },
-                    maxWidth: { xs: '98vw', md: '80vw' },
-                    position: 'relative',
-                    pointerEvents: 'auto',
-                  }}
-                >
-                  {gameList.map((game) => (
-                    <Box
-                      key={game.path}
-                      onClick={() => handleGameSelect(game.path)}
-                      sx={{
-                        cursor: 'pointer',
-                        background: game.color,
-                        borderRadius: 3,
-                        p: { xs: 2.5, md: 2.5 },
-                        minWidth: { xs: 220, md: 110 },
-                        minHeight: { xs: 110, md: 140 },
-                        mb: { xs: 1.5, md: 0 },
-                        boxShadow: { xs: '0 2px 12px 0 rgba(25, 118, 210, 0.10)', md: '0 4px 20px rgba(0,0,0,0.15)' },
-                        border: { xs: '2px solid rgba(255,255,255,0.12)', md: 'none' },
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'transform 0.18s, box-shadow 0.18s',
-                        '&:hover': {
-                          transform: { xs: 'scale(1.06)', md: 'translateY(-6px) scale(1.07)' },
-                          boxShadow: { xs: '0 6px 24px rgba(25, 118, 210, 0.18)', md: '0 8px 32px rgba(25, 118, 210, 0.25)' },
-                        },
-                      }}
-                    >
-                      {game.icon}
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: 'white',
-                          fontWeight: 800,
-                          mt: 1.5,
-                          fontSize: { xs: 20, md: 20 },
-                          letterSpacing: 1,
-                          textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                        }}
-                      >
-                        {game.label}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Paper>
-              </ClickAwayListener>
-            </Popper>
-          )}
-
-          {/* Mobile Fullscreen Menu */}
-          {isMobile && (
-            <Dialog
-              fullScreen
-              open={mobileMenuOpen}
-              onClose={handleClose}
-              TransitionComponent={Slide}
-              TransitionProps={{ direction: 'up' }}
-              PaperProps={{
-                sx: {
-                  background: 'linear-gradient(135deg, #232a3b 0%, #121213 100%)',
-                  color: 'white',
-                  p: 0,
-                },
-              }}
-            >
-              <Box sx={{ position: 'absolute', top: 0, right: 0, p: 2, zIndex: 10 }}>
-                <IconButton onClick={handleClose} sx={{ color: 'white', background: 'rgba(0,0,0,0.18)' }}>
-                  <CloseIcon sx={{ fontSize: 32 }} />
-                </IconButton>
-              </Box>
-              <Box sx={{ pt: 8, pb: 4, px: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh' }}>
-                <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, mt: 2, letterSpacing: 1, textAlign: 'center' }}>
-                  Choose a Game
-                </Typography>
-                {gameList.map((game) => (
-                  <Box
-                    key={game.path}
-                    onClick={() => handleGameSelect(game.path)}
-                    sx={{
-                      width: '100%',
-                      maxWidth: 340,
-                      background: game.color,
-                      borderRadius: 4,
-                      p: 3,
-                      mb: 2.5,
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      boxShadow: '0 4px 24px 0 rgba(25, 118, 210, 0.10)',
-                      cursor: 'pointer',
-                      transition: 'transform 0.15s',
-                      '&:active': { transform: 'scale(0.97)' },
-                    }}
-                  >
-                    {game.icon}
-                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, ml: 2, fontSize: 22, letterSpacing: 1 }}>
-                      {game.label}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Dialog>
-          )}
 
           {/* Contact Section */}
           {!isMobile && (

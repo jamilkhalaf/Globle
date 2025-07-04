@@ -28,6 +28,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import GroupsIcon from '@mui/icons-material/Groups';
 import FlagIcon from '@mui/icons-material/Flag';
 import SchoolIcon from '@mui/icons-material/School';
+import HelpIcon from '@mui/icons-material/Help';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import TimerIcon from '@mui/icons-material/Timer';
@@ -127,7 +128,8 @@ const Badges = () => {
       ...(badges.findle || []),
       ...(badges.flagle || []),
       ...(badges.worldle || []),
-      ...(badges.capitals || [])
+      ...(badges.capitals || []),
+      ...(badges.hangman || [])
     ];
     return allBadges.find(badge => badge.badgeId === badgeId);
   };
@@ -905,6 +907,132 @@ const Badges = () => {
           color: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
           unlocked: userStats?.games?.capitals?.currentStreak >= 10,
           progress: Math.min(userStats?.games?.capitals?.currentStreak || 0, 10),
+          maxProgress: 10
+        }
+      ]
+    },
+    {
+      name: 'Hangman',
+      icon: <HelpIcon sx={{ fontSize: 20, color: '#f44336' }} />,
+      badges: [
+        {
+          id: 'hangman_first_win',
+          name: 'Hangman Survivor',
+          description: 'Win your first Hangman game',
+          icon: <HelpIcon sx={{ fontSize: 24, color: '#f44336' }} />,
+          color: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+          unlocked: userStats?.games?.hangman?.gamesPlayed >= 1,
+          progress: userStats?.games?.hangman?.gamesPlayed || 0,
+          maxProgress: 1
+        },
+        {
+          id: 'hangman_10_games',
+          name: 'Hangman Regular',
+          description: 'Play 10 Hangman games',
+          icon: <HelpIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.hangman?.gamesPlayed >= 10,
+          progress: Math.min(userStats?.games?.hangman?.gamesPlayed || 0, 10),
+          maxProgress: 10
+        },
+        {
+          id: 'hangman_50_games',
+          name: 'Hangman Master',
+          description: 'Play 50 Hangman games',
+          icon: <HelpIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.hangman?.gamesPlayed >= 50,
+          progress: Math.min(userStats?.games?.hangman?.gamesPlayed || 0, 50),
+          maxProgress: 50
+        },
+        {
+          id: 'hangman_score_50',
+          name: 'Hangman Novice',
+          description: 'Score 50+ in Hangman',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: userStats?.games?.hangman?.bestScore >= 50,
+          progress: Math.min(userStats?.games?.hangman?.bestScore || 0, 50),
+          maxProgress: 50
+        },
+        {
+          id: 'hangman_score_70',
+          name: 'Hangman Expert',
+          description: 'Score 70+ in Hangman',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.hangman?.bestScore >= 70,
+          progress: Math.min(userStats?.games?.hangman?.bestScore || 0, 70),
+          maxProgress: 70
+        },
+        {
+          id: 'hangman_score_80',
+          name: 'Hangman Master',
+          description: 'Score 80+ in Hangman',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.hangman?.bestScore >= 80,
+          progress: Math.min(userStats?.games?.hangman?.bestScore || 0, 80),
+          maxProgress: 80
+        },
+        {
+          id: 'hangman_score_90',
+          name: 'Hangman Legend',
+          description: 'Score 90+ in Hangman',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#F44336' }} />,
+          color: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
+          unlocked: userStats?.games?.hangman?.bestScore >= 90,
+          progress: Math.min(userStats?.games?.hangman?.bestScore || 0, 90),
+          maxProgress: 90
+        },
+        {
+          id: 'hangman_score_100',
+          name: 'Hangman God',
+          description: 'Perfect score in Hangman (100)',
+          icon: <EmojiEventsIcon sx={{ fontSize: 24, color: '#FFD700' }} />,
+          color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          unlocked: userStats?.games?.hangman?.bestScore >= 100,
+          progress: Math.min(userStats?.games?.hangman?.bestScore || 0, 100),
+          maxProgress: 100
+        },
+        {
+          id: 'hangman_perfect_win',
+          name: 'Perfect Hangman',
+          description: 'Win Hangman with perfect score (100)',
+          icon: <EmojiEventsIcon sx={{ fontSize: 24, color: '#FFD700' }} />,
+          color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          unlocked: userStats?.games?.hangman?.bestScore === 100,
+          progress: userStats?.games?.hangman?.bestScore === 100 ? 1 : 0,
+          maxProgress: 1
+        },
+        {
+          id: 'hangman_streak_3',
+          name: 'Hangman Streaker',
+          description: 'Maintain a 3-game Hangman streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.hangman?.currentStreak >= 3,
+          progress: Math.min(userStats?.games?.hangman?.currentStreak || 0, 3),
+          maxProgress: 3
+        },
+        {
+          id: 'hangman_streak_5',
+          name: 'Hangman Fire',
+          description: 'Maintain a 5-game Hangman streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#F44336' }} />,
+          color: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
+          unlocked: userStats?.games?.hangman?.currentStreak >= 5,
+          progress: Math.min(userStats?.games?.hangman?.currentStreak || 0, 5),
+          maxProgress: 5
+        },
+        {
+          id: 'hangman_streak_10',
+          name: 'Hangman Inferno',
+          description: 'Maintain a 10-game Hangman streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#9C27B0' }} />,
+          color: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+          unlocked: userStats?.games?.hangman?.currentStreak >= 10,
+          progress: Math.min(userStats?.games?.hangman?.currentStreak || 0, 10),
           maxProgress: 10
         }
       ]

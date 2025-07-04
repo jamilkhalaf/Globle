@@ -19,7 +19,8 @@ router.get('/', auth, async (req, res) => {
       findle: badges.filter(badge => badge.category === 'findle'),
       flagle: badges.filter(badge => badge.category === 'flagle'),
       worldle: badges.filter(badge => badge.category === 'worldle'),
-      capitals: badges.filter(badge => badge.category === 'capitals')
+      capitals: badges.filter(badge => badge.category === 'capitals'),
+      hangman: badges.filter(badge => badge.category === 'hangman')
     };
 
     res.json(badgesByCategory);
@@ -51,7 +52,8 @@ router.get('/progress', auth, async (req, res) => {
         findle: badges.filter(badge => badge.category === 'findle').length,
         flagle: badges.filter(badge => badge.category === 'flagle').length,
         worldle: badges.filter(badge => badge.category === 'worldle').length,
-        capitals: badges.filter(badge => badge.category === 'capitals').length
+        capitals: badges.filter(badge => badge.category === 'capitals').length,
+        hangman: badges.filter(badge => badge.category === 'hangman').length
       }
     });
   } catch (error) {
@@ -188,6 +190,26 @@ router.post('/update', auth, async (req, res) => {
         { id: 'capitals_streak_5', category: 'capitals', condition: gameStats.currentStreak >= 5 },
         { id: 'capitals_streak_10', category: 'capitals', condition: gameStats.currentStreak >= 10 }
       );
+    } else if (gameId === 'hangman') {
+      const gameStats = user.games?.hangman || {};
+      console.log('Hangman game stats for badge check:', gameStats);
+      console.log('Hangman gamesPlayed:', gameStats.gamesPlayed);
+      console.log('Hangman bestScore:', gameStats.bestScore);
+      console.log('Hangman currentStreak:', gameStats.currentStreak);
+      badgesToCheck.push(
+        { id: 'hangman_first_win', category: 'hangman', condition: gameStats.gamesPlayed >= 1 },
+        { id: 'hangman_10_games', category: 'hangman', condition: gameStats.gamesPlayed >= 10 },
+        { id: 'hangman_50_games', category: 'hangman', condition: gameStats.gamesPlayed >= 50 },
+        { id: 'hangman_score_50', category: 'hangman', condition: gameStats.bestScore >= 50 },
+        { id: 'hangman_score_70', category: 'hangman', condition: gameStats.bestScore >= 70 },
+        { id: 'hangman_score_80', category: 'hangman', condition: gameStats.bestScore >= 80 },
+        { id: 'hangman_score_90', category: 'hangman', condition: gameStats.bestScore >= 90 },
+        { id: 'hangman_score_100', category: 'hangman', condition: gameStats.bestScore >= 100 },
+        { id: 'hangman_perfect_win', category: 'hangman', condition: gameStats.bestScore === 100 },
+        { id: 'hangman_streak_3', category: 'hangman', condition: gameStats.currentStreak >= 3 },
+        { id: 'hangman_streak_5', category: 'hangman', condition: gameStats.currentStreak >= 5 },
+        { id: 'hangman_streak_10', category: 'hangman', condition: gameStats.currentStreak >= 10 }
+      );
     }
 
     // Check and create/update badges
@@ -208,7 +230,8 @@ router.post('/update', auth, async (req, res) => {
             badgeId: badgeCheck.id,
             category: badgeCheck.category,
             unlocked: true,
-            unlockedAt: new Date()
+            unlockedAt: new Date(),
+            maxProgress: 1 // Default maxProgress for unlocked badges
           });
           await badge.save();
           newlyUnlockedBadges.push(badgeCheck.id);

@@ -9,7 +9,7 @@ const router = express.Router();
 // @desc    Update user game statistics
 // @access  Private
 router.post('/update-stats', [
-  body('gameId').isIn(['globle', 'population', 'findle', 'flagle', 'worldle', 'capitals'])
+  body('gameId').isIn(['globle', 'population', 'findle', 'flagle', 'worldle', 'capitals', 'hangman'])
     .withMessage('Invalid game ID'),
   body('score').isNumeric().withMessage('Score must be a number'),
   body('gameTime').optional().isNumeric().withMessage('Game time must be a number'),
@@ -19,11 +19,15 @@ router.post('/update-stats', [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { gameId, score, gameTime, attempts, streak } = req.body;
     const userId = req.user.id;
+
+    console.log(`Updating stats for game: ${gameId}, user: ${userId}`);
+    console.log('Request body:', req.body);
 
     // Get user
     const user = await User.findById(userId);
@@ -35,6 +39,8 @@ router.post('/update-stats', [
     if (!user.games) {
       user.games = {};
     }
+
+    console.log('Current user games:', user.games);
 
     // Update game statistics
     const gameStats = user.games[gameId] || {
@@ -97,6 +103,9 @@ router.post('/update-stats', [
     } else if (gameId === 'capitals') {
       // For Capitals, a win is getting at least one correct answer
       isWin = score > 0;
+    } else if (gameId === 'hangman') {
+      // For Hangman, a win is completing the word
+      isWin = score > 0;
     }
 
     let newCurrentStreak = gameStats.currentStreak;
@@ -123,6 +132,8 @@ router.post('/update-stats', [
       averageScore: newAverageScore,
       lastPlayed: today
     };
+
+    console.log(`Setting ${gameId} stats:`, user.games[gameId]);
 
     // Update overall statistics
     user.totalGamesPlayed += 1;
@@ -163,7 +174,18 @@ router.post('/update-stats', [
     user.currentStreak = newOverallCurrentStreak;
     user.longestStreak = Math.max(user.longestStreak, newOverallCurrentStreak);
 
-    await user.save();
+    console.log('About to save user with games:', user.games);
+    
+    try {
+      await user.save();
+      console.log('User saved successfully');
+    } catch (saveError) {
+      console.error('Error saving user:', saveError);
+      throw saveError;
+    }
+
+    console.log('Updated user games:', user.games);
+    console.log(`Hangman stats after save:`, user.games.hangman);
 
     res.json({
       message: 'Statistics updated successfully',

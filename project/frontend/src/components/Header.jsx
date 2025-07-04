@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { 
   AppBar, 
   Toolbar, 
@@ -29,8 +29,9 @@ import SchoolIcon from '@mui/icons-material/School';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
+import HelpIcon from '@mui/icons-material/Help';
 
-const Header = () => {
+const Header = forwardRef((props, ref) => {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -49,6 +50,17 @@ const Header = () => {
       setUser(JSON.parse(userData));
     }
   }, []);
+
+  // Expose functions to parent component
+  useImperativeHandle(ref, () => ({
+    openGamesMenu: () => {
+      // Create a synthetic event to open the games menu
+      const event = {
+        currentTarget: document.querySelector('[data-games-button]') || document.body
+      };
+      handleGamesMenuOpen(event);
+    }
+  }));
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -85,6 +97,7 @@ const Header = () => {
     { path: '/flagle', label: 'Flagle', icon: <FlagIcon sx={{ fontSize: 20, color: '#ff9800' }} /> },
     { path: '/worldle', label: 'Worldle', icon: <PublicIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
     { path: '/capitals', label: 'Capitals', icon: <SchoolIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
+    { path: '/hangman', label: 'Hangman', icon: <HelpIcon sx={{ fontSize: 20, color: '#f44336' }} /> },
   ];
 
   const mainMenuItems = [
@@ -356,6 +369,7 @@ const Header = () => {
                 color="inherit"
                 onClick={handleGamesMenuOpen}
                 endIcon={<ExpandMoreIcon />}
+                data-games-button
                 sx={{ 
                   color: games.some(game => location.pathname === game.path) ? '#43cea2' : 'white',
                   fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
@@ -521,6 +535,6 @@ const Header = () => {
       </Drawer>
     </>
   );
-};
+});
 
 export default Header; 

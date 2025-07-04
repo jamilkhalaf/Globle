@@ -29,7 +29,7 @@ const badgeSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['overall', 'globle', 'population', 'findle', 'flagle', 'worldle', 'capitals']
+    enum: ['overall', 'globle', 'population', 'findle', 'flagle', 'worldle', 'capitals', 'hangman']
   }
 }, {
   timestamps: true

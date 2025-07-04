@@ -100,6 +100,14 @@ const userSchema = new mongoose.Schema({
       longestStreak: { type: Number, default: 0 },
       averageScore: { type: Number, default: 0 },
       lastPlayed: { type: Date, default: null }
+    },
+    hangman: {
+      gamesPlayed: { type: Number, default: 0 },
+      bestScore: { type: Number, default: 0 },
+      currentStreak: { type: Number, default: 0 },
+      longestStreak: { type: Number, default: 0 },
+      averageScore: { type: Number, default: 0 },
+      lastPlayed: { type: Date, default: null }
     }
   }
 }, {
