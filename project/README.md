@@ -66,16 +66,25 @@ project/
    npm install
    ```
 
-3. **Configure MongoDB:**
-   - The backend is already configured to use your MongoDB Atlas cluster
-   - Connection string: `mongodb+srv://jamil04k:jamil123@cluster0.amw0e.mongodb.net/globle-webapp`
+3. **Configure environment variables:**
+   ```bash
+   # Copy the example environment file
+   cp env.example .env
+   
+   # Edit the .env file with your MongoDB credentials
+   # See backend/README.md for detailed instructions
+   ```
+
+4. **Configure MongoDB:**
+   - Create a MongoDB Atlas account or use a local MongoDB instance
+   - Update the `MONGODB_URI` in your `.env` file
    - Database name: `globle-webapp`
 
-4. **Start the backend server:**
+5. **Start the backend server:**
    ```bash
    npm run dev
    ```
-   The server will start on `http://localhost:5000`
+   The server will start on `http://localhost:5051`
 
 ### Frontend Setup
 
@@ -94,6 +103,34 @@ project/
    npm start
    ```
    The application will open on `http://localhost:3000`
+
+## Security Configuration
+
+⚠️ **IMPORTANT**: This application contains sensitive configuration that should never be committed to version control.
+
+### Protected Files
+The following files are automatically ignored by `.gitignore`:
+- `.env` files (environment variables)
+- `config/db.js` (database credentials)
+- `secrets.json` (API keys and secrets)
+- `*.pem`, `*.key` (certificate files)
+
+### Environment Variables
+Create a `.env` file in the backend directory with:
+```env
+MONGODB_URI=your-mongodb-connection-string
+JWT_SECRET=your-jwt-secret-key
+PORT=5051
+NODE_ENV=development
+```
+
+### JWT Secret Generation
+Generate a secure JWT secret:
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+For detailed security setup instructions, see `backend/README.md`.
 
 ## API Endpoints
 

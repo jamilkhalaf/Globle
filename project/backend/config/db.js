@@ -1,8 +1,16 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect('mongodb+srv://jamil04k:jamil123@cluster0.amw0e.mongodb.net/globle-webapp?retryWrites=true&w=majority', {
+    // Use environment variable for MongoDB URI
+    const mongoURI = process.env.MONGODB_URI;
+    
+    if (!mongoURI) {
+      throw new Error('MONGODB_URI environment variable is not set. Please check your .env file.');
+    }
+    
+    const conn = await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
