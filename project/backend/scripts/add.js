@@ -31,4 +31,34 @@ async function addHangmanToUsers() {
   mongoose.disconnect();
 }
 
+async function addUSStatesToUsers() {
+  await mongoose.connect(process.env.MONGODB_URI);
+
+  const users = await User.find({});
+  let updated = 0;
+
+  for (const user of users) {
+    if (!user.games) user.games = {};
+    if (!user.games.usstates) {
+      user.games.usstates = {
+        gamesPlayed: 0,
+        bestScore: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        averageScore: 0,
+        lastPlayed: null
+      };
+      user.markModified('games');
+      await user.save();
+      updated++;
+      console.log(`Updated user: ${user.username || user._id}`);
+    }
+  }
+
+  console.log(`Done. Updated ${updated} users.`);
+  mongoose.disconnect();
+}
+
 addHangmanToUsers();
+// Uncomment to run
+// addUSStatesToUsers();

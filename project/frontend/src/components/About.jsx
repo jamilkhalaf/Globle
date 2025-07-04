@@ -8,6 +8,8 @@ import FlagIcon from '@mui/icons-material/Flag';
 import EmailIcon from '@mui/icons-material/Email';
 import SchoolIcon from '@mui/icons-material/School';
 import HelpIcon from '@mui/icons-material/Help';
+import CropSquareIcon from '@mui/icons-material/CropSquare';
+import MapIcon from '@mui/icons-material/Map';
 import { Link as RouterLink } from 'react-router-dom';
 
 const About = () => {
@@ -56,7 +58,21 @@ const About = () => {
       description: 'Guess the country name letter by letter.',
       icon: <HelpIcon sx={{ fontSize: 32, color: '#f44336' }} />,
       color: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)'
-    }
+    },
+    {
+      name: 'Shaple',
+      description: 'Guess the country or US state by its shape!',
+      icon: <CropSquareIcon sx={{ fontSize: 24, color: '#43cea2' }} />,
+      color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)',
+      path: '/shaple'
+    },
+    {
+      name: 'US',
+      description: 'Find the prompted US state by clicking on the map.',
+      icon: <MapIcon sx={{ fontSize: 32, color: '#1976d2' }} />,
+      color: 'linear-gradient(135deg, #1976d2 0%, #43cea2 100%)',
+      path: '/us'
+    },
   ];
 
   return (

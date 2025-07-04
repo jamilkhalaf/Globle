@@ -30,6 +30,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
 import HelpIcon from '@mui/icons-material/Help';
+import CropSquareIcon from '@mui/icons-material/CropSquare';
+import MapIcon from '@mui/icons-material/Map';
 
 const Header = forwardRef((props, ref) => {
   const location = useLocation();
@@ -98,6 +100,16 @@ const Header = forwardRef((props, ref) => {
     { path: '/worldle', label: 'Worldle', icon: <PublicIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
     { path: '/capitals', label: 'Capitals', icon: <SchoolIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
     { path: '/hangman', label: 'Hangman', icon: <HelpIcon sx={{ fontSize: 20, color: '#f44336' }} /> },
+    {
+      label: 'Shaple',
+      path: '/shaple',
+      icon: <CropSquareIcon sx={{ fontSize: 22, color: '#43cea2' }} />
+    },
+    {
+      label: 'US',
+      path: '/us',
+      icon: <MapIcon sx={{ fontSize: 22, color: '#1976d2' }} />
+    }
   ];
 
   const mainMenuItems = [

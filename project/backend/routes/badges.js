@@ -20,7 +20,8 @@ router.get('/', auth, async (req, res) => {
       flagle: badges.filter(badge => badge.category === 'flagle'),
       worldle: badges.filter(badge => badge.category === 'worldle'),
       capitals: badges.filter(badge => badge.category === 'capitals'),
-      hangman: badges.filter(badge => badge.category === 'hangman')
+      hangman: badges.filter(badge => badge.category === 'hangman'),
+      usstates: badges.filter(badge => badge.category === 'usstates')
     };
 
     res.json(badgesByCategory);
@@ -53,7 +54,8 @@ router.get('/progress', auth, async (req, res) => {
         flagle: badges.filter(badge => badge.category === 'flagle').length,
         worldle: badges.filter(badge => badge.category === 'worldle').length,
         capitals: badges.filter(badge => badge.category === 'capitals').length,
-        hangman: badges.filter(badge => badge.category === 'hangman').length
+        hangman: badges.filter(badge => badge.category === 'hangman').length,
+        usstates: badges.filter(badge => badge.category === 'usstates').length
       }
     });
   } catch (error) {
@@ -209,6 +211,31 @@ router.post('/update', auth, async (req, res) => {
         { id: 'hangman_streak_3', category: 'hangman', condition: gameStats.currentStreak >= 3 },
         { id: 'hangman_streak_5', category: 'hangman', condition: gameStats.currentStreak >= 5 },
         { id: 'hangman_streak_10', category: 'hangman', condition: gameStats.currentStreak >= 10 }
+      );
+    } else if (gameId === 'shaple') {
+      const gameStats = user.games?.shaple || {};
+      badgesToCheck.push(
+        { id: 'shaple_first_win', category: 'shaple', condition: gameStats.gamesPlayed >= 1 },
+        { id: 'shaple_10_games', category: 'shaple', condition: gameStats.gamesPlayed >= 10 },
+        { id: 'shaple_50_games', category: 'shaple', condition: gameStats.gamesPlayed >= 50 },
+        { id: 'shaple_score_5', category: 'shaple', condition: gameStats.bestScore >= 5 },
+        { id: 'shaple_score_10', category: 'shaple', condition: gameStats.bestScore >= 10 },
+        { id: 'shaple_streak_3', category: 'shaple', condition: gameStats.currentStreak >= 3 },
+        { id: 'shaple_streak_5', category: 'shaple', condition: gameStats.currentStreak >= 5 }
+      );
+    } else if (gameId === 'usstates') {
+      const gameStats = user.games?.usstates || {};
+      badgesToCheck.push(
+        { id: 'usstates_first_win', category: 'usstates', condition: gameStats.gamesPlayed >= 1 },
+        { id: 'usstates_10_games', category: 'usstates', condition: gameStats.gamesPlayed >= 10 },
+        { id: 'usstates_50_games', category: 'usstates', condition: gameStats.gamesPlayed >= 50 },
+        { id: 'usstates_score_5', category: 'usstates', condition: gameStats.bestScore >= 5 },
+        { id: 'usstates_score_10', category: 'usstates', condition: gameStats.bestScore >= 10 },
+        { id: 'usstates_score_20', category: 'usstates', condition: gameStats.bestScore >= 20 },
+        { id: 'usstates_streak_5', category: 'usstates', condition: gameStats.currentStreak >= 5 },
+        { id: 'usstates_streak_20', category: 'usstates', condition: gameStats.currentStreak >= 20 },
+        { id: 'usstates_streak_30', category: 'usstates', condition: gameStats.currentStreak >= 30 },
+        { id: 'usstates_streak_40', category: 'usstates', condition: gameStats.currentStreak >= 40 }
       );
     }
 

@@ -9,7 +9,7 @@ const router = express.Router();
 // @desc    Update user game statistics
 // @access  Private
 router.post('/update-stats', [
-  body('gameId').isIn(['globle', 'population', 'findle', 'flagle', 'worldle', 'capitals', 'hangman'])
+  body('gameId').isIn(['globle', 'population', 'findle', 'flagle', 'worldle', 'capitals', 'hangman', 'shaple', 'usstates'])
     .withMessage('Invalid game ID'),
   body('score').isNumeric().withMessage('Score must be a number'),
   body('gameTime').optional().isNumeric().withMessage('Game time must be a number'),
@@ -86,25 +86,22 @@ router.post('/update-stats', [
     // Determine if this was a win based on game type and score
     let isWin = false;
     if (gameId === 'globle') {
-      // For Globle, any completed game is a win (they found the country)
       isWin = score > 0;
     } else if (gameId === 'population') {
-      // For Population, a win is getting at least one correct answer
       isWin = score > 0;
     } else if (gameId === 'findle') {
-      // For Findle, a win is getting the correct country
       isWin = score > 0;
     } else if (gameId === 'flagle') {
-      // For Flagle, a win is guessing the country correctly
       isWin = score > 0;
     } else if (gameId === 'worldle') {
-      // For Worldle, a win is guessing the country correctly
       isWin = score > 0;
     } else if (gameId === 'capitals') {
-      // For Capitals, a win is getting at least one correct answer
       isWin = score > 0;
     } else if (gameId === 'hangman') {
-      // For Hangman, a win is completing the word
+      isWin = score > 0;
+    } else if (gameId === 'shaple') {
+      isWin = score > 0;
+    } else if (gameId === 'usstates') {
       isWin = score > 0;
     }
 

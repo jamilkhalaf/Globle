@@ -15,6 +15,8 @@ import Badges from './components/badges'
 import Maintenance from './components/Maintenance'
 import Login from './components/Login'
 import Signup from './components/Signup'
+import Shaple from './components/shaple'
+import US from './components/US'
 import './App.css'
 
 const theme = createTheme({
@@ -55,6 +57,8 @@ function App() {
           <Route path="/worldle" element={<Worldle />} />
           <Route path="/capitals" element={<Capitals />} />
           <Route path="/hangman" element={<Hangman />} />
+          <Route path="/shaple" element={<Shaple />} />
+          <Route path="/us" element={<US />} />
         </Routes>
       </Router>
     </ThemeProvider>

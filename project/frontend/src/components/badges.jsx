@@ -37,6 +37,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CropSquareIcon from '@mui/icons-material/CropSquare';
 
 const Badges = () => {
   const theme = useTheme();
@@ -129,7 +130,8 @@ const Badges = () => {
       ...(badges.flagle || []),
       ...(badges.worldle || []),
       ...(badges.capitals || []),
-      ...(badges.hangman || [])
+      ...(badges.hangman || []),
+      ...(badges.usstates || [])
     ];
     return allBadges.find(badge => badge.badgeId === badgeId);
   };
@@ -1034,6 +1036,188 @@ const Badges = () => {
           unlocked: userStats?.games?.hangman?.currentStreak >= 10,
           progress: Math.min(userStats?.games?.hangman?.currentStreak || 0, 10),
           maxProgress: 10
+        }
+      ]
+    },
+    {
+      name: 'Shaple',
+      icon: <CropSquareIcon sx={{ fontSize: 20, color: '#43cea2' }} />,
+      badges: [
+        {
+          id: 'shaple_first_win',
+          name: 'Shaple Starter',
+          description: 'Win your first Shaple game',
+          icon: <CropSquareIcon sx={{ fontSize: 24, color: '#43cea2' }} />,
+          color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)',
+          unlocked: userStats?.games?.shaple?.gamesPlayed >= 1,
+          progress: userStats?.games?.shaple?.gamesPlayed || 0,
+          maxProgress: 1
+        },
+        {
+          id: 'shaple_10_games',
+          name: 'Shaple Regular',
+          description: 'Play 10 Shaple games',
+          icon: <CropSquareIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.shaple?.gamesPlayed >= 10,
+          progress: Math.min(userStats?.games?.shaple?.gamesPlayed || 0, 10),
+          maxProgress: 10
+        },
+        {
+          id: 'shaple_50_games',
+          name: 'Shaple Master',
+          description: 'Play 50 Shaple games',
+          icon: <CropSquareIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.shaple?.gamesPlayed >= 50,
+          progress: Math.min(userStats?.games?.shaple?.gamesPlayed || 0, 50),
+          maxProgress: 50
+        },
+        {
+          id: 'shaple_score_5',
+          name: 'Shaple Novice',
+          description: 'Score 5+ in Shaple',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: userStats?.games?.shaple?.bestScore >= 5,
+          progress: Math.min(userStats?.games?.shaple?.bestScore || 0, 5),
+          maxProgress: 5
+        },
+        {
+          id: 'shaple_score_10',
+          name: 'Shaple Expert',
+          description: 'Score 10+ in Shaple',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.shaple?.bestScore >= 10,
+          progress: Math.min(userStats?.games?.shaple?.bestScore || 0, 10),
+          maxProgress: 10
+        },
+        {
+          id: 'shaple_streak_3',
+          name: 'Shaple Streaker',
+          description: 'Maintain a 3-game Shaple streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.shaple?.currentStreak >= 3,
+          progress: Math.min(userStats?.games?.shaple?.currentStreak || 0, 3),
+          maxProgress: 3
+        },
+        {
+          id: 'shaple_streak_5',
+          name: 'Shaple Fire',
+          description: 'Maintain a 5-game Shaple streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#F44336' }} />,
+          color: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
+          unlocked: userStats?.games?.shaple?.currentStreak >= 5,
+          progress: Math.min(userStats?.games?.shaple?.currentStreak || 0, 5),
+          maxProgress: 5
+        }
+      ]
+    },
+    {
+      name: 'US States',
+      icon: <CropSquareIcon sx={{ fontSize: 20, color: '#43cea2' }} />,
+      badges: [
+        {
+          id: 'usstates_first_win',
+          name: 'US States Starter',
+          description: 'Win your first US States game',
+          icon: <CropSquareIcon sx={{ fontSize: 24, color: '#43cea2' }} />,
+          color: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)',
+          unlocked: userStats?.games?.usstates?.gamesPlayed >= 1,
+          progress: userStats?.games?.usstates?.gamesPlayed || 0,
+          maxProgress: 1
+        },
+        {
+          id: 'usstates_10_games',
+          name: 'US States Regular',
+          description: 'Play 10 US States games',
+          icon: <CropSquareIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.usstates?.gamesPlayed >= 10,
+          progress: Math.min(userStats?.games?.usstates?.gamesPlayed || 0, 10),
+          maxProgress: 10
+        },
+        {
+          id: 'usstates_50_games',
+          name: 'US States Master',
+          description: 'Play 50 US States games',
+          icon: <CropSquareIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.usstates?.gamesPlayed >= 50,
+          progress: Math.min(userStats?.games?.usstates?.gamesPlayed || 0, 50),
+          maxProgress: 50
+        },
+        {
+          id: 'usstates_score_5',
+          name: 'US States Novice',
+          description: 'Score 5+ in US States',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: userStats?.games?.usstates?.bestScore >= 5,
+          progress: Math.min(userStats?.games?.usstates?.bestScore || 0, 5),
+          maxProgress: 5
+        },
+        {
+          id: 'usstates_score_10',
+          name: 'US States Expert',
+          description: 'Score 10+ in US States',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.usstates?.bestScore >= 10,
+          progress: Math.min(userStats?.games?.usstates?.bestScore || 0, 10),
+          maxProgress: 10
+        },
+        {
+          id: 'usstates_score_20',
+          name: 'US States Legend',
+          description: 'Score 20+ in US States',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#F44336' }} />,
+          color: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
+          unlocked: userStats?.games?.usstates?.bestScore >= 20,
+          progress: Math.min(userStats?.games?.usstates?.bestScore || 0, 20),
+          maxProgress: 20
+        },
+        {
+          id: 'usstates_streak_5',
+          name: 'US States Streaker',
+          description: 'Maintain a 5-game US States streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.usstates?.currentStreak >= 5,
+          progress: Math.min(userStats?.games?.usstates?.currentStreak || 0, 5),
+          maxProgress: 5
+        },
+        {
+          id: 'usstates_streak_20',
+          name: 'US States Fire',
+          description: 'Maintain a 20-game US States streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#F44336' }} />,
+          color: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
+          unlocked: userStats?.games?.usstates?.currentStreak >= 20,
+          progress: Math.min(userStats?.games?.usstates?.currentStreak || 0, 20),
+          maxProgress: 20
+        },
+        {
+          id: 'usstates_streak_30',
+          name: 'US States Inferno',
+          description: 'Maintain a 30-game US States streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#9C27B0' }} />,
+          color: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+          unlocked: userStats?.games?.usstates?.currentStreak >= 30,
+          progress: Math.min(userStats?.games?.usstates?.currentStreak || 0, 30),
+          maxProgress: 30
+        },
+        {
+          id: 'usstates_streak_40',
+          name: 'US States God',
+          description: 'Maintain a 40-game US States streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FFD700' }} />,
+          color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          unlocked: userStats?.games?.usstates?.currentStreak >= 40,
+          progress: Math.min(userStats?.games?.usstates?.currentStreak || 0, 40),
+          maxProgress: 40
         }
       ]
     }
