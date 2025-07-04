@@ -34,7 +34,7 @@ const Capitals = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5051/api/games/update-stats', {
+      const response = await fetch('http://136.36.59.111:5051/api/games/update-stats', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -51,29 +51,30 @@ const Capitals = () => {
 
       if (response.ok) {
         // Update badge progress
-        await updateBadgeProgress('capitals', finalScore, 10, bestStreak);
+        await updateBadgeProgress(finalScore, gameTime, bestStreak);
       }
     } catch (error) {
       console.error('Error updating game stats:', error);
     }
   };
 
-  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
+  const updateBadgeProgress = async (finalScore, gameTime, bestStreak) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5051/api/badges/update', {
+      const response = await fetch('http://136.36.59.111:5051/api/badges/update', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          gameId,
-          score,
-          attempts,
-          streak
+          gameId: 'capitals',
+          score: finalScore,
+          gameTime,
+          bestStreak,
+          attempts: 10 // Capitals has 10 questions
         }),
       });
 

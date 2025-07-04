@@ -98,7 +98,7 @@ const Signup = () => {
     setAlert({ show: false, message: '', severity: 'error' });
 
     try {
-      const response = await fetch('http://localhost:5051/api/auth/signup', {
+      const response = await fetch('http://136.36.59.111:5051/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

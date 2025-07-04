@@ -74,7 +74,7 @@ const updateGameStats = async (finalScore, streak, attempts) => {
   try {
     const token = localStorage.getItem('token');
     if (!token) return;
-    await fetch('http://localhost:5051/api/games/update-stats', {
+    await fetch('http://136.36.59.111:5051/api/games/update-stats', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -87,7 +87,7 @@ const updateGameStats = async (finalScore, streak, attempts) => {
         attempts: attempts
       }),
     });
-    await fetch('http://localhost:5051/api/badges/update', {
+    await fetch('http://136.36.59.111:5051/api/badges/update', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
