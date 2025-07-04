@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import countryInfo from './countryInfo';
 import officialCountries from './officialCountries';
-import Header from './header';
+import Header from './Header';
 import NotificationModal from './NotificationModal';
 
 const Capitals = () => {
