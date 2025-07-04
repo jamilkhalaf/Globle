@@ -27,7 +27,7 @@ app.use(limiter);
 // CORS
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+    ? ['https://games.jamilweb.click'] 
     : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5051'],
   credentials: true
 }));
