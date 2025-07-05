@@ -11,6 +11,8 @@ import HelpIcon from '@mui/icons-material/Help';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import MapIcon from '@mui/icons-material/Map';
 import { Link as RouterLink } from 'react-router-dom';
+import { HeaderAd, InContentAd, FooterAd } from './AdPlacements';
+import SmartAdComponent from './SmartAdComponent';
 
 const About = () => {
   const theme = useTheme();
@@ -90,6 +92,10 @@ const About = () => {
     >
       <Header />
       <Toolbar />
+      
+      {/* Header Ad */}
+      <HeaderAd />
+      
       <Fade in timeout={800}>
         <Box sx={{ 
           flex: 1, 
@@ -159,6 +165,9 @@ const About = () => {
               A collection of geography games designed to challenge your knowledge of countries, capitals, populations, flags, and more.
             </Typography>
           </Paper>
+
+          {/* In-Content Ad */}
+          <InContentAd />
 
           {/* Games Grid */}
           <Typography
