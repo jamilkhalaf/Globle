@@ -156,6 +156,9 @@ const Flagle = () => {
       setStreak(newStreak);
       setBestScore(prev => Math.max(prev, newStreak));
       
+      // Reveal all pieces when correct
+      setRevealedPieces(Array.from({length: NUM_PIECES}, (_, i) => i));
+      
       // Update stats when game is won
       updateGameStats(newStreak, 0, newStreak);
     } else {
