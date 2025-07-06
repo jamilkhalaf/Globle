@@ -68,11 +68,12 @@ const hintOrder = [
   'population',
   'capital',
   'famous',
+  'shape',
   'bordering',
   'flag',
 ];
 
-function getHints(country, extra, revealed) {
+function getHints(country, extra, revealed, target) {
   const hints = [];
   if (revealed >= 1) {
     hints.push({ label: 'Population', value: country.population?.toLocaleString() });
@@ -85,8 +86,11 @@ function getHints(country, extra, revealed) {
     const places = extra.famousPlaces?.join(', ');
     hints.push({ label: 'Famous city/place', value: [cities, places].filter(Boolean).join(' / ') });
   }
-  if (revealed >= 4 && extra && extra.imageLink) {
-    hints.push({ label: 'Image', value: extra.imageLink });
+  if (revealed >= 4) {
+    // Show country shape instead of landmark image
+    const countryCode = getFlagCode(target);
+    const shapeSrc = `/all/${countryCode}/1024.png`;
+    hints.push({ label: 'Country Shape', value: shapeSrc, type: 'shape' });
   }
   if (revealed >= 5 && extra) {
     let border = 'None';
@@ -231,7 +235,7 @@ const Worldle = () => {
     setRound(r => r + 1);
   };
 
-  const hints = getHints(country, extra, revealed);
+  const hints = getHints(country, extra, revealed, target);
 
   React.useEffect(() => {
     setScrollHint(hints.length > 3);
@@ -246,7 +250,7 @@ const Worldle = () => {
           open={showIntro}
           onClose={() => setShowIntro(false)}
           title="How to Play Worldle"
-          description={"Guess the country based on hints! Each wrong guess reveals a new hint: population, capital, famous places, borders, hemisphere, and flag. You have 5 tries. Good luck!"}
+          description={"Guess the country based on hints! Each wrong guess reveals a new hint: population, capital, famous places, country shape, borders, hemisphere, and flag. You have 5 tries. Good luck!"}
           color="success"
         />
       </>
@@ -273,13 +277,13 @@ const Worldle = () => {
               </Typography>
             )}
             {hints.map((hint, idx) => (
-              hint.label === 'Image' ? (
+              hint.type === 'shape' ? (
                 <Box key={idx} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2, mb: 1 }}>
                   <img
                     src={hint.value}
-                    alt="country"
-                    style={{ width: 160, height: 100, objectFit: 'cover', borderRadius: 6, border: '2px solid #1976d2', background: '#fff', cursor: 'pointer' }}
-                    onClick={() => setOpenImage({ type: 'image', src: hint.value })}
+                    alt="country shape"
+                    style={{ width: 160, height: 100, objectFit: 'contain', borderRadius: 6, border: '2px solid #1976d2', background: '#fff', cursor: 'pointer' }}
+                    onClick={() => setOpenImage({ type: 'shape', src: hint.value })}
                   />
                 </Box>
               ) : (
@@ -357,7 +361,7 @@ const Worldle = () => {
       {/* Image/Flag Dialog */}
       <Dialog open={!!openImage} onClose={() => setOpenImage(null)} maxWidth="md" PaperProps={{ sx: { borderRadius: 3, bgcolor: '#232a3b' } }}>
         <DialogTitle sx={{ color: 'white', background: 'rgba(30,34,44,0.98)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
-          <span>{openImage?.type === 'flag' ? 'Flag' : 'Country Image'}</span>
+          <span>{openImage?.type === 'flag' ? 'Flag' : openImage?.type === 'shape' ? 'Country Shape' : 'Country Image'}</span>
           <IconButton onClick={() => setOpenImage(null)} sx={{ color: 'white' }} aria-label="close">
             <CloseIcon />
           </IconButton>
