@@ -33,6 +33,7 @@ const OnlineGame = ({
   const [gameProps, setGameProps] = useState({});
   const [isGameReady, setIsGameReady] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
+  const [canRenderGame, setCanRenderGame] = useState(false);
 
   // Debug logging
   useEffect(() => {
@@ -210,6 +211,12 @@ const OnlineGame = ({
                 setIsGameReady(true);
                 setIsSettingUp(false);
                 console.log('Game is now ready to render');
+                
+                // Add final delay before actually rendering the Game component
+                setTimeout(() => {
+                  console.log('Now safe to render Game component');
+                  setCanRenderGame(true);
+                }, 5000); // Additional 5 second delay
               }, 8000); // Increased to 8 seconds
             } else {
               console.error('Target is null/undefined:', target);
@@ -233,6 +240,7 @@ const OnlineGame = ({
       setGameProps({});
       setIsGameReady(false);
       setIsSettingUp(false);
+      setCanRenderGame(false); // Reset canRenderGame when game state changes
     }
   }, [matchData, gameState, onAnswerSubmit, isSettingUp]);
 
@@ -337,9 +345,9 @@ const OnlineGame = ({
 
       {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {gameState === 'playing' && isGameReady && gameComponent && gameProps ? (
+        {gameState === 'playing' && isGameReady && gameComponent && gameProps && canRenderGame ? (
           (() => {
-            console.log('OnlineGame: About to render SafeGameComponent with props:', gameProps);
+            console.log('OnlineGame: About to render Game component with props:', gameProps);
             const target = gameProps.targetCountry || gameProps.targetWord || gameProps.targetState;
             console.log('OnlineGame: Target extracted:', target);
             
@@ -356,11 +364,14 @@ const OnlineGame = ({
               );
             }
             
+            // Now safe to render the Game component
+            console.log('OnlineGame: Rendering Game component with target:', target);
             return (
-              <SafeGameComponent 
-                gameType={matchData.gameType} 
-                targetCountry={target} 
-                onAnswerSubmit={onAnswerSubmit} 
+              <Game 
+                targetCountry={target}
+                isOnline={true}
+                disabled={false}
+                onAnswerSubmit={onAnswerSubmit}
               />
             );
           })()
@@ -376,7 +387,8 @@ const OnlineGame = ({
                 Ready: {isGameReady ? 'Yes' : 'No'}, 
                 Component: {gameComponent ? 'Yes' : 'No'}, 
                 Props: {gameProps && Object.keys(gameProps).length > 0 ? 'Yes' : 'No'}, 
-                Target: {gameProps?.targetCountry || 'Not set'}
+                Target: {gameProps?.targetCountry || 'Not set'},
+                Can Render: {canRenderGame ? 'Yes' : 'No'}
               </Typography>
             )}
           </Box>
