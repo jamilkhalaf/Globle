@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Card, CardContent, CircularProgress } from '@mui/material';
+import { Box, Typography, Button, Card, CardContent, CircularProgress, TextField } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TimerIcon from '@mui/icons-material/Timer';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -31,103 +31,71 @@ const OnlineGame = ({
   useEffect(() => {
     if (matchData?.gameType) {
       // Set up game-specific props and component
+      const getGameConfig = (gameType) => {
+        const baseProps = {
+          // Don't pass unsupported props to game components
+          // We'll handle online functionality in the wrapper
+        };
+
+        switch (gameType) {
+          case 'Globle':
+            return {
+              component: Game,
+              props: baseProps
+            };
+          case 'Population':
+            return {
+              component: Population,
+              props: baseProps
+            };
+          case 'Findle':
+            return {
+              component: Wordle,
+              props: baseProps
+            };
+          case 'Flagle':
+            return {
+              component: Flagle,
+              props: baseProps
+            };
+          case 'Worldle':
+            return {
+              component: Worldle,
+              props: baseProps
+            };
+          case 'Capitals':
+            return {
+              component: Capitals,
+              props: baseProps
+            };
+          case 'Hangman':
+            return {
+              component: Hangman,
+              props: baseProps
+            };
+          case 'Shaple':
+            return {
+              component: Shaple,
+              props: baseProps
+            };
+          case 'US':
+            return {
+              component: US,
+              props: baseProps
+            };
+          default:
+            return {
+              component: Game,
+              props: baseProps
+            };
+        }
+      };
+
       const gameConfig = getGameConfig(matchData.gameType);
       setGameComponent(gameConfig.component);
       setGameProps(gameConfig.props);
     }
-  }, [matchData]);
-
-  const getGameConfig = (gameType) => {
-    const baseProps = {
-      isOnline: true,
-      sharedTarget: matchData?.sharedTarget,
-      onAnswerSubmit: (answer) => {
-        onAnswerSubmit(answer);
-        setGameAnswer('');
-      },
-      disabled: gameState !== 'playing'
-    };
-
-    switch (gameType) {
-      case 'Globle':
-        return {
-          component: Game,
-          props: {
-            ...baseProps,
-            targetCountry: matchData?.sharedTarget?.target
-          }
-        };
-      case 'Population':
-        return {
-          component: Population,
-          props: {
-            ...baseProps,
-            targetCountry: matchData?.sharedTarget?.target
-          }
-        };
-      case 'Findle':
-        return {
-          component: Wordle,
-          props: {
-            ...baseProps,
-            targetWord: matchData?.sharedTarget?.target
-          }
-        };
-      case 'Flagle':
-        return {
-          component: Flagle,
-          props: {
-            ...baseProps,
-            targetCountry: matchData?.sharedTarget?.target
-          }
-        };
-      case 'Worldle':
-        return {
-          component: Worldle,
-          props: {
-            ...baseProps,
-            targetCountry: matchData?.sharedTarget?.target
-          }
-        };
-      case 'Capitals':
-        return {
-          component: Capitals,
-          props: {
-            ...baseProps,
-            targetCountry: matchData?.sharedTarget?.target
-          }
-        };
-      case 'Hangman':
-        return {
-          component: Hangman,
-          props: {
-            ...baseProps,
-            targetWord: matchData?.sharedTarget?.target
-          }
-        };
-      case 'Shaple':
-        return {
-          component: Shaple,
-          props: {
-            ...baseProps,
-            targetCountry: matchData?.sharedTarget?.target
-          }
-        };
-      case 'US':
-        return {
-          component: US,
-          props: {
-            ...baseProps,
-            targetState: matchData?.sharedTarget?.target
-          }
-        };
-      default:
-        return {
-          component: Game,
-          props: baseProps
-        };
-    }
-  };
+  }, [matchData, gameState, onAnswerSubmit]);
 
   const renderCountdown = () => (
     <Box sx={{ textAlign: 'center', p: 4 }}>
@@ -170,8 +138,74 @@ const OnlineGame = ({
       </Box>
 
       {/* Game Component */}
-      <Box sx={{ flex: 1, overflow: 'hidden' }}>
+      <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {gameComponent && React.createElement(gameComponent, gameProps)}
+        
+        {/* Online Answer Submission Overlay */}
+        {gameState === 'playing' && (
+          <Box sx={{
+            position: 'absolute',
+            bottom: 20,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bgcolor: 'rgba(30, 30, 30, 0.9)',
+            p: 2,
+            borderRadius: 2,
+            border: '1px solid rgba(67, 206, 162, 0.3)',
+            display: 'flex',
+            gap: 2,
+            alignItems: 'center',
+            minWidth: 300
+          }}>
+            <Typography variant="body2" sx={{ color: 'white', minWidth: 80 }}>
+              Your Answer:
+            </Typography>
+            <TextField
+              size="small"
+              value={gameAnswer}
+              onChange={(e) => setGameAnswer(e.target.value)}
+              placeholder="Enter your answer..."
+              sx={{
+                flex: 1,
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': {
+                    borderColor: 'rgba(255,255,255,0.3)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255,255,255,0.5)',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#43cea2',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: 'white',
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                },
+              }}
+            />
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (gameAnswer.trim()) {
+                  onAnswerSubmit(gameAnswer.trim());
+                  setGameAnswer('');
+                }
+              }}
+              disabled={!gameAnswer.trim()}
+              sx={{ 
+                bgcolor: '#43cea2',
+                '&:hover': { bgcolor: '#3bb08f' },
+                '&:disabled': { bgcolor: 'rgba(67, 206, 162, 0.3)' }
+              }}
+            >
+              Submit
+            </Button>
+          </Box>
+        )}
       </Box>
     </Box>
   );
