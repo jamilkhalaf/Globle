@@ -19,13 +19,7 @@ const server = createServer(app);
 // Create Socket.IO server
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://jamilweb.click",
-      "https://games.jamilweb.click",
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "http://localhost:8080"
-    ],
+    origin: true, // Allow all origins temporarily for debugging
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -52,24 +46,7 @@ app.use(limiter);
 
 // CORS
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'https://jamilweb.click',
-      'https://games.jamilweb.click',
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:8080'
-    ];
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow all origins temporarily for debugging
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
