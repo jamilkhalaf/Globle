@@ -121,6 +121,13 @@ const Badges = () => {
 
   const yearsPlaying = calculateYearsPlaying();
 
+  const formatTime = (seconds) => {
+    if (!seconds || seconds === 0) return 'No time set';
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   const getBadgeData = (badgeId) => {
     const allBadges = [
       ...(badges.overall || []),
@@ -131,7 +138,8 @@ const Badges = () => {
       ...(badges.worldle || []),
       ...(badges.capitals || []),
       ...(badges.hangman || []),
-      ...(badges.usstates || [])
+      ...(badges.usstates || []),
+      ...(badges.namle || [])
     ];
     return allBadges.find(badge => badge.badgeId === badgeId);
   };
@@ -1220,6 +1228,145 @@ const Badges = () => {
           maxProgress: 40
         }
       ]
+    },
+    {
+      name: 'Namle',
+      icon: <PublicIcon sx={{ fontSize: 20, color: '#9c27b0' }} />,
+      badges: [
+        {
+          id: 'namle_first_win',
+          name: 'Namle Explorer',
+          description: 'Complete your first Namle game',
+          icon: <PublicIcon sx={{ fontSize: 24, color: '#9c27b0' }} />,
+          color: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+          unlocked: userStats?.games?.namle?.gamesPlayed >= 1,
+          progress: userStats?.games?.namle?.gamesPlayed || 0,
+          maxProgress: 1
+        },
+        {
+          id: 'namle_10_games',
+          name: 'Namle Regular',
+          description: 'Play 10 Namle games',
+          icon: <PublicIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: userStats?.games?.namle?.gamesPlayed >= 10,
+          progress: Math.min(userStats?.games?.namle?.gamesPlayed || 0, 10),
+          maxProgress: 10
+        },
+        {
+          id: 'namle_50_games',
+          name: 'Namle Master',
+          description: 'Play 50 Namle games',
+          icon: <PublicIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.namle?.gamesPlayed >= 50,
+          progress: Math.min(userStats?.games?.namle?.gamesPlayed || 0, 50),
+          maxProgress: 50
+        },
+        {
+          id: 'namle_complete_15min',
+          name: 'Namle Speedster',
+          description: 'Name all countries in under 15 minutes',
+          icon: <TimerIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: userStats?.games?.namle?.bestTime > 0 && userStats?.games?.namle?.bestTime <= 900,
+          progress: userStats?.games?.namle?.bestTime || 0,
+          maxProgress: 900,
+          reverseProgress: true
+        },
+        {
+          id: 'namle_complete_10min',
+          name: 'Namle Lightning',
+          description: 'Name all countries in under 10 minutes',
+          icon: <TimerIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.namle?.bestTime > 0 && userStats?.games?.namle?.bestTime <= 600,
+          progress: userStats?.games?.namle?.bestTime || 0,
+          maxProgress: 600,
+          reverseProgress: true
+        },
+        {
+          id: 'namle_complete_5min',
+          name: 'Namle Flash',
+          description: 'Name all countries in under 5 minutes',
+          icon: <TimerIcon sx={{ fontSize: 24, color: '#FFD700' }} />,
+          color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          unlocked: userStats?.games?.namle?.bestTime > 0 && userStats?.games?.namle?.bestTime <= 300,
+          progress: userStats?.games?.namle?.bestTime || 0,
+          maxProgress: 300,
+          reverseProgress: true
+        },
+        {
+          id: 'namle_score_50',
+          name: 'Namle Beginner',
+          description: 'Name 50% of countries',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: userStats?.games?.namle?.bestScore >= 50,
+          progress: Math.min(userStats?.games?.namle?.bestScore || 0, 50),
+          maxProgress: 50
+        },
+        {
+          id: 'namle_score_75',
+          name: 'Namle Intermediate',
+          description: 'Name 75% of countries',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: userStats?.games?.namle?.bestScore >= 75,
+          progress: Math.min(userStats?.games?.namle?.bestScore || 0, 75),
+          maxProgress: 75
+        },
+        {
+          id: 'namle_score_90',
+          name: 'Namle Expert',
+          description: 'Name 90% of countries',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.namle?.bestScore >= 90,
+          progress: Math.min(userStats?.games?.namle?.bestScore || 0, 90),
+          maxProgress: 90
+        },
+        {
+          id: 'namle_score_100',
+          name: 'Namle Perfect',
+          description: 'Name all 195 countries',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#FFD700' }} />,
+          color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          unlocked: userStats?.games?.namle?.bestScore >= 100,
+          progress: Math.min(userStats?.games?.namle?.bestScore || 0, 100),
+          maxProgress: 100
+        },
+        {
+          id: 'namle_streak_3',
+          name: 'Namle Streaker',
+          description: 'Maintain a 3-game Namle streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FF5722' }} />,
+          color: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)',
+          unlocked: userStats?.games?.namle?.currentStreak >= 3,
+          progress: Math.min(userStats?.games?.namle?.currentStreak || 0, 3),
+          maxProgress: 3
+        },
+        {
+          id: 'namle_streak_5',
+          name: 'Namle Fire',
+          description: 'Maintain a 5-game Namle streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.namle?.currentStreak >= 5,
+          progress: Math.min(userStats?.games?.namle?.currentStreak || 0, 5),
+          maxProgress: 5
+        },
+        {
+          id: 'namle_streak_10',
+          name: 'Namle Inferno',
+          description: 'Maintain a 10-game Namle streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#F44336' }} />,
+          color: 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
+          unlocked: userStats?.games?.namle?.currentStreak >= 10,
+          progress: Math.min(userStats?.games?.namle?.currentStreak || 0, 10),
+          maxProgress: 10
+        }
+      ]
     }
   ];
 
@@ -1593,12 +1740,15 @@ const Badges = () => {
                     {!badge.unlocked && (
                       <Box sx={{ mb: 1.5 }}>
                         <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                          Progress: {badge.progress}/{badge.maxProgress}
+                          {badge.id.includes('complete_') ? 
+                            `Best time: ${formatTime(badge.progress)}` :
+                            `Progress: ${badge.progress}/${badge.maxProgress}`
+                          }
                         </Typography>
                         <LinearProgress
                           variant="determinate"
                           value={badge.reverseProgress 
-                            ? Math.max(0, ((badge.maxProgress - badge.progress) / badge.maxProgress) * 100)
+                            ? (badge.progress === 0 ? 0 : Math.max(0, ((badge.maxProgress - badge.progress) / badge.maxProgress) * 100))
                             : (badge.progress / badge.maxProgress) * 100
                           }
                           sx={{
@@ -1636,4 +1786,4 @@ const Badges = () => {
   );
 };
 
-export default Badges; 
+export default Badges;

@@ -32,6 +32,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import HelpIcon from '@mui/icons-material/Help';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import MapIcon from '@mui/icons-material/Map';
+import ComingSoon from './ComingSoon';
 
 const Header = forwardRef((props, ref) => {
   const location = useLocation();
@@ -42,6 +43,8 @@ const Header = forwardRef((props, ref) => {
   const [gamesAnchorEl, setGamesAnchorEl] = useState(null);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
   const [user, setUser] = useState(null);
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [comingSoonFeature, setComingSoonFeature] = useState('New Feature');
 
   useEffect(() => {
     // Check if user is logged in
@@ -92,6 +95,11 @@ const Header = forwardRef((props, ref) => {
     navigate('/');
   };
 
+  const handleComingSoon = (feature = 'New Feature') => {
+    setComingSoonFeature(feature);
+    setComingSoonOpen(true);
+  };
+
   const games = [
     { path: '/game', label: 'Globle', icon: <PublicIcon sx={{ fontSize: 20, color: '#1976d2' }} /> },
     { path: '/population', label: 'Population', icon: <GroupsIcon sx={{ fontSize: 20, color: '#4caf50' }} /> },
@@ -109,6 +117,11 @@ const Header = forwardRef((props, ref) => {
       label: 'US',
       path: '/us',
       icon: <MapIcon sx={{ fontSize: 22, color: '#1976d2' }} />
+    },
+    {
+      label: 'Namle',
+      path: '/namle',
+      icon: <PublicIcon sx={{ fontSize: 20, color: '#9c27b0' }} />
     }
   ];
 
@@ -117,6 +130,11 @@ const Header = forwardRef((props, ref) => {
     { path: '/about', label: 'About' },
     { path: '/badges', label: 'Badges' },
     { path: '/contact', label: 'Contact' },
+    { 
+      label: 'Coming Soon', 
+      action: () => handleComingSoon('Premium Features'),
+      isComingSoon: true 
+    },
   ];
 
   const allMenuItems = [
@@ -214,25 +232,30 @@ const Header = forwardRef((props, ref) => {
       <List>
         {mainMenuItems.map((item) => (
           <ListItem 
-            key={item.path} 
-            component={RouterLink} 
-            to={item.path}
-            onClick={handleDrawerToggle}
+            key={item.label} 
+            component={item.isComingSoon ? 'div' : RouterLink} 
+            to={item.isComingSoon ? undefined : item.path}
+            onClick={item.isComingSoon ? () => {
+              item.action();
+              handleDrawerToggle();
+            } : handleDrawerToggle}
             sx={{
-              color: 'white',
+              color: item.isComingSoon ? '#ff9800' : 'white',
               borderBottom: '1px solid rgba(255,255,255,0.05)',
-              backgroundColor: location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
+              backgroundColor: !item.isComingSoon && location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
               '&:hover': {
                 backgroundColor: 'rgba(255,255,255,0.05)',
-              }
+              },
+              cursor: 'pointer',
             }}
           >
             <ListItemText 
               primary={item.label} 
               sx={{
                 '& .MuiListItemText-primary': {
-                  fontWeight: location.pathname === item.path ? 'bold' : 'normal',
-                  fontSize: '1.1rem'
+                  fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
+                  fontSize: '1.1rem',
+                  color: item.isComingSoon ? '#ff9800' : 'inherit',
                 }
               }}
             />
@@ -362,16 +385,21 @@ const Header = forwardRef((props, ref) => {
             <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, alignItems: 'center' }}>
               {mainMenuItems.map((item) => (
                 <Button 
-                  key={item.path}
+                  key={item.label}
                   color="inherit" 
-                  component={RouterLink} 
-                  to={item.path}
+                  component={item.isComingSoon ? 'button' : RouterLink} 
+                  to={item.isComingSoon ? undefined : item.path}
+                  onClick={item.isComingSoon ? item.action : undefined}
                   sx={{ 
-                    color: 'white',
-                    fontWeight: location.pathname === item.path ? 'bold' : 'normal',
-                    borderBottom: location.pathname === item.path ? '2px solid white' : 'none',
+                    color: item.isComingSoon ? '#ff9800' : 'white',
+                    fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
+                    borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
                     fontSize: { xs: '0.8rem', md: '1rem' },
-                    px: { xs: 1, md: 2 }
+                    px: { xs: 1, md: 2 },
+                    '&:hover': {
+                      color: item.isComingSoon ? '#f57c00' : 'white',
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                    }
                   }}
                 >
                   {item.label}
@@ -545,6 +573,13 @@ const Header = forwardRef((props, ref) => {
       >
         {drawer}
       </Drawer>
+
+      {/* Coming Soon Dialog */}
+      <ComingSoon 
+        open={comingSoonOpen}
+        onClose={() => setComingSoonOpen(false)}
+        feature={comingSoonFeature}
+      />
     </>
   );
 });

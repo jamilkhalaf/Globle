@@ -23,7 +23,8 @@ router.get('/', auth, async (req, res) => {
       worldle: badges.filter(badge => badge.category === 'worldle'),
       capitals: badges.filter(badge => badge.category === 'capitals'),
       hangman: badges.filter(badge => badge.category === 'hangman'),
-      usstates: badges.filter(badge => badge.category === 'usstates')
+      usstates: badges.filter(badge => badge.category === 'usstates'),
+      namle: badges.filter(badge => badge.category === 'namle')
     };
 
     res.json(badgesByCategory);
@@ -58,7 +59,8 @@ router.get('/progress', auth, async (req, res) => {
         worldle: badges.filter(badge => badge.category === 'worldle').length,
         capitals: badges.filter(badge => badge.category === 'capitals').length,
         hangman: badges.filter(badge => badge.category === 'hangman').length,
-        usstates: badges.filter(badge => badge.category === 'usstates').length
+        usstates: badges.filter(badge => badge.category === 'usstates').length,
+        namle: badges.filter(badge => badge.category === 'namle').length
       }
     });
   } catch (error) {
@@ -240,6 +242,29 @@ router.post('/update', auth, async (req, res) => {
         { id: 'usstates_streak_30', category: 'usstates', condition: gameStats.currentStreak >= 30 },
         { id: 'usstates_streak_40', category: 'usstates', condition: gameStats.currentStreak >= 40 }
       );
+    } else if (gameId === 'namle') {
+      const gameStats = user.games?.namle || {};
+      const gameTime = req.body.gameTime || 0; // Time in seconds
+      const score = req.body.score || 0; // Percentage of countries named
+      
+      // Only award time badges if all countries were named (100% score)
+      const allCountriesNamed = score === 100;
+      
+      badgesToCheck.push(
+        { id: 'namle_first_win', category: 'namle', condition: gameStats.gamesPlayed >= 1 },
+        { id: 'namle_10_games', category: 'namle', condition: gameStats.gamesPlayed >= 10 },
+        { id: 'namle_50_games', category: 'namle', condition: gameStats.gamesPlayed >= 50 },
+        { id: 'namle_complete_15min', category: 'namle', condition: allCountriesNamed && gameTime <= 900 }, // 15 minutes = 900 seconds
+        { id: 'namle_complete_10min', category: 'namle', condition: allCountriesNamed && gameTime <= 600 }, // 10 minutes = 600 seconds
+        { id: 'namle_complete_5min', category: 'namle', condition: allCountriesNamed && gameTime <= 300 }, // 5 minutes = 300 seconds
+        { id: 'namle_score_50', category: 'namle', condition: gameStats.bestScore >= 50 },
+        { id: 'namle_score_75', category: 'namle', condition: gameStats.bestScore >= 75 },
+        { id: 'namle_score_90', category: 'namle', condition: gameStats.bestScore >= 90 },
+        { id: 'namle_score_100', category: 'namle', condition: gameStats.bestScore >= 100 },
+        { id: 'namle_streak_3', category: 'namle', condition: gameStats.currentStreak >= 3 },
+        { id: 'namle_streak_5', category: 'namle', condition: gameStats.currentStreak >= 5 },
+        { id: 'namle_streak_10', category: 'namle', condition: gameStats.currentStreak >= 10 }
+      );
     }
 
     // Check and create/update badges
@@ -329,6 +354,31 @@ router.post('/cleanup', auth, async (req, res) => {
             shouldRemove = gameStats.bestScore > 2 || gameStats.bestScore === 0;
             break;
           case 'globle_1_attempt':
+            shouldRemove = gameStats.bestScore !== 1;
+            break;
+        }
+      }
+      
+      if (shouldRemove) {
+        badgesToRemove.push(badge.badgeId);
+        await Badge.findByIdAndDelete(badge._id);
+        console.log(`Removing badge: ${badge.badgeId}`);
+      }
+    }
+
+    res.json({ 
+      message: 'Badge cleanup completed',
+      removedBadges: badgesToRemove,
+      totalRemoved: badgesToRemove.length
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router; 
             shouldRemove = gameStats.bestScore !== 1;
             break;
         }

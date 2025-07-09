@@ -17,6 +17,7 @@ import Login from './components/Login'
 import Signup from './components/Signup'
 import Shaple from './components/shaple'
 import US from './components/US'
+import Namle from './components/Namle'
 import './App.css'
 
 const theme = createTheme({
@@ -59,6 +60,7 @@ function App() {
           <Route path="/hangman" element={<Hangman />} />
           <Route path="/shaple" element={<Shaple />} />
           <Route path="/us" element={<US />} />
+          <Route path="/namle" element={<Namle />} />
         </Routes>
       </Router>
     </ThemeProvider>
