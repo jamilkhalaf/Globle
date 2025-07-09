@@ -199,12 +199,12 @@ const OnlineGame = ({
               setGameComponent(gameConfig.component);
               setGameProps(gameConfig.props);
               
-              // Add additional delay before marking game as ready
+              // Add much longer delay before marking game as ready
               setTimeout(() => {
                 console.log('Final props check before marking ready:', gameConfig.props);
                 setIsGameReady(true);
                 console.log('Game is now ready to render');
-              }, 1500); // Increased to 1.5 seconds
+              }, 8000); // Increased to 8 seconds
             } else {
               console.error('Target is null/undefined:', target);
             }
@@ -216,8 +216,8 @@ const OnlineGame = ({
         }
       };
 
-      // Add initial delay to ensure everything is properly set
-      setTimeout(setupGame, 1000); // Increased to 1 second
+      // Add much longer initial delay to ensure everything is properly set
+      setTimeout(setupGame, 5000); // Increased to 5 seconds
     } else if (gameState !== 'playing') {
       // Clear game component when not playing
       setGameComponent(null);
@@ -228,9 +228,23 @@ const OnlineGame = ({
 
   // Safe Game Component that only renders when everything is ready
   const SafeGameComponent = ({ gameType, targetCountry, onAnswerSubmit }) => {
-    console.log('SafeGameComponent: Rendering with targetCountry:', targetCountry);
+    const [isReadyToRender, setIsReadyToRender] = useState(false);
     
-    // More explicit null check
+    useEffect(() => {
+      console.log('SafeGameComponent: Received targetCountry:', targetCountry);
+      
+      if (targetCountry && targetCountry !== null && targetCountry !== undefined) {
+        console.log('SafeGameComponent: TargetCountry is valid, waiting before rendering');
+        // Add a delay before rendering the Game component
+        setTimeout(() => {
+          console.log('SafeGameComponent: Now ready to render Game component');
+          setIsReadyToRender(true);
+        }, 3000); // 3 second delay
+      } else {
+        console.log('SafeGameComponent: No valid targetCountry, showing loading');
+      }
+    }, [targetCountry]);
+    
     if (!targetCountry || targetCountry === null || targetCountry === undefined) {
       console.log('SafeGameComponent: No valid targetCountry, showing loading');
       return (
@@ -246,9 +260,21 @@ const OnlineGame = ({
       );
     }
     
+    if (!isReadyToRender) {
+      console.log('SafeGameComponent: Not ready to render yet, showing loading');
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <CircularProgress sx={{ color: '#43cea2' }} />
+          <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
+            Initializing game...
+          </Typography>
+        </Box>
+      );
+    }
+    
     console.log('SafeGameComponent: TargetCountry is valid, rendering Game component');
     
-    // Only render the actual game component when we have a valid target
+    // Only render the actual game component when we have a valid target and are ready
     return (
       <Game 
         targetCountry={targetCountry}
