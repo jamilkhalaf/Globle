@@ -216,8 +216,8 @@ const OnlineGame = ({
                 setTimeout(() => {
                   console.log('Now safe to render Game component');
                   setCanRenderGame(true);
-                }, 5000); // Additional 5 second delay
-              }, 8000); // Increased to 8 seconds
+                }, 12000); // Extended to 12 seconds
+              }, 8000); // Keep at 8 seconds
             } else {
               console.error('Target is null/undefined:', target);
               setIsSettingUp(false);
@@ -233,7 +233,7 @@ const OnlineGame = ({
       };
 
       // Add much longer initial delay to ensure everything is properly set
-      setTimeout(setupGame, 5000); // Increased to 5 seconds
+      setTimeout(setupGame, 10000); // Extended to 10 seconds
     } else if (gameState !== 'playing') {
       // Clear game component when not playing
       setGameComponent(null);
