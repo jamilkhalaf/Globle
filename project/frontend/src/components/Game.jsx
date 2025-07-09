@@ -52,6 +52,11 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   // Add state for showing the intro modal
   const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
 
+  // Debug logging for props
+  useEffect(() => {
+    console.log('Game component props:', { targetCountry, isOnline, disabled });
+  }, [targetCountry, isOnline, disabled]);
+
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
     const continents = {
@@ -186,6 +191,14 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
 
   // Load countries data
   useEffect(() => {
+    // Don't initialize if targetCountry is null and we're in online mode
+    if (isOnline && !targetCountry) {
+      console.log('Game component: Waiting for targetCountry to be set');
+      return;
+    }
+
+    console.log('Game component: Starting initialization with targetCountry:', targetCountry);
+    
     fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
       .then(response => response.json())
       .then(data => {
@@ -204,6 +217,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
         let selectedCountry;
         if (targetCountry && isOnline) {
           // Use the provided target country for online games
+          console.log('Game component: Using provided target country:', targetCountry);
           selectedCountry = data.features.find(country => 
             country.properties.name === targetCountry
           );
@@ -213,6 +227,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
           }
         } else {
           // Use random country for offline games
+          console.log('Game component: Using random country for offline game');
           selectedCountry = selectRandomCountry(data.features);
         }
         
@@ -673,6 +688,42 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       console.error('Error updating badge progress:', error);
     }
   };
+
+  // Show loading state when waiting for targetCountry in online mode
+  if (isOnline && !targetCountry) {
+    return (
+      <Box sx={{ 
+        position: 'relative', 
+        width: '100vw', 
+        height: '100vh', 
+        overflow: 'hidden',
+        margin: 0,
+        padding: 0,
+        backgroundColor: '#2b2b2b',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column'
+      }}>
+        <Header />
+        <Toolbar />
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          gap: 2,
+          color: 'white'
+        }}>
+          <Typography variant="h6" sx={{ color: '#43cea2' }}>
+            Loading Game...
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#ccc' }}>
+            Preparing your multiplayer match
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   if (showIntro) {
     return (
