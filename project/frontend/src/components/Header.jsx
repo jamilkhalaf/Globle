@@ -32,7 +32,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import HelpIcon from '@mui/icons-material/Help';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import MapIcon from '@mui/icons-material/Map';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import ComingSoon from './ComingSoon';
+import ProfilePictureUpload from './ProfilePictureUpload';
 
 const Header = forwardRef((props, ref) => {
   const location = useLocation();
@@ -45,6 +47,7 @@ const Header = forwardRef((props, ref) => {
   const [user, setUser] = useState(null);
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('New Feature');
+  const [profileUploadOpen, setProfileUploadOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -93,6 +96,20 @@ const Header = forwardRef((props, ref) => {
     setUser(null);
     setUserMenuAnchorEl(null);
     navigate('/');
+  };
+
+  const handleProfilePictureUpdate = (newProfilePicture) => {
+    setUser(prevUser => ({
+      ...prevUser,
+      profilePicture: newProfilePicture
+    }));
+    
+    // Update localStorage
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const updatedUser = { ...JSON.parse(userData), profilePicture: newProfilePicture };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
   };
 
   const handleComingSoon = (feature = 'New Feature') => {
@@ -169,7 +186,15 @@ const Header = forwardRef((props, ref) => {
       {user ? (
         <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: '#43cea2', width: 40, height: 40 }}>
+            <Avatar 
+              src={user.profilePicture}
+              sx={{ 
+                bgcolor: '#43cea2', 
+                width: 40, 
+                height: 40,
+                border: '2px solid rgba(255,255,255,0.2)'
+              }}
+            >
               <PersonIcon />
             </Avatar>
             <Box>
@@ -319,6 +344,31 @@ const Header = forwardRef((props, ref) => {
             <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 1 }} />
             <ListItem 
               onClick={() => {
+                setProfileUploadOpen(true);
+                handleDrawerToggle();
+              }}
+              sx={{
+                color: 'white',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                }
+              }}
+            >
+              <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+                <PhotoCameraIcon />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Change Profile Picture" 
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    fontSize: '1.1rem'
+                  }
+                }}
+              />
+            </ListItem>
+            <ListItem 
+              onClick={() => {
                 handleLogout();
                 handleDrawerToggle();
               }}
@@ -427,7 +477,15 @@ const Header = forwardRef((props, ref) => {
                   onClick={handleUserMenuOpen}
                   sx={{ color: 'white', ml: 1 }}
                 >
-                  <Avatar sx={{ bgcolor: '#43cea2', width: 32, height: 32 }}>
+                  <Avatar 
+                    src={user.profilePicture}
+                    sx={{ 
+                      bgcolor: '#43cea2', 
+                      width: 32, 
+                      height: 32,
+                      border: '2px solid rgba(255,255,255,0.2)'
+                    }}
+                  >
                     <PersonIcon />
                   </Avatar>
                 </IconButton>
@@ -526,19 +584,51 @@ const Header = forwardRef((props, ref) => {
             bgcolor: '#121213',
             color: 'white',
             mt: 1,
-            minWidth: 200,
+            minWidth: 250,
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
           }
         }}
       >
         <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.9rem' }}>
-            {user?.username}
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
-            {user?.email}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <Avatar 
+              src={user?.profilePicture}
+              sx={{ 
+                bgcolor: '#43cea2', 
+                width: 48, 
+                height: 48,
+                border: '2px solid rgba(255,255,255,0.2)'
+              }}
+            >
+              <PersonIcon />
+            </Avatar>
+            <Box>
+              <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                {user?.username}
+              </Typography>
+              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+                {user?.email}
+              </Typography>
+            </Box>
+          </Box>
         </Box>
+        <MenuItem 
+          onClick={() => {
+            setProfileUploadOpen(true);
+            handleUserMenuClose();
+          }}
+          sx={{
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255,255,255,0.05)',
+            }
+          }}
+        >
+          <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+            <PhotoCameraIcon />
+          </ListItemIcon>
+          <Typography>Change Profile Picture</Typography>
+        </MenuItem>
         <MenuItem 
           onClick={handleLogout}
           sx={{
@@ -579,6 +669,14 @@ const Header = forwardRef((props, ref) => {
         open={comingSoonOpen}
         onClose={() => setComingSoonOpen(false)}
         feature={comingSoonFeature}
+      />
+
+      {/* Profile Picture Upload Dialog */}
+      <ProfilePictureUpload
+        open={profileUploadOpen}
+        onClose={() => setProfileUploadOpen(false)}
+        onUpdate={handleProfilePictureUpdate}
+        currentProfilePicture={user?.profilePicture}
       />
     </>
   );
