@@ -32,6 +32,7 @@ const OnlineGame = ({
   const [gameComponent, setGameComponent] = useState(null);
   const [gameProps, setGameProps] = useState({});
   const [isGameReady, setIsGameReady] = useState(false);
+  const [isSettingUp, setIsSettingUp] = useState(false);
 
   // Debug logging
   useEffect(() => {
@@ -74,9 +75,12 @@ const OnlineGame = ({
   };
 
   useEffect(() => {
-    if (matchData?.gameType && gameState === 'playing') {
+    if (matchData?.gameType && gameState === 'playing' && !isSettingUp) {
       // Reset ready state when starting new game
       setIsGameReady(false);
+      setIsSettingUp(true);
+      
+      console.log('Starting game setup for:', matchData.gameType);
       
       // Add a delay to ensure everything is properly set up
       const setupGame = () => {
@@ -90,6 +94,7 @@ const OnlineGame = ({
           // Ensure we have a valid target
           if (!target) {
             console.error('No valid target found for game:', gameType);
+            setIsSettingUp(false);
             return null;
           }
           
@@ -203,16 +208,20 @@ const OnlineGame = ({
               setTimeout(() => {
                 console.log('Final props check before marking ready:', gameConfig.props);
                 setIsGameReady(true);
+                setIsSettingUp(false);
                 console.log('Game is now ready to render');
               }, 8000); // Increased to 8 seconds
             } else {
               console.error('Target is null/undefined:', target);
+              setIsSettingUp(false);
             }
           } else {
             console.error('Game config props are invalid:', gameConfig.props);
+            setIsSettingUp(false);
           }
         } else {
           console.error('Failed to create game config for:', matchData.gameType);
+          setIsSettingUp(false);
         }
       };
 
@@ -223,8 +232,9 @@ const OnlineGame = ({
       setGameComponent(null);
       setGameProps({});
       setIsGameReady(false);
+      setIsSettingUp(false);
     }
-  }, [matchData, gameState, onAnswerSubmit]);
+  }, [matchData, gameState, onAnswerSubmit, isSettingUp]);
 
   // Safe Game Component that only renders when everything is ready
   const SafeGameComponent = ({ gameType, targetCountry, onAnswerSubmit }) => {
