@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, Card, CardContent, CircularProgress, TextField } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TimerIcon from '@mui/icons-material/Timer';
@@ -34,6 +34,10 @@ const OnlineGame = ({
   const [isGameReady, setIsGameReady] = useState(false);
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [canRenderGame, setCanRenderGame] = useState(false);
+  
+  // Use refs to store the actual component and props without triggering renders
+  const gameComponentRef = useRef(null);
+  const gamePropsRef = useRef(null);
 
   // Debug logging
   useEffect(() => {
@@ -213,6 +217,12 @@ const OnlineGame = ({
                 // Add final delay before actually setting the game component
                 setTimeout(() => {
                   console.log('Now safe to set game component');
+                  
+                  // Store the component and props in refs without triggering renders
+                  gameComponentRef.current = gameConfig.component;
+                  gamePropsRef.current = gameConfig.props;
+                  
+                  // Set the state flags to trigger rendering
                   setGameComponent(gameConfig.component);
                   setGameProps(gameConfig.props);
                   
@@ -350,10 +360,10 @@ const OnlineGame = ({
 
       {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {gameState === 'playing' && isGameReady && gameComponent && gameProps && canRenderGame ? (
+        {gameState === 'playing' && isGameReady && canRenderGame && gameComponentRef.current && gamePropsRef.current ? (
           (() => {
-            console.log('OnlineGame: About to render Game component with props:', gameProps);
-            const target = gameProps.targetCountry || gameProps.targetWord || gameProps.targetState;
+            console.log('OnlineGame: About to render Game component with props:', gamePropsRef.current);
+            const target = gamePropsRef.current.targetCountry || gamePropsRef.current.targetWord || gamePropsRef.current.targetState;
             console.log('OnlineGame: Target extracted:', target);
             
             // Final validation - don't render if target is invalid
@@ -371,8 +381,9 @@ const OnlineGame = ({
             
             // Now safe to render the Game component
             console.log('OnlineGame: Rendering Game component with target:', target);
+            const ComponentToRender = gameComponentRef.current;
             return (
-              <Game 
+              <ComponentToRender 
                 targetCountry={target}
                 isOnline={true}
                 disabled={false}
@@ -390,9 +401,9 @@ const OnlineGame = ({
             {gameState === 'playing' && (
               <Typography variant="caption" sx={{ ml: 2, color: '#999', display: 'block', width: '100%', textAlign: 'center' }}>
                 Ready: {isGameReady ? 'Yes' : 'No'}, 
-                Component: {gameComponent ? 'Yes' : 'No'}, 
-                Props: {gameProps && Object.keys(gameProps).length > 0 ? 'Yes' : 'No'}, 
-                Target: {gameProps?.targetCountry || 'Not set'},
+                Component: {gameComponentRef.current ? 'Yes' : 'No'}, 
+                Props: {gamePropsRef.current ? 'Yes' : 'No'}, 
+                Target: {gamePropsRef.current?.targetCountry || 'Not set'},
                 Can Render: {canRenderGame ? 'Yes' : 'No'}
               </Typography>
             )}
