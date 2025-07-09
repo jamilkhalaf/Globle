@@ -131,6 +131,8 @@ io.on('connection', (socket) => {
   socket.on('joinQueue', async (data) => {
     const { gameType } = data;
     
+    console.log(`User ${socket.username} trying to join queue for ${gameType}`);
+    
     if (!gameQueues[gameType]) {
       gameQueues[gameType] = [];
     }
@@ -138,6 +140,7 @@ io.on('connection', (socket) => {
     // Check if user is already in queue
     const alreadyInQueue = gameQueues[gameType].find(player => player.userId === socket.userId);
     if (alreadyInQueue) {
+      console.log(`User ${socket.username} already in queue for ${gameType}`);
       socket.emit('queueError', { message: 'Already in queue for this game' });
       return;
     }
@@ -152,6 +155,10 @@ io.on('connection', (socket) => {
 
     gameQueues[gameType].push(player);
     socket.join(`queue_${gameType}`);
+    
+    console.log(`User ${socket.username} joined queue for ${gameType}. Queue length: ${gameQueues[gameType].length}`);
+    console.log(`Current queue for ${gameType}:`, gameQueues[gameType].map(p => p.username));
+    
     socket.emit('queueJoined', { gameType, position: gameQueues[gameType].length });
 
     // Try to match players
@@ -274,9 +281,13 @@ function leaveQueue(socket, gameType) {
 async function tryMatchPlayers(gameType) {
   const queue = gameQueues[gameType];
   
+  console.log(`Trying to match players for ${gameType}. Queue length: ${queue.length}`);
+  
   if (queue.length >= 2) {
     const player1 = queue.shift();
     const player2 = queue.shift();
+    
+    console.log(`Matching players: ${player1.username} vs ${player2.username} for ${gameType}`);
     
     const matchId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
@@ -296,9 +307,13 @@ async function tryMatchPlayers(gameType) {
     const socket1 = userSockets.get(player1.userId);
     const socket2 = userSockets.get(player2.userId);
     
+    console.log(`Socket1 found: ${!!socket1}, Socket2 found: ${!!socket2}`);
+    
     if (socket1 && socket2) {
       socket1.join(matchId);
       socket2.join(matchId);
+      
+      console.log(`Both players joined match room: ${matchId}`);
       
       // Notify players
       io.to(matchId).emit('matchFound', {
@@ -312,6 +327,8 @@ async function tryMatchPlayers(gameType) {
         startTime: Date.now() + 3000 // 3 second countdown
       });
       
+      console.log(`Match found event sent to both players`);
+      
       // Start game after countdown
       setTimeout(() => {
         io.to(matchId).emit('gameStart', {
@@ -320,8 +337,13 @@ async function tryMatchPlayers(gameType) {
           question: match.correctAnswer.question,
           startTime: Date.now()
         });
+        console.log(`Game start event sent to both players`);
       }, 3000);
+    } else {
+      console.log(`Failed to find sockets for players. Socket1: ${!!socket1}, Socket2: ${!!socket2}`);
     }
+  } else {
+    console.log(`Not enough players in queue for ${gameType}. Need 2, have ${queue.length}`);
   }
 }
 
