@@ -512,6 +512,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       
       // Call onAnswerSubmit for online games
       if (isOnline && onAnswerSubmit) {
+        console.log('Game component: Correct answer found, calling onAnswerSubmit with:', guessedCountry.properties.name);
         onAnswerSubmit(guessedCountry.properties.name);
       }
     } else {
@@ -565,6 +566,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
           
           // Call onAnswerSubmit for online games
           if (isOnline && onAnswerSubmit) {
+            console.log('Game component: Correct answer found (dropdown), calling onAnswerSubmit with:', guessedCountry.properties.name);
             onAnswerSubmit(guessedCountry.properties.name);
           }
         } else {

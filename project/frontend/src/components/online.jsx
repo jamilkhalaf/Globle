@@ -270,13 +270,26 @@ const Online = () => {
     }
   };
 
-  const handleSubmitAnswer = () => {
-    if (!socket || !currentMatch || !gameAnswer.trim()) return;
+  const handleSubmitAnswer = (answer) => {
+    console.log('handleSubmitAnswer called with answer:', answer);
+    console.log('socket exists:', !!socket);
+    console.log('currentMatch:', currentMatch);
+    
+    if (!socket || !currentMatch) {
+      console.log('Missing socket or currentMatch');
+      return;
+    }
     
     const timeTaken = 60 - gameTimer;
+    console.log('Emitting submitAnswer with:', {
+      matchId: currentMatch.matchId,
+      answer: answer,
+      timeTaken
+    });
+    
     socket.emit('submitAnswer', {
       matchId: currentMatch.matchId,
-      answer: gameAnswer.trim(),
+      answer: answer,
       timeTaken
     });
   };

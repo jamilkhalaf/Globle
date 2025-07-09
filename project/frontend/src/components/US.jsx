@@ -83,9 +83,11 @@ const US = ({ targetState = null, isOnline = false, onAnswerSubmit = null, disab
     setClickedState(clickedName);
     setGameOver(true); // Only allow one click per round
     
-    // Call onAnswerSubmit for online games
+    // For online mode, immediately call onAnswerSubmit and end the game
     if (isOnline && onAnswerSubmit) {
+      console.log('US: Online mode - calling onAnswerSubmit with:', clickedName);
       onAnswerSubmit(clickedName);
+      return; // End the game immediately for online mode
     }
     
     if (clickedName.trim().toLowerCase() === currentTarget.trim().toLowerCase()) {

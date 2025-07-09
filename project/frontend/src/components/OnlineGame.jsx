@@ -107,6 +107,8 @@ const OnlineGame = ({
             isOnline: true,
             disabled: false, // Game is active when playing
             onAnswerSubmit: (answer) => {
+              console.log('OnlineGame: Answer submitted:', answer);
+              console.log('OnlineGame: Calling parent onAnswerSubmit with:', answer);
               onAnswerSubmit(answer);
               setGameAnswer('');
             }

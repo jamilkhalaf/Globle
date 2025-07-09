@@ -163,9 +163,11 @@ const Shaple = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null,
       return;
     }
     
-    // Call onAnswerSubmit for online games
+    // For online mode, immediately call onAnswerSubmit and end the game
     if (isOnline && onAnswerSubmit) {
+      console.log('Shaple: Online mode - calling onAnswerSubmit with:', guessName);
       onAnswerSubmit(guessName);
+      return; // End the game immediately for online mode
     }
     
     if (guessName.toLowerCase() === secret.toLowerCase()) {

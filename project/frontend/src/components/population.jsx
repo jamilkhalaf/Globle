@@ -120,6 +120,13 @@ const Population = ({ targetCountry = null, isOnline = false, onAnswerSubmit = n
     const popRight = getPopulation(right);
     const correct = (guessIdx === 0 && popLeft >= popRight) || (guessIdx === 1 && popRight > popLeft);
     
+    // For online mode, immediately call onAnswerSubmit and end the game
+    if (isOnline && onAnswerSubmit) {
+      console.log('Population: Online mode - calling onAnswerSubmit with:', guessIdx === 0 ? left : right);
+      onAnswerSubmit(guessIdx === 0 ? left : right);
+      return; // End the game immediately for online mode
+    }
+    
     if (correct) {
       const newScore = score + 1;
       const newStreak = streak + 1;
@@ -127,11 +134,6 @@ const Population = ({ targetCountry = null, isOnline = false, onAnswerSubmit = n
       setBestScore(prev => Math.max(prev, newScore));
       setStreak(newStreak);
       setMessage('Correct! 🎉');
-      
-      // Call onAnswerSubmit for online games
-      if (isOnline && onAnswerSubmit) {
-        onAnswerSubmit(guessIdx === 0 ? left : right);
-      }
       
       // Update stats after each correct answer
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
@@ -148,11 +150,6 @@ const Population = ({ targetCountry = null, isOnline = false, onAnswerSubmit = n
       setScore(0);
       setStreak(0); // Reset streak on wrong answer
       setMessage(`Wrong! The answer was ${popLeft > popRight ? left : right}.`);
-      
-      // Call onAnswerSubmit for online games (even for wrong answers)
-      if (isOnline && onAnswerSubmit) {
-        onAnswerSubmit(guessIdx === 0 ? left : right);
-      }
       
       // Update stats when game ends (wrong answer)
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
@@ -60,7 +60,7 @@ function getRandomCountry(exclude) {
 
 const NUM_PIECES = 8;
 
-const Flagle = () => {
+const Flagle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
   const [target, setTarget] = useState(() => getRandomCountry());
   const [guess, setGuess] = useState('');
   const [revealedPieces, setRevealedPieces] = useState([]); // Array of revealed piece indices
@@ -71,11 +71,20 @@ const Flagle = () => {
   const [inputValue, setInputValue] = useState('');
   const [round, setRound] = useState(0); // Used to force remount flag box
   const [inputError, setInputError] = useState('');
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
   const [bestScore, setBestScore] = useState(0);
 
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
+
+  // Initialize target for online mode
+  useEffect(() => {
+    if (targetCountry && isOnline) {
+      console.log('Flagle: Using provided target country:', targetCountry);
+      setTarget(targetCountry);
+      setMessage('Guess the country!');
+    }
+  }, [targetCountry, isOnline]);
 
   const updateGameStats = async (finalScore, gameTime, bestStreak) => {
     try {
@@ -155,6 +164,13 @@ const Flagle = () => {
       const newStreak = streak + 1;
       setStreak(newStreak);
       setBestScore(prev => Math.max(prev, newStreak));
+      
+      // For online mode, immediately call onAnswerSubmit and end the game
+      if (isOnline && onAnswerSubmit) {
+        console.log('Flagle: Online mode - calling onAnswerSubmit with:', guessToCheck);
+        onAnswerSubmit(guessToCheck);
+        return; // End the game immediately for online mode
+      }
       
       // Reveal all pieces when correct
       setRevealedPieces(Array.from({length: NUM_PIECES}, (_, i) => i));

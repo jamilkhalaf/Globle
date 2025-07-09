@@ -4,7 +4,7 @@ import Header from './Header';
 import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
 
-const Hangman = () => {
+const Hangman = ({ targetWord = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const canvasRef = useRef(null);
@@ -14,7 +14,7 @@ const Hangman = () => {
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [gameWon, setGameWon] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
   const [message, setMessage] = useState('');
   const [streak, setStreak] = useState(0);
   const [bestScore, setBestScore] = useState(0);
@@ -24,6 +24,15 @@ const Hangman = () => {
   const allCountries = officialCountries.filter(name => 
     name.length >= 4 && name.length <= 15
   );
+
+  // Initialize target for online mode
+  useEffect(() => {
+    if (targetWord && isOnline) {
+      console.log('Hangman: Using provided target word:', targetWord);
+      setWord(targetWord.toUpperCase());
+      setMessage('Guess the country!');
+    }
+  }, [targetWord, isOnline]);
 
   const getRandomWord = () => {
     return allCountries[Math.floor(Math.random() * allCountries.length)].toUpperCase();
@@ -149,6 +158,14 @@ const Hangman = () => {
         setGameOver(true);
         setStreak(prev => prev + 1);
         setMessage('🎉 Congratulations! You saved the hangman!');
+        
+        // For online mode, immediately call onAnswerSubmit and end the game
+        if (isOnline && onAnswerSubmit) {
+          console.log('Hangman: Online mode - calling onAnswerSubmit with:', word);
+          onAnswerSubmit(word);
+          return; // End the game immediately for online mode
+        }
+        
         updateGameStats(true);
       }
     }
