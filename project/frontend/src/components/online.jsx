@@ -130,7 +130,7 @@ const Online = () => {
     }
   };
 
-  const connectSocket = () => {
+  const connectSocket = (gameType = null) => {
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Please login to play online');
@@ -147,10 +147,11 @@ const Online = () => {
       setError('');
       console.log('Socket connected successfully');
       
-      // If we're waiting to join a queue, do it now
-      if (isWaitingForPlayer && selectedGameType) {
-        console.log('Joining queue after connection for:', selectedGameType);
-        socketInstance.emit('joinQueue', { gameType: selectedGameType });
+      // If we have a game type to join, do it now
+      if (gameType) {
+        console.log('Joining queue after connection for:', gameType);
+        console.log('Emitting joinQueue event with:', { gameType: gameType });
+        socketInstance.emit('joinQueue', { gameType: gameType });
       }
     });
 
@@ -161,6 +162,7 @@ const Online = () => {
 
     socketInstance.on('queueJoined', (data) => {
       console.log('Joined queue successfully:', data);
+      console.log('Queue joined for game type:', data.gameType);
     });
 
     socketInstance.on('queueError', (data) => {
@@ -170,6 +172,7 @@ const Online = () => {
 
     socketInstance.on('matchFound', (data) => {
       console.log('Match found:', data);
+      console.log('Match data:', JSON.stringify(data, null, 2));
       setCurrentMatch(data);
       setGameState('countdown');
       setGameQuestion(data.question);
@@ -246,10 +249,11 @@ const Online = () => {
     // Connect socket if not connected
     if (!socket) {
       console.log('No socket, connecting...');
-      connectSocket();
+      connectSocket(selectedGameType);
     } else {
       // Socket already exists, join queue immediately
       console.log('Socket exists, joining queue for:', selectedGameType);
+      console.log('Emitting joinQueue event with:', { gameType: selectedGameType });
       socket.emit('joinQueue', { gameType: selectedGameType });
     }
   };
