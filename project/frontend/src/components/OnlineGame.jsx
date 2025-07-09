@@ -189,15 +189,21 @@ const OnlineGame = ({
         const gameConfig = getGameConfig(matchData.gameType);
         if (gameConfig) {
           console.log('Setting game component with props:', gameConfig.props);
-          setGameComponent(gameConfig.component);
-          setGameProps(gameConfig.props);
           
-          // Add additional delay before marking game as ready
-          setTimeout(() => {
-            console.log('Final props check before marking ready:', gameConfig.props);
-            setIsGameReady(true);
-            console.log('Game is now ready to render');
-          }, 1500); // Increased to 1.5 seconds
+          // Additional check to ensure props are valid before setting
+          if (gameConfig.props && (gameConfig.props.targetCountry || gameConfig.props.targetWord || gameConfig.props.targetState)) {
+            setGameComponent(gameConfig.component);
+            setGameProps(gameConfig.props);
+            
+            // Add additional delay before marking game as ready
+            setTimeout(() => {
+              console.log('Final props check before marking ready:', gameConfig.props);
+              setIsGameReady(true);
+              console.log('Game is now ready to render');
+            }, 1500); // Increased to 1.5 seconds
+          } else {
+            console.error('Game config props are invalid:', gameConfig.props);
+          }
         } else {
           console.error('Failed to create game config for:', matchData.gameType);
         }
@@ -213,32 +219,31 @@ const OnlineGame = ({
     }
   }, [matchData, gameState, onAnswerSubmit]);
 
-  // Wrapper component to ensure Game component is only rendered when ready
-  const GameWrapper = ({ component, props }) => {
-    const [isComponentReady, setIsComponentReady] = useState(false);
+  // Safe Game Component that only renders when everything is ready
+  const SafeGameComponent = ({ gameType, targetCountry, onAnswerSubmit }) => {
+    console.log('SafeGameComponent: Rendering with targetCountry:', targetCountry);
     
-    useEffect(() => {
-      // Double-check that props are valid before rendering
-      if (props && (props.targetCountry || props.targetWord || props.targetState)) {
-        console.log('GameWrapper: Props are valid, setting component ready');
-        setTimeout(() => {
-          setIsComponentReady(true);
-        }, 500); // Additional 500ms delay
-      }
-    }, [props]);
-    
-    if (!isComponentReady) {
+    if (!targetCountry) {
+      console.log('SafeGameComponent: No targetCountry, showing loading');
       return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
           <CircularProgress sx={{ color: '#43cea2' }} />
           <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
-            Initializing game component...
+            Loading game...
           </Typography>
         </Box>
       );
     }
     
-    return React.createElement(component, props);
+    // Only render the actual game component when we have a valid target
+    return (
+      <Game 
+        targetCountry={targetCountry}
+        isOnline={true}
+        disabled={false}
+        onAnswerSubmit={onAnswerSubmit}
+      />
+    );
   };
 
   const renderCountdown = () => (
@@ -284,7 +289,11 @@ const OnlineGame = ({
       {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {gameState === 'playing' && isGameReady && gameComponent && gameProps ? (
-          <GameWrapper component={gameComponent} props={gameProps} />
+          <SafeGameComponent 
+            gameType={matchData.gameType} 
+            targetCountry={gameProps.targetCountry || gameProps.targetWord || gameProps.targetState} 
+            onAnswerSubmit={onAnswerSubmit} 
+          />
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress sx={{ color: '#43cea2' }} />
