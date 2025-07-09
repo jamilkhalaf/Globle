@@ -48,6 +48,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import TimerIcon from '@mui/icons-material/Timer';
 import GroupIcon from '@mui/icons-material/Group';
 import Header from './Header';
+import OnlineGame from './OnlineGame';
 import { io } from 'socket.io-client';
 
 const Online = () => {
@@ -215,7 +216,7 @@ const Online = () => {
     
     // If random is selected, pick a random game type
     if (selectedGameType === 'random') {
-      const gameTypes = ['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'];
+      const gameTypes = ['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US'];
       const randomGameType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
       setSelectedGameType(randomGameType);
     }
@@ -374,7 +375,7 @@ const Online = () => {
             </Typography>
             
             <Grid container spacing={2}>
-              {['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'].map((gameType) => (
+              {['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US'].map((gameType) => (
                 <Grid item xs={12} sm={6} md={4} key={gameType}>
                   <Card 
                     sx={{ 
@@ -556,116 +557,15 @@ const Online = () => {
         zIndex: 10000
       }}
     >
-      <Card sx={{ bgcolor: '#1e1e1e', color: 'white', p: 4, maxWidth: 600, width: '100%' }}>
-        <CardContent>
-          {gameState === 'countdown' && (
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
-                Match Found!
-              </Typography>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                {currentMatch?.players?.map(p => p.username).join(' vs ')}
-              </Typography>
-              <Typography variant="h6" sx={{ mb: 3 }}>
-                Game: {currentMatch?.gameType}
-              </Typography>
-              <CircularProgress size={60} sx={{ color: '#43cea2' }} />
-              <Typography variant="body1" sx={{ mt: 2 }}>
-                Starting in 3 seconds...
-              </Typography>
-            </Box>
-          )}
-
-          {gameState === 'playing' && (
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" sx={{ color: '#43cea2' }}>
-                  {currentMatch?.gameType}
-                </Typography>
-                <Typography variant="h4" sx={{ color: gameTimer <= 10 ? '#f44336' : '#43cea2' }}>
-                  {Math.floor(gameTimer / 60)}:{(gameTimer % 60).toString().padStart(2, '0')}
-                </Typography>
-              </Box>
-
-              <Typography variant="h5" sx={{ mb: 3, textAlign: 'center' }}>
-                {gameQuestion}
-              </Typography>
-
-              <TextField
-                fullWidth
-                label="Your Answer"
-                value={gameAnswer}
-                onChange={(e) => setGameAnswer(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmitAnswer()}
-                sx={{
-                  mb: 3,
-                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                    '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                    '&.Mui-focused fieldset': { borderColor: '#43cea2' }
-                  },
-                  '& .MuiInputBase-input': { color: 'white' }
-                }}
-              />
-
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                <Button
-                  variant="contained"
-                  onClick={handleSubmitAnswer}
-                  disabled={!gameAnswer.trim()}
-                  sx={{ bgcolor: '#43cea2' }}
-                >
-                  Submit Answer
-                </Button>
-              </Box>
-            </Box>
-          )}
-
-          {gameState === 'ended' && matchResult && (
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
-                Game Over!
-              </Typography>
-              
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                Winner: {matchResult.winner}
-              </Typography>
-              
-              <Typography variant="body1" sx={{ mb: 3 }}>
-                Correct Answer: {matchResult.correctAnswer?.answer}
-              </Typography>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ color: '#43cea2' }}>
-                  Points: {matchResult.points ? Object.values(matchResult.points)[0] : 0}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                <Button
-                  variant="outlined"
-                  onClick={handleLeaveGame}
-                  sx={{ 
-                    color: 'white', 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    '&:hover': { borderColor: 'white' }
-                  }}
-                >
-                  Leave Game
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleNewOpponent}
-                  sx={{ bgcolor: '#43cea2' }}
-                >
-                  Find New Opponent
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
+      <OnlineGame
+        matchData={currentMatch}
+        gameState={gameState}
+        gameTimer={gameTimer}
+        onAnswerSubmit={handleSubmitAnswer}
+        onLeaveGame={handleLeaveGame}
+        onNewOpponent={handleNewOpponent}
+        matchResult={matchResult}
+      />
     </Box>
   );
 

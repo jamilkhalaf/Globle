@@ -91,8 +91,7 @@ const gameQueues = {
   'Capitals': [],
   'Hangman': [],
   'Shaple': [],
-  'US': [],
-  'Namle': []
+  'US': []
 };
 
 const activeMatches = new Map();
@@ -186,8 +185,8 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Check if answer is correct (simplified for now)
-    const isCorrect = checkAnswer(match.gameType, answer);
+    // Check if answer is correct using the shared target
+    const isCorrect = checkAnswer(match.gameType, answer, match.sharedTarget);
     
     if (isCorrect) {
       // Player wins
@@ -203,7 +202,7 @@ io.on('connection', (socket) => {
       io.to(matchId).emit('gameEnd', {
         winner: socket.username,
         winnerTime: timeTaken,
-        correctAnswer: match.correctAnswer,
+        correctAnswer: match.sharedTarget.target,
         points: {
           [socket.userId]: 100,
           [match.players.find(p => p.userId !== socket.userId).userId]: -100
@@ -228,7 +227,7 @@ io.on('connection', (socket) => {
       io.to(matchId).emit('gameEnd', {
         winner: match.players.find(p => p.userId !== socket.userId).username,
         loserTime: timeTaken,
-        correctAnswer: match.correctAnswer,
+        correctAnswer: match.sharedTarget.target,
         points: {
           [socket.userId]: -100,
           [match.players.find(p => p.userId !== socket.userId).userId]: 100
@@ -282,6 +281,7 @@ async function tryMatchPlayers(gameType) {
   const queue = gameQueues[gameType];
   
   console.log(`Trying to match players for ${gameType}. Queue length: ${queue.length}`);
+  console.log(`Queue contents:`, queue.map(p => ({ username: p.username, userId: p.userId })));
   
   if (queue.length >= 2) {
     const player1 = queue.shift();
@@ -291,13 +291,16 @@ async function tryMatchPlayers(gameType) {
     
     const matchId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // Generate shared target for the game
+    const sharedTarget = generateSharedTarget(gameType);
+    
     // Create match
     const match = {
       id: matchId,
       gameType,
       players: [player1, player2],
       startTime: Date.now(),
-      correctAnswer: generateQuestion(gameType),
+      sharedTarget: sharedTarget,
       winner: null
     };
     
@@ -308,6 +311,7 @@ async function tryMatchPlayers(gameType) {
     const socket2 = userSockets.get(player2.userId);
     
     console.log(`Socket1 found: ${!!socket1}, Socket2 found: ${!!socket2}`);
+    console.log(`Socket1 ID: ${socket1?.id}, Socket2 ID: ${socket2?.id}`);
     
     if (socket1 && socket2) {
       socket1.join(matchId);
@@ -316,112 +320,186 @@ async function tryMatchPlayers(gameType) {
       console.log(`Both players joined match room: ${matchId}`);
       
       // Notify players
-      io.to(matchId).emit('matchFound', {
+      const matchData = {
         matchId,
         gameType,
         players: [
           { username: player1.username },
           { username: player2.username }
         ],
-        question: match.correctAnswer.question,
+        sharedTarget: sharedTarget,
         startTime: Date.now() + 3000 // 3 second countdown
-      });
+      };
+      
+      console.log(`Sending matchFound event with data:`, matchData);
+      io.to(matchId).emit('matchFound', matchData);
       
       console.log(`Match found event sent to both players`);
       
       // Start game after countdown
       setTimeout(() => {
-        io.to(matchId).emit('gameStart', {
+        const gameStartData = {
           matchId,
           gameType,
-          question: match.correctAnswer.question,
+          sharedTarget: sharedTarget,
           startTime: Date.now()
-        });
+        };
+        console.log(`Sending gameStart event with data:`, gameStartData);
+        io.to(matchId).emit('gameStart', gameStartData);
         console.log(`Game start event sent to both players`);
       }, 3000);
     } else {
       console.log(`Failed to find sockets for players. Socket1: ${!!socket1}, Socket2: ${!!socket2}`);
+      // Put players back in queue if sockets not found
+      if (socket1) queue.unshift(player1);
+      if (socket2) queue.unshift(player2);
     }
   } else {
     console.log(`Not enough players in queue for ${gameType}. Need 2, have ${queue.length}`);
   }
 }
 
+function generateSharedTarget(gameType) {
+  // Generate a shared target for both players
+  const targets = {
+    'Globle': {
+      target: 'United States',
+      type: 'country'
+    },
+    'Population': {
+      target: 'China',
+      type: 'country'
+    },
+    'Findle': {
+      target: 'Brazil',
+      type: 'country'
+    },
+    'Flagle': {
+      target: 'Switzerland',
+      type: 'country'
+    },
+    'Worldle': {
+      target: 'Brazil',
+      type: 'country'
+    },
+    'Capitals': {
+      target: 'France',
+      type: 'country'
+    },
+    'Hangman': {
+      target: 'BANANA',
+      type: 'word'
+    },
+    'Shaple': {
+      target: 'Italy',
+      type: 'country'
+    },
+    'US': {
+      target: 'California',
+      type: 'state'
+    }
+  };
+  
+  return targets[gameType] || targets['Globle'];
+}
+
 function generateQuestion(gameType) {
-  // Simplified question generation - you can expand this
+  // More realistic question generation
   const questions = {
     'Globle': {
-      question: 'What country is this?',
+      question: 'Guess the country: This country has a population of 331 million and is located in North America',
       answer: 'United States',
       type: 'country'
     },
     'Population': {
-      question: 'What is the population of this country?',
-      answer: '331 million',
+      question: 'What is the population of China?',
+      answer: '1.4 billion',
       type: 'population'
     },
     'Findle': {
-      question: 'What country name starts with "U"?',
-      answer: 'United States',
+      question: 'Name a country that starts with the letter "B"',
+      answer: 'Brazil',
       type: 'name'
     },
     'Flagle': {
-      question: 'What country does this flag belong to?',
-      answer: 'United States',
+      question: 'Which country has a red flag with a white cross?',
+      answer: 'Switzerland',
       type: 'flag'
     },
     'Worldle': {
-      question: 'Where is this country located?',
-      answer: 'North America',
+      question: 'Where is Brazil located?',
+      answer: 'South America',
       type: 'location'
     },
     'Capitals': {
-      question: 'What is the capital of this country?',
-      answer: 'Washington D.C.',
+      question: 'What is the capital of France?',
+      answer: 'Paris',
       type: 'capital'
     },
     'Hangman': {
-      question: 'Guess the word: _ _ _ _ _ _ _ _',
-      answer: 'COUNTRY',
+      question: 'Guess the word: _ _ _ _ _ _ _ (Hint: A type of fruit)',
+      answer: 'BANANA',
       type: 'word'
     },
     'Shaple': {
-      question: 'What shape is this country?',
-      answer: 'Rectangle',
+      question: 'What shape is Italy?',
+      answer: 'Boot',
       type: 'shape'
     },
     'US': {
-      question: 'What US state is this?',
+      question: 'Which US state is known as the Golden State?',
       answer: 'California',
       type: 'state'
-    },
-    'Namle': {
-      question: 'What country name contains "A"?',
-      answer: 'Canada',
-      type: 'name'
     }
   };
   
   return questions[gameType] || questions['Globle'];
 }
 
-function checkAnswer(gameType, answer) {
-  // Simplified answer checking - you can make this more sophisticated
-  const correctAnswers = {
-    'Globle': ['united states', 'usa', 'america'],
-    'Population': ['331 million', '331m', '331'],
-    'Findle': ['united states', 'usa'],
-    'Flagle': ['united states', 'usa', 'america'],
-    'Worldle': ['north america', 'america'],
-    'Capitals': ['washington d.c.', 'washington', 'dc'],
-    'Hangman': ['country'],
-    'Shaple': ['rectangle'],
-    'US': ['california', 'ca'],
-    'Namle': ['canada']
-  };
+function checkAnswer(gameType, answer, sharedTarget) {
+  // Check if the answer matches the shared target
+  const userAnswer = answer.toLowerCase().trim();
+  const targetAnswer = sharedTarget.target.toLowerCase();
   
-  const answers = correctAnswers[gameType] || [];
-  return answers.some(correct => answer.toLowerCase().includes(correct));
+  // Basic exact match
+  if (userAnswer === targetAnswer) {
+    return true;
+  }
+  
+  // For countries, also accept common variations
+  if (sharedTarget.type === 'country') {
+    const variations = {
+      'united states': ['usa', 'america', 'united states of america'],
+      'china': ['peoples republic of china', 'prc'],
+      'brazil': ['brasil'],
+      'switzerland': ['swiss'],
+      'france': ['republic of france'],
+      'italy': ['italian republic']
+    };
+    
+    const targetVariations = variations[targetAnswer] || [];
+    if (targetVariations.includes(userAnswer)) {
+      return true;
+    }
+  }
+  
+  // For US states, accept abbreviations
+  if (sharedTarget.type === 'state') {
+    const stateAbbreviations = {
+      'california': ['ca', 'cal'],
+      'texas': ['tx'],
+      'new york': ['ny'],
+      'florida': ['fl'],
+      'illinois': ['il']
+    };
+    
+    const targetAbbreviations = stateAbbreviations[targetAnswer] || [];
+    if (targetAbbreviations.includes(userAnswer)) {
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 async function updatePlayerPoints(userId, pointsChange, isWin) {
