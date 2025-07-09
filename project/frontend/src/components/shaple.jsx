@@ -106,22 +106,34 @@ const updateGameStats = async (finalScore, streak, attempts) => {
   }
 };
 
-const Shaple = () => {
+const Shaple = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
   const [mode, setMode] = useState('world');
   const [secret, setSecret] = useState('');
   const [guess, setGuess] = useState('');
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
   const [guessesLeft, setGuessesLeft] = useState(5);
   const [gameOver, setGameOver] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
 
   useEffect(() => {
-    if (!showIntro) startNewGame();
+    if (!showIntro) {
+      if (targetCountry && isOnline) {
+        // Use the provided target for online games
+        setSecret(targetCountry);
+        setGuess('');
+        setMessage('');
+        setGuessesLeft(5);
+        setGameOver(false);
+      } else {
+        // Use random target for offline games
+        startNewGame();
+      }
+    }
     // eslint-disable-next-line
-  }, [mode, showIntro]);
+  }, [mode, showIntro, targetCountry, isOnline]);
 
   const startNewGame = () => {
     setSecret(mode === 'world' ? getRandom(countryList) : getRandom(stateList));
@@ -142,7 +154,7 @@ const Shaple = () => {
   };
 
   const handleGuess = () => {
-    if (gameOver || !secret) return;
+    if (gameOver || !secret || disabled) return;
     const guessName = guess.trim();
     const validList = mode === 'world' ? countryList : stateList;
     if (!validList.includes(guessName)) {
@@ -150,6 +162,12 @@ const Shaple = () => {
       setGuess('');
       return;
     }
+    
+    // Call onAnswerSubmit for online games
+    if (isOnline && onAnswerSubmit) {
+      onAnswerSubmit(guessName);
+    }
+    
     if (guessName.toLowerCase() === secret.toLowerCase()) {
       setScore(score + 1);
       setStreak(streak + 1);

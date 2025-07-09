@@ -15,7 +15,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
 
-const Game = () => {
+const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -50,7 +50,7 @@ const Game = () => {
   const [recentlyUsedCountries, setRecentlyUsedCountries] = useState([]);
 
   // Add state for showing the intro modal
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
 
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
@@ -201,8 +201,22 @@ const Game = () => {
         loadBestScore();
         
         // Start new game
-        const randomCountry = selectRandomCountry(data.features);
-        setSecretCountry(randomCountry);
+        let selectedCountry;
+        if (targetCountry && isOnline) {
+          // Use the provided target country for online games
+          selectedCountry = data.features.find(country => 
+            country.properties.name === targetCountry
+          );
+          if (!selectedCountry) {
+            console.warn(`Target country "${targetCountry}" not found, using random country`);
+            selectedCountry = selectRandomCountry(data.features);
+          }
+        } else {
+          // Use random country for offline games
+          selectedCountry = selectRandomCountry(data.features);
+        }
+        
+        setSecretCountry(selectedCountry);
         setGameStartTime(Date.now());
         setMessage('Guess the country!');
       })
@@ -210,7 +224,7 @@ const Game = () => {
         console.error('Error loading countries:', error);
         setMessage('Error loading countries data');
       });
-  }, []);
+  }, [targetCountry, isOnline]);
 
   // Handle map initialization and viewport fitting
   useEffect(() => {
@@ -407,7 +421,7 @@ const Game = () => {
   };
 
   const handleGuess = () => {
-    if (!guess) return;
+    if (!guess || disabled) return;
 
     const guessedCountry = countries.find(
       country => country.properties.name.toLowerCase() === guess.toLowerCase()
@@ -440,6 +454,11 @@ const Game = () => {
       
       setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
       setGameOver(true);
+      
+      // Call onAnswerSubmit for online games
+      if (isOnline && onAnswerSubmit) {
+        onAnswerSubmit(guessedCountry.properties.name);
+      }
     } else {
       // Calculate distance between guessed country and secret country
       const guessedCenter = getCountryCenter(guessedCountry);
@@ -459,7 +478,7 @@ const Game = () => {
   };
 
   const handleCountrySelect = (event, newValue) => {
-    if (newValue) {
+    if (newValue && !disabled) {
       setGuess(newValue.label);
       const guessedCountry = countries.find(
         country => country.properties.name.toLowerCase() === newValue.label.toLowerCase()
@@ -488,6 +507,11 @@ const Game = () => {
           
           setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
           setGameOver(true);
+          
+          // Call onAnswerSubmit for online games
+          if (isOnline && onAnswerSubmit) {
+            onAnswerSubmit(guessedCountry.properties.name);
+          }
         } else {
           const guessedCenter = getCountryCenter(guessedCountry);
           const secretCenter = getCountryCenter(secretCountry);
@@ -870,7 +894,7 @@ const Game = () => {
                 <TextField
                   {...params}
                   placeholder="Country"
-                  disabled={gameOver}
+                  disabled={gameOver || disabled}
                   fullWidth
                   variant="outlined"
                   size="small"
@@ -908,7 +932,7 @@ const Game = () => {
                   }}
                 />
               )}
-              disabled={gameOver}
+              disabled={gameOver || disabled}
               fullWidth
               sx={{ flexGrow: 1 }}
               open={isDropdownOpen}
@@ -923,7 +947,7 @@ const Game = () => {
             <Button
               variant="contained"
               onClick={handleGuess}
-              disabled={gameOver}
+              disabled={gameOver || disabled}
               size="small"
               sx={{
                 minWidth: { xs: '40px', md: '60px' },

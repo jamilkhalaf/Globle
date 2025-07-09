@@ -8,16 +8,16 @@ import 'leaflet/dist/leaflet.css';
 import stateList from './stateList.json';
 import statesGeoData from './states.json';
 
-const US = () => {
+const US = ({ targetState = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
   const [statesGeo, setStatesGeo] = useState(null);
-  const [targetState, setTargetState] = useState('');
-  const targetStateRef = useRef(targetState);
+  const [currentTargetState, setCurrentTargetState] = useState('');
+  const targetStateRef = useRef(currentTargetState);
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
   const [clickedState, setClickedState] = useState(null);
   const mapRef = useRef(null);
   const theme = useTheme();
@@ -28,16 +28,28 @@ const US = () => {
   }, []);
 
   useEffect(() => {
-    if (statesGeo && !showIntro) startNewRound();
+    if (statesGeo && !showIntro) {
+      if (targetState && isOnline) {
+        // Use the provided target state for online games
+        setCurrentTargetState(targetState);
+        setMessage('');
+        setGameOver(false);
+        setShowContinue(false);
+        setClickedState(null);
+      } else {
+        // Use random state for offline games
+        startNewRound();
+      }
+    }
     // eslint-disable-next-line
-  }, [statesGeo, showIntro]);
+  }, [statesGeo, showIntro, targetState, isOnline]);
 
   useEffect(() => {
-    targetStateRef.current = targetState;
-  }, [targetState]);
+    targetStateRef.current = currentTargetState;
+  }, [currentTargetState]);
 
   const startNewRound = () => {
-    setTargetState(stateList[Math.floor(Math.random() * stateList.length)]);
+    setCurrentTargetState(stateList[Math.floor(Math.random() * stateList.length)]);
     setMessage('');
     setGameOver(false);
     setShowContinue(false);
@@ -61,7 +73,7 @@ const US = () => {
   };
 
   const handleStateClick = (feature, layer) => {
-    if (gameOver) return;
+    if (gameOver || disabled) return;
     let clickedName = 'Unknown';
     if (feature && feature.properties) {
       clickedName = feature.properties.NAME || feature.properties.name || feature.properties.State || 'Unknown';
@@ -70,6 +82,12 @@ const US = () => {
     console.log('Clicked:', clickedName, 'Target:', currentTarget, 'Types:', typeof clickedName, typeof currentTarget, 'Raw:', JSON.stringify(clickedName), JSON.stringify(currentTarget)); // Enhanced debug log
     setClickedState(clickedName);
     setGameOver(true); // Only allow one click per round
+    
+    // Call onAnswerSubmit for online games
+    if (isOnline && onAnswerSubmit) {
+      onAnswerSubmit(clickedName);
+    }
+    
     if (clickedName.trim().toLowerCase() === currentTarget.trim().toLowerCase()) {
       setMessage('Correct!');
       setScore(prev => {
@@ -183,13 +201,13 @@ const US = () => {
               const name = feature.properties.NAME || feature.properties.name || feature.properties.State || 'Unknown';
               let fillColor = '#232a3b';
               if (gameOver) {
-                if (name === targetState) fillColor = '#43cea2';
+                if (name === currentTargetState) fillColor = '#43cea2';
                 else if (name === clickedState) fillColor = '#f44336';
               }
               return {
                 color: '#43cea2',
                 weight: 1.5,
-                fillOpacity: (gameOver && (name === targetState || name === clickedState)) ? 0.7 : 0.2,
+                fillOpacity: (gameOver && (name === currentTargetState || name === clickedState)) ? 0.7 : 0.2,
                 fillColor
               };
             }} />
@@ -217,7 +235,7 @@ const US = () => {
           alignItems: 'center',
         }}>
           <Typography variant="h4" sx={{ mb: 2, fontWeight: 900, color: 'transparent', background: 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>US States</Typography>
-          <Typography variant="h6" sx={{ mb: 2, color: '#43cea2', textAlign: 'center' }}>Find: <b>{targetState}</b></Typography>
+          <Typography variant="h6" sx={{ mb: 2, color: '#43cea2', textAlign: 'center' }}>Find: <b>{currentTargetState}</b></Typography>
           <Typography variant="h6" sx={{ mb: 2, color: message.startsWith('Correct') ? '#43cea2' : '#f44336', minHeight: 32, textAlign: 'center' }}>{message}</Typography>
           <Stack direction="row" spacing={3} sx={{ mb: 2, width: '100%', justifyContent: 'center' }}>
             <Typography>Score: {score}</Typography>

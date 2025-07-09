@@ -15,6 +15,10 @@ import Hangman from './hangman.jsx';
 import Shaple from './shaple.jsx';
 import US from './US.jsx';
 
+// Import official lists
+import officialCountries from './officialCountries';
+import stateList from './stateList.json';
+
 const OnlineGame = ({ 
   matchData, 
   gameState, 
@@ -28,60 +32,127 @@ const OnlineGame = ({
   const [gameComponent, setGameComponent] = useState(null);
   const [gameProps, setGameProps] = useState({});
 
+  // Function to get a random target from the appropriate list
+  const getRandomTarget = (gameType) => {
+    switch (gameType) {
+      case 'Globle':
+      case 'Population':
+      case 'Flagle':
+      case 'Worldle':
+      case 'Capitals':
+      case 'Hangman':
+      case 'Shaple':
+        // For Shaple, we need to determine if it's world or US mode
+        // For now, default to world mode (countries)
+        return officialCountries[Math.floor(Math.random() * officialCountries.length)];
+      case 'US':
+        return stateList[Math.floor(Math.random() * stateList.length)];
+      case 'Findle':
+        // For Findle (Wordle), we need a word list
+        // For now, use a simple word list or countries
+        return officialCountries[Math.floor(Math.random() * officialCountries.length)];
+      default:
+        return officialCountries[Math.floor(Math.random() * officialCountries.length)];
+    }
+  };
+
+  // Function to get the appropriate target based on game type and shared target
+  const getTargetForGame = (gameType, sharedTarget) => {
+    if (sharedTarget && sharedTarget.target) {
+      return sharedTarget.target;
+    }
+    
+    // If no shared target provided, generate a random one
+    return getRandomTarget(gameType);
+  };
+
   useEffect(() => {
     if (matchData?.gameType) {
       // Set up game-specific props and component
       const getGameConfig = (gameType) => {
+        const target = getTargetForGame(gameType, matchData?.sharedTarget);
+        
         const baseProps = {
-          // Don't pass unsupported props to game components
-          // We'll handle online functionality in the wrapper
+          isOnline: true,
+          disabled: gameState !== 'playing',
+          onAnswerSubmit: (answer) => {
+            onAnswerSubmit(answer);
+            setGameAnswer('');
+          }
         };
 
         switch (gameType) {
           case 'Globle':
             return {
               component: Game,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetCountry: target
+              }
             };
           case 'Population':
             return {
               component: Population,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetCountry: target
+              }
             };
           case 'Findle':
             return {
               component: Wordle,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetWord: target
+              }
             };
           case 'Flagle':
             return {
               component: Flagle,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetCountry: target
+              }
             };
           case 'Worldle':
             return {
               component: Worldle,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetCountry: target
+              }
             };
           case 'Capitals':
             return {
               component: Capitals,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetCountry: target
+              }
             };
           case 'Hangman':
             return {
               component: Hangman,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetWord: target
+              }
             };
           case 'Shaple':
             return {
               component: Shaple,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetCountry: target
+              }
             };
           case 'US':
             return {
               component: US,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetState: target
+              }
             };
           default:
             return {
@@ -140,72 +211,6 @@ const OnlineGame = ({
       {/* Game Component */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {gameComponent && React.createElement(gameComponent, gameProps)}
-        
-        {/* Online Answer Submission Overlay */}
-        {gameState === 'playing' && (
-          <Box sx={{
-            position: 'absolute',
-            bottom: 20,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            bgcolor: 'rgba(30, 30, 30, 0.9)',
-            p: 2,
-            borderRadius: 2,
-            border: '1px solid rgba(67, 206, 162, 0.3)',
-            display: 'flex',
-            gap: 2,
-            alignItems: 'center',
-            minWidth: 300
-          }}>
-            <Typography variant="body2" sx={{ color: 'white', minWidth: 80 }}>
-              Your Answer:
-            </Typography>
-            <TextField
-              size="small"
-              value={gameAnswer}
-              onChange={(e) => setGameAnswer(e.target.value)}
-              placeholder="Enter your answer..."
-              sx={{
-                flex: 1,
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': {
-                    borderColor: 'rgba(255,255,255,0.3)',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'rgba(255,255,255,0.5)',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#43cea2',
-                  },
-                },
-                '& .MuiInputBase-input': {
-                  color: 'white',
-                },
-                '& .MuiInputLabel-root': {
-                  color: 'rgba(255,255,255,0.7)',
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              onClick={() => {
-                if (gameAnswer.trim()) {
-                  onAnswerSubmit(gameAnswer.trim());
-                  setGameAnswer('');
-                }
-              }}
-              disabled={!gameAnswer.trim()}
-              sx={{ 
-                bgcolor: '#43cea2',
-                '&:hover': { bgcolor: '#3bb08f' },
-                '&:disabled': { bgcolor: 'rgba(67, 206, 162, 0.3)' }
-              }}
-            >
-              Submit
-            </Button>
-          </Box>
-        )}
       </Box>
     </Box>
   );

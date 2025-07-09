@@ -20,7 +20,7 @@ const getCountryCapital = (countryName) => {
   return countryInfo[countryName]?.capital || 'Unknown';
 };
 
-const Population = () => {
+const Population = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [countries, setCountries] = useState([]); // [left, right]
@@ -36,7 +36,7 @@ const Population = () => {
   const [contactOpen, setContactOpen] = useState(false);
 
   // Add state for notification modal
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
 
   const updateGameStats = async (finalScore, gameTime, currentStreak) => {
     try {
@@ -112,7 +112,7 @@ const Population = () => {
   }, [generateNewCountries]);
 
   const handleGuess = useCallback((guessIdx) => {
-    if (isLoading) return; // Prevent multiple clicks
+    if (isLoading || disabled) return; // Prevent multiple clicks and respect disabled state
     
     setIsLoading(true);
     const [left, right] = countries;
@@ -127,6 +127,11 @@ const Population = () => {
       setBestScore(prev => Math.max(prev, newScore));
       setStreak(newStreak);
       setMessage('Correct! 🎉');
+      
+      // Call onAnswerSubmit for online games
+      if (isOnline && onAnswerSubmit) {
+        onAnswerSubmit(guessIdx === 0 ? left : right);
+      }
       
       // Update stats after each correct answer
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
@@ -144,6 +149,11 @@ const Population = () => {
       setStreak(0); // Reset streak on wrong answer
       setMessage(`Wrong! The answer was ${popLeft > popRight ? left : right}.`);
       
+      // Call onAnswerSubmit for online games (even for wrong answers)
+      if (isOnline && onAnswerSubmit) {
+        onAnswerSubmit(guessIdx === 0 ? left : right);
+      }
+      
       // Update stats when game ends (wrong answer)
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
       updateGameStats(0, gameTime, 0);
@@ -156,7 +166,7 @@ const Population = () => {
         setGameStartTime(Date.now()); // Reset timer for new game
       }, 1000);
     }
-  }, [countries, isLoading, generateNewCountries, score, gameStartTime, bestScore, streak]);
+  }, [countries, isLoading, generateNewCountries, score, gameStartTime, bestScore, streak, disabled, isOnline, onAnswerSubmit]);
 
   if (showIntro) {
     return (
