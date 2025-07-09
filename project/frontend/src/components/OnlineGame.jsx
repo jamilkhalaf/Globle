@@ -7,7 +7,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 // Import all game components
 import Game from './Game'; // Globle
 import Population from './population.jsx';
-import Wordle from './Wordle.jsx'; // Findle
+import Name from './name.jsx'; // Findle
 import Flagle from './Flagle.jsx';
 import Worldle from './Worldle.jsx';
 import Capitals from './capitals.jsx';
@@ -61,8 +61,7 @@ const OnlineGame = ({
       case 'US':
         return stateList[Math.floor(Math.random() * stateList.length)];
       case 'Findle':
-        // For Findle (Wordle), we need a word list
-        // For now, use a simple word list or countries
+        // For Findle (Name game), use countries
         return officialCountries[Math.floor(Math.random() * officialCountries.length)];
       default:
         return officialCountries[Math.floor(Math.random() * officialCountries.length)];
@@ -133,10 +132,10 @@ const OnlineGame = ({
               };
             case 'Findle':
               return {
-                component: Wordle,
+                component: Name,
                 props: {
                   ...baseProps,
-                  targetWord: target
+                  targetCountry: target
                 }
               };
             case 'Flagle':
@@ -387,10 +386,7 @@ const OnlineGame = ({
             const ComponentToRender = gameComponentRef.current;
             return (
               <ComponentToRender 
-                targetCountry={target}
-                isOnline={true}
-                disabled={false}
-                onAnswerSubmit={onAnswerSubmit}
+                {...gamePropsRef.current}
               />
             );
           })()
@@ -416,48 +412,127 @@ const OnlineGame = ({
     </Box>
   );
 
-  const renderGameEnd = () => (
-    <Box sx={{ textAlign: 'center', p: 4 }}>
-      <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
-        Game Over!
-      </Typography>
-      
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Winner: {matchResult?.winner}
-      </Typography>
-      
-      <Typography variant="body1" sx={{ mb: 3 }}>
-        Correct Answer: {matchResult?.correctAnswer?.answer}
-      </Typography>
-
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" sx={{ color: '#43cea2' }}>
-          Points: {matchResult?.points ? Object.values(matchResult.points)[0] : 0}
+  const renderGameEnd = () => {
+    // Get current user's username from localStorage or match data
+    const currentUsername = localStorage.getItem('username') || matchData?.players?.[0]?.username;
+    const currentUserId = localStorage.getItem('userId');
+    
+    // Determine if current user won or lost
+    const isWinner = matchResult?.winner === currentUsername;
+    const isLoser = matchResult?.loser === currentUsername;
+    const bothWrong = matchResult?.bothWrong;
+    const bothCorrect = matchResult?.bothCorrect;
+    const timeout = matchResult?.timeout;
+    
+    // Get current user's points
+    const userPoints = currentUserId ? matchResult?.points?.[currentUserId] : 0;
+    
+    return (
+      <Box sx={{ textAlign: 'center', p: 4 }}>
+        <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
+          Game Over!
         </Typography>
-      </Box>
+        
+        {timeout ? (
+          <>
+            <Typography variant="h5" sx={{ mb: 2, color: '#ff9800' }}>
+              ⏰ Time's Up!
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3, color: '#ff9800' }}>
+              Correct Answer: {matchResult?.correctAnswer}
+            </Typography>
+            {matchResult?.winner ? (
+              <>
+                <Typography variant="body1" sx={{ mb: 3 }}>
+                  Winner: {matchResult?.winner}
+                </Typography>
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" sx={{ color: isWinner ? '#4caf50' : '#f44336' }}>
+                    {isWinner ? 'You won +100 points!' : 'You lost -100 points'}
+                  </Typography>
+                </Box>
+              </>
+            ) : (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ color: '#f44336' }}>
+                  No one answered correctly - both players lost -100 points
+                </Typography>
+              </Box>
+            )}
+          </>
+        ) : bothWrong ? (
+          <>
+            <Typography variant="h5" sx={{ mb: 2, color: '#f44336' }}>
+              Both players got it wrong!
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3, color: '#ff9800' }}>
+              Correct Answer: {matchResult?.correctAnswer}
+            </Typography>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: '#f44336' }}>
+                You lost -100 points
+              </Typography>
+            </Box>
+          </>
+        ) : bothCorrect ? (
+          <>
+            <Typography variant="h5" sx={{ mb: 2, color: '#4caf50' }}>
+              Both players got it right!
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3 }}>
+              Winner: {matchResult?.winner} (faster time)
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3, color: '#ff9800' }}>
+              Correct Answer: {matchResult?.correctAnswer}
+            </Typography>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: isWinner ? '#4caf50' : '#f44336' }}>
+                {isWinner ? 'You won +100 points!' : 'You lost -100 points'}
+              </Typography>
+            </Box>
+          </>
+        ) : (
+          <>
+            <Typography variant="h5" sx={{ mb: 2, color: isWinner ? '#4caf50' : '#f44336' }}>
+              {isWinner ? '🎉 You Won!' : '😔 You Lost'}
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3 }}>
+              {isWinner ? `Winner: ${matchResult?.winner}` : `Winner: ${matchResult?.winner}`}
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3, color: '#ff9800' }}>
+              Correct Answer: {matchResult?.correctAnswer}
+            </Typography>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: isWinner ? '#4caf50' : '#f44336' }}>
+                {isWinner ? 'You won +100 points!' : 'You lost -100 points'}
+              </Typography>
+            </Box>
+          </>
+        )}
 
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-        <Button
-          variant="outlined"
-          onClick={onLeaveGame}
-          sx={{ 
-            color: 'white', 
-            borderColor: 'rgba(255,255,255,0.3)',
-            '&:hover': { borderColor: 'white' }
-          }}
-        >
-          Leave Game
-        </Button>
-        <Button
-          variant="contained"
-          onClick={onNewOpponent}
-          sx={{ bgcolor: '#43cea2' }}
-        >
-          Find New Opponent
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={onLeaveGame}
+            sx={{ 
+              color: 'white', 
+              borderColor: 'rgba(255,255,255,0.3)',
+              '&:hover': { borderColor: 'white' }
+            }}
+          >
+            Leave Game
+          </Button>
+          <Button
+            variant="contained"
+            onClick={onNewOpponent}
+            sx={{ bgcolor: '#43cea2' }}
+          >
+            Find New Opponent
+          </Button>
+        </Box>
       </Box>
-    </Box>
-  );
+    );
+  };
 
   if (gameState === 'countdown') {
     return renderCountdown();

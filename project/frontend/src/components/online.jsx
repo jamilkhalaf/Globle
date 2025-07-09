@@ -221,6 +221,17 @@ const Online = () => {
 
     socketInstance.on('gameEnd', (data) => {
       console.log('Game ended:', data);
+      console.log('Game end data details:', {
+        winner: data.winner,
+        loser: data.loser,
+        winnerTime: data.winnerTime,
+        loserTime: data.loserTime,
+        correctAnswer: data.correctAnswer,
+        points: data.points,
+        bothCorrect: data.bothCorrect,
+        bothWrong: data.bothWrong,
+        timeout: data.timeout
+      });
       setGameState('ended');
       setMatchResult(data);
       setGameTimer(0);

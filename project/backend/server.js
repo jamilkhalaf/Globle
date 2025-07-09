@@ -222,25 +222,127 @@ io.on('connection', (socket) => {
     // Check if answer is correct using the shared target
     const isCorrect = checkAnswer(match.gameType, answer, match.sharedTarget);
     
-    if (isCorrect) {
-      // Player wins
-      match.winner = socket.userId;
-      match.winnerTime = timeTaken;
+    // Store the player's answer
+    const playerIndex = match.players.findIndex(p => p.userId === socket.userId);
+    if (playerIndex === -1) {
+      socket.emit('error', { message: 'Player not found in match' });
+      return;
+    }
+    
+    // Initialize answers array if it doesn't exist
+    if (!match.answers) {
+      match.answers = [];
+    }
+    
+    // Store this player's answer
+    match.answers[playerIndex] = {
+      userId: socket.userId,
+      username: socket.username,
+      answer: answer,
+      timeTaken: timeTaken,
+      isCorrect: isCorrect
+    };
+    
+    console.log(`Player ${socket.username} submitted answer: ${answer} (correct: ${isCorrect})`);
+    console.log(`Match answers so far:`, match.answers);
+    
+    // Check if both players have answered
+    if (match.answers.length === 2 && match.answers.every(a => a !== undefined)) {
+      // Both players have answered, determine winner
+      const player1 = match.answers[0];
+      const player2 = match.answers[1];
+      
+      console.log(`Both players answered. Player1: ${player1.username} (${player1.answer}, correct: ${player1.isCorrect}, time: ${player1.timeTaken})`);
+      console.log(`Player2: ${player2.username} (${player2.answer}, correct: ${player2.isCorrect}, time: ${player2.timeTaken})`);
+      
+      let winner, loser, winnerTime, loserTime;
+      let points = {};
+      
+      if (player1.isCorrect && !player2.isCorrect) {
+        // Player 1 wins
+        winner = player1.username;
+        loser = player2.username;
+        winnerTime = player1.timeTaken;
+        loserTime = player2.timeTaken;
+        points[player1.userId] = 100;
+        points[player2.userId] = -100;
+        match.winner = player1.userId;
+        
+        console.log(`Player1 wins: ${player1.username} (correct answer)`);
+        
+        await updatePlayerPoints(player1.userId, 100, true);
+        await updatePlayerPoints(player2.userId, -100, false);
+      } else if (!player1.isCorrect && player2.isCorrect) {
+        // Player 2 wins
+        winner = player2.username;
+        loser = player1.username;
+        winnerTime = player2.timeTaken;
+        loserTime = player1.timeTaken;
+        points[player2.userId] = 100;
+        points[player1.userId] = -100;
+        match.winner = player2.userId;
+        
+        console.log(`Player2 wins: ${player2.username} (correct answer)`);
+        
+        await updatePlayerPoints(player2.userId, 100, true);
+        await updatePlayerPoints(player1.userId, -100, false);
+      } else if (player1.isCorrect && player2.isCorrect) {
+        // Both correct - faster player wins
+        if (player1.timeTaken < player2.timeTaken) {
+          winner = player1.username;
+          loser = player2.username;
+          winnerTime = player1.timeTaken;
+          loserTime = player2.timeTaken;
+          points[player1.userId] = 100;
+          points[player2.userId] = -100;
+          match.winner = player1.userId;
+          
+          console.log(`Player1 wins: ${player1.username} (faster time: ${player1.timeTaken}s vs ${player2.timeTaken}s)`);
+          
+          await updatePlayerPoints(player1.userId, 100, true);
+          await updatePlayerPoints(player2.userId, -100, false);
+        } else {
+          winner = player2.username;
+          loser = player1.username;
+          winnerTime = player2.timeTaken;
+          loserTime = player1.timeTaken;
+          points[player2.userId] = 100;
+          points[player1.userId] = -100;
+          match.winner = player2.userId;
+          
+          console.log(`Player2 wins: ${player2.username} (faster time: ${player2.timeTaken}s vs ${player1.timeTaken}s)`);
+          
+          await updatePlayerPoints(player2.userId, 100, true);
+          await updatePlayerPoints(player1.userId, -100, false);
+        }
+      } else {
+        // Both wrong - no winner, both lose points
+        winner = null;
+        loser = null;
+        points[player1.userId] = -100;
+        points[player2.userId] = -100;
+        match.winner = null;
+        
+        console.log(`Both players wrong - no winner`);
+        
+        await updatePlayerPoints(player1.userId, -100, false);
+        await updatePlayerPoints(player2.userId, -100, false);
+      }
+      
       match.endTime = Date.now();
       
-      // Update points
-      await updatePlayerPoints(socket.userId, 100, true);
-      await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, -100, false);
+      console.log(`Final result - Winner: ${winner}, Loser: ${loser}, Points:`, points);
       
       // Notify both players
       io.to(matchId).emit('gameEnd', {
-        winner: socket.username,
-        winnerTime: timeTaken,
+        winner: winner,
+        loser: loser,
+        winnerTime: winnerTime,
+        loserTime: loserTime,
         correctAnswer: match.sharedTarget.target,
-        points: {
-          [socket.userId]: 100,
-          [match.players.find(p => p.userId !== socket.userId).userId]: -100
-        }
+        points: points,
+        bothCorrect: player1.isCorrect && player2.isCorrect,
+        bothWrong: !player1.isCorrect && !player2.isCorrect
       });
       
       // Clean up match after delay
@@ -248,30 +350,8 @@ io.on('connection', (socket) => {
         activeMatches.delete(matchId);
       }, 5000);
     } else {
-      // Player loses
-      match.winner = match.players.find(p => p.userId !== socket.userId).userId;
-      match.loserTime = timeTaken;
-      match.endTime = Date.now();
-      
-      // Update points
-      await updatePlayerPoints(socket.userId, -100, false);
-      await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, 100, true);
-      
-      // Notify both players
-      io.to(matchId).emit('gameEnd', {
-        winner: match.players.find(p => p.userId !== socket.userId).username,
-        loserTime: timeTaken,
-        correctAnswer: match.sharedTarget.target,
-        points: {
-          [socket.userId]: -100,
-          [match.players.find(p => p.userId !== socket.userId).userId]: 100
-        }
-      });
-      
-      // Clean up match after delay
-      setTimeout(() => {
-        activeMatches.delete(matchId);
-      }, 5000);
+      // First player to answer - wait for second player
+      console.log(`Waiting for second player to answer...`);
     }
   });
 
@@ -381,6 +461,138 @@ async function tryMatchPlayers(gameType) {
         console.log(`Sending gameStart event with data:`, gameStartData);
         io.to(matchId).emit('gameStart', gameStartData);
         console.log(`Game start event sent to both players`);
+        
+        // Set a timeout to end the game after 60 seconds if not already ended
+        setTimeout(() => {
+          const currentMatch = activeMatches.get(matchId);
+          if (currentMatch && !currentMatch.winner) {
+            console.log(`Game timeout for match ${matchId}`);
+            
+            // Determine winner based on who answered (if any)
+            let winner = null;
+            let loser = null;
+            let points = {};
+            
+            if (currentMatch.answers && currentMatch.answers.length === 2) {
+              const player1 = currentMatch.answers[0];
+              const player2 = currentMatch.answers[1];
+              
+              if (player1 && player2) {
+                // Both answered - determine winner
+                if (player1.isCorrect && !player2.isCorrect) {
+                  winner = player1.username;
+                  loser = player2.username;
+                  points[player1.userId] = 100;
+                  points[player2.userId] = -100;
+                  currentMatch.winner = player1.userId;
+                  
+                  updatePlayerPoints(player1.userId, 100, true);
+                  updatePlayerPoints(player2.userId, -100, false);
+                } else if (!player1.isCorrect && player2.isCorrect) {
+                  winner = player2.username;
+                  loser = player1.username;
+                  points[player2.userId] = 100;
+                  points[player1.userId] = -100;
+                  currentMatch.winner = player2.userId;
+                  
+                  updatePlayerPoints(player2.userId, 100, true);
+                  updatePlayerPoints(player1.userId, -100, false);
+                } else if (player1.isCorrect && player2.isCorrect) {
+                  // Both correct - faster player wins
+                  if (player1.timeTaken < player2.timeTaken) {
+                    winner = player1.username;
+                    loser = player2.username;
+                    points[player1.userId] = 100;
+                    points[player2.userId] = -100;
+                    currentMatch.winner = player1.userId;
+                    
+                    updatePlayerPoints(player1.userId, 100, true);
+                    updatePlayerPoints(player2.userId, -100, false);
+                  } else {
+                    winner = player2.username;
+                    loser = player1.username;
+                    points[player2.userId] = 100;
+                    points[player1.userId] = -100;
+                    currentMatch.winner = player2.userId;
+                    
+                    updatePlayerPoints(player2.userId, 100, true);
+                    updatePlayerPoints(player1.userId, -100, false);
+                  }
+                } else {
+                  // Both wrong
+                  points[player1.userId] = -100;
+                  points[player2.userId] = -100;
+                  currentMatch.winner = null;
+                  
+                  updatePlayerPoints(player1.userId, -100, false);
+                  updatePlayerPoints(player2.userId, -100, false);
+                }
+              } else if (player1 && !player2) {
+                // Only player1 answered
+                if (player1.isCorrect) {
+                  winner = player1.username;
+                  points[player1.userId] = 100;
+                  points[player2.userId] = -100;
+                  currentMatch.winner = player1.userId;
+                  
+                  updatePlayerPoints(player1.userId, 100, true);
+                  updatePlayerPoints(player2.userId, -100, false);
+                } else {
+                  winner = player2.username;
+                  points[player1.userId] = -100;
+                  points[player2.userId] = 100;
+                  currentMatch.winner = player2.userId;
+                  
+                  updatePlayerPoints(player1.userId, -100, false);
+                  updatePlayerPoints(player2.userId, 100, true);
+                }
+              } else if (!player1 && player2) {
+                // Only player2 answered
+                if (player2.isCorrect) {
+                  winner = player2.username;
+                  points[player1.userId] = -100;
+                  points[player2.userId] = 100;
+                  currentMatch.winner = player2.userId;
+                  
+                  updatePlayerPoints(player1.userId, -100, false);
+                  updatePlayerPoints(player2.userId, 100, true);
+                } else {
+                  winner = player1.username;
+                  points[player1.userId] = 100;
+                  points[player2.userId] = -100;
+                  currentMatch.winner = player1.userId;
+                  
+                  updatePlayerPoints(player1.userId, 100, true);
+                  updatePlayerPoints(player2.userId, -100, false);
+                }
+              }
+            } else {
+              // No one answered - both lose
+              points[currentMatch.players[0].userId] = -100;
+              points[currentMatch.players[1].userId] = -100;
+              currentMatch.winner = null;
+              
+              updatePlayerPoints(currentMatch.players[0].userId, -100, false);
+              updatePlayerPoints(currentMatch.players[1].userId, -100, false);
+            }
+            
+            currentMatch.endTime = Date.now();
+            
+            // Notify both players
+            io.to(matchId).emit('gameEnd', {
+              winner: winner,
+              loser: loser,
+              correctAnswer: currentMatch.sharedTarget.target,
+              points: points,
+              timeout: true
+            });
+            
+            // Clean up match
+            setTimeout(() => {
+              activeMatches.delete(matchId);
+            }, 5000);
+          }
+        }, 60000); // 60 second timeout
       }, 3000);
     } else {
       console.log(`Failed to find sockets for players. Socket1: ${!!socket1}, Socket2: ${!!socket2}`);
