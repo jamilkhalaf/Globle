@@ -32,6 +32,12 @@ const OnlineGame = ({
   const [gameComponent, setGameComponent] = useState(null);
   const [gameProps, setGameProps] = useState({});
 
+  // Debug logging
+  useEffect(() => {
+    console.log('OnlineGame - matchData changed:', matchData);
+    console.log('OnlineGame - gameState:', gameState);
+  }, [matchData, gameState]);
+
   // Function to get a random target from the appropriate list
   const getRandomTarget = (gameType) => {
     switch (gameType) {
@@ -71,6 +77,15 @@ const OnlineGame = ({
       // Set up game-specific props and component
       const getGameConfig = (gameType) => {
         const target = getTargetForGame(gameType, matchData?.sharedTarget);
+        
+        console.log(`Setting up game config for ${gameType} with target:`, target);
+        console.log(`Match data shared target:`, matchData?.sharedTarget);
+        
+        // Ensure we have a valid target
+        if (!target) {
+          console.error('No valid target found for game:', gameType);
+          return null;
+        }
         
         const baseProps = {
           isOnline: true,
@@ -157,14 +172,22 @@ const OnlineGame = ({
           default:
             return {
               component: Game,
-              props: baseProps
+              props: {
+                ...baseProps,
+                targetCountry: target
+              }
             };
         }
       };
 
       const gameConfig = getGameConfig(matchData.gameType);
-      setGameComponent(gameConfig.component);
-      setGameProps(gameConfig.props);
+      if (gameConfig) {
+        console.log('Setting game component with props:', gameConfig.props);
+        setGameComponent(gameConfig.component);
+        setGameProps(gameConfig.props);
+      } else {
+        console.error('Failed to create game config for:', matchData.gameType);
+      }
     }
   }, [matchData, gameState, onAnswerSubmit]);
 
@@ -210,7 +233,16 @@ const OnlineGame = ({
 
       {/* Game Component */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {gameComponent && React.createElement(gameComponent, gameProps)}
+        {gameComponent && gameProps && (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) ? (
+          React.createElement(gameComponent, gameProps)
+        ) : (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <CircularProgress sx={{ color: '#43cea2' }} />
+            <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
+              Loading game...
+            </Typography>
+          </Box>
+        )}
       </Box>
     </Box>
   );
