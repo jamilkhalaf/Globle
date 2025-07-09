@@ -16,12 +16,14 @@ import {
   useMediaQuery
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import ConstructionIcon from '@mui/icons-material/Construction';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import GroupsIcon from '@mui/icons-material/Groups';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import EmailIcon from '@mui/icons-material/Email';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
-const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
+const ComingSoon = ({ open, onClose, feature = "1v1 Multiplayer" }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [email, setEmail] = useState('');
@@ -84,20 +86,20 @@ const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
               width: 80,
               height: 80,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #ff9800 0%, #ff5e62 100%)',
+              background: 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 12px 48px rgba(255, 152, 0, 0.4)',
+              boxShadow: '0 12px 48px rgba(156, 39, 176, 0.4)',
               animation: 'pulse 2s infinite',
               '@keyframes pulse': {
-                '0%': { transform: 'scale(1)', boxShadow: '0 12px 48px rgba(255, 152, 0, 0.4)' },
-                '50%': { transform: 'scale(1.05)', boxShadow: '0 16px 64px rgba(255, 152, 0, 0.6)' },
-                '100%': { transform: 'scale(1)', boxShadow: '0 12px 48px rgba(255, 152, 0, 0.4)' },
+                '0%': { transform: 'scale(1)', boxShadow: '0 12px 48px rgba(156, 39, 176, 0.4)' },
+                '50%': { transform: 'scale(1.05)', boxShadow: '0 16px 64px rgba(156, 39, 176, 0.6)' },
+                '100%': { transform: 'scale(1)', boxShadow: '0 12px 48px rgba(156, 39, 176, 0.4)' },
               }
             }}
           >
-            <ConstructionIcon sx={{ fontSize: 40, color: 'white' }} />
+            <GroupsIcon sx={{ fontSize: 40, color: 'white' }} />
           </Box>
         </Box>
 
@@ -106,7 +108,7 @@ const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
           sx={{
             fontWeight: 900,
             color: 'transparent',
-            background: 'linear-gradient(90deg, #ff9800 30%, #ff5e62 100%)',
+            background: 'linear-gradient(90deg, #9c27b0 30%, #673ab7 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             mb: 1,
@@ -138,30 +140,99 @@ const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
             mb: 3,
           }}
         >
-          We're working hard to bring you something amazing! This feature is currently under development 
-          and will be available soon. Stay tuned for updates!
+          Challenge your friends in real-time 1v1 battles! Compete head-to-head in all your favorite geography games 
+          with live leaderboards, rankings, and global tournaments. Show off your skills and climb the competitive ladder!
         </Typography>
 
         <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap" sx={{ mb: 3 }}>
           <Chip 
-            icon={<RocketLaunchIcon />} 
-            label="In Development"
+            icon={<SportsEsportsIcon />} 
+            label="1v1 Battles"
+            sx={{ 
+              background: 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)',
+              color: 'white',
+              fontWeight: 600,
+            }}
+          />
+          <Chip 
+            icon={<LeaderboardIcon />} 
+            label="Live Leaderboards"
+            sx={{ 
+              background: 'linear-gradient(135deg, #ff9800 0%, #ff5e62 100%)',
+              color: 'white',
+              fontWeight: 600,
+            }}
+          />
+          <Chip 
+            icon={<EmojiEventsIcon />} 
+            label="Tournaments"
             sx={{ 
               background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
               color: 'white',
               fontWeight: 600,
             }}
           />
-          <Chip 
-            icon={<NotificationsIcon />} 
-            label="Get Notified"
-            sx={{ 
-              background: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
-              color: 'white',
-              fontWeight: 600,
-            }}
-          />
         </Stack>
+
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'rgba(255,255,255,0.9)',
+              fontWeight: 600,
+              mb: 2,
+            }}
+          >
+            🎮 Multiplayer Features
+          </Typography>
+          
+          <Stack spacing={2} sx={{ textAlign: 'left', mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                background: '#9c27b0' 
+              }} />
+              <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem' }}>
+                Real-time 1v1 matches across all games
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                background: '#ff9800' 
+              }} />
+              <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem' }}>
+                Global leaderboards and rankings
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                background: '#4caf50' 
+              }} />
+              <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem' }}>
+                Weekly tournaments with prizes
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                background: '#2196f3' 
+              }} />
+              <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem' }}>
+                Friend challenges and private matches
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
 
         <Box sx={{ mb: 3 }}>
           <Typography
@@ -172,7 +243,7 @@ const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
               fontWeight: 500,
             }}
           >
-            Want to be notified when this feature launches?
+            Want to be notified when multiplayer launches?
           </Typography>
           
           <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
@@ -201,14 +272,14 @@ const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
               onClick={handleSubscribe}
               startIcon={<EmailIcon />}
               sx={{
-                background: 'linear-gradient(135deg, #ff9800 0%, #ff5e62 100%)',
+                background: 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)',
                 color: 'white',
                 fontWeight: 600,
                 borderRadius: 2,
                 px: 3,
                 textTransform: 'none',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #f57c00 0%, #e64a19 100%)',
+                  background: 'linear-gradient(135deg, #7b1fa2 0%, #512da8 100%)',
                   transform: 'translateY(-1px)',
                 }
               }}
@@ -228,7 +299,7 @@ const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
                 mb: 2,
               }}
             >
-              ✅ Thanks! We'll notify you when it's ready.
+              ✅ Thanks! We'll notify you when multiplayer is ready.
             </Typography>
           </Fade>
         )}
@@ -241,7 +312,7 @@ const ComingSoon = ({ open, onClose, feature = "New Feature" }) => {
             fontStyle: 'italic',
           }}
         >
-          Estimated launch: Coming soon
+          Estimated launch: Q1 2024
         </Typography>
       </DialogContent>
 

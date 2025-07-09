@@ -132,7 +132,7 @@ const Header = forwardRef((props, ref) => {
     { path: '/contact', label: 'Contact' },
     { 
       label: 'Coming Soon', 
-      action: () => handleComingSoon('Premium Features'),
+      action: () => handleComingSoon('1v1 Multiplayer & Leaderboards'),
       isComingSoon: true 
     },
   ];

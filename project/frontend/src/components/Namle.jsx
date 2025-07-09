@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import { Box, Typography, Button, Paper, Stack, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, DialogActions, Chip, IconButton, useTheme, useMediaQuery, List, ListItem, ListItemText, Accordion, AccordionSummary, AccordionDetails, LinearProgress } from '@mui/material';
+import { Box, Typography, Button, Paper, Stack, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, DialogActions, Chip, IconButton, useTheme, useMediaQuery, List, ListItem, ListItemText, Accordion, AccordionSummary, AccordionDetails, LinearProgress, Fade } from '@mui/material';
 import Header from './Header';
 import 'leaflet/dist/leaflet.css';
 import countryInfo from './countryInfo';
@@ -29,6 +29,7 @@ const Namle = () => {
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [inputError, setInputError] = useState('');
   const [countryOptions, setCountryOptions] = useState([]);
+  const [showSuccessTick, setShowSuccessTick] = useState(false);
   const timerRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -231,6 +232,13 @@ const Namle = () => {
     setTimerRunning(false);
     setGameFinished(true);
     setShowResults(true);
+  };
+
+  const showSuccessAnimation = () => {
+    setShowSuccessTick(true);
+    setTimeout(() => {
+      setShowSuccessTick(false);
+    }, 1000);
   };
 
   const handleGuess = () => {
@@ -439,6 +447,50 @@ const Namle = () => {
       <Header />
       <Toolbar />
       
+      {/* Success Tick Animation */}
+      <Fade in={showSuccessTick} timeout={300}>
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(69, 160, 73, 0.9) 100%)',
+            boxShadow: '0 8px 32px rgba(76, 175, 80, 0.4)',
+            animation: showSuccessTick ? 'pulse 0.6s ease-in-out' : 'none',
+            '@keyframes pulse': {
+              '0%': {
+                transform: 'translate(-50%, -50%) scale(0.8)',
+                opacity: 0,
+              },
+              '50%': {
+                transform: 'translate(-50%, -50%) scale(1.1)',
+                opacity: 1,
+              },
+              '100%': {
+                transform: 'translate(-50%, -50%) scale(1)',
+                opacity: 1,
+              },
+            },
+          }}
+        >
+          <CheckCircleIcon 
+            sx={{ 
+              fontSize: 60, 
+              color: 'white',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            }} 
+          />
+        </Box>
+      </Fade>
+      
       {/* Game Controls */}
       <Paper
         sx={{
@@ -582,7 +634,7 @@ const Namle = () => {
             <Autocomplete
               freeSolo={false}
               disableClearable
-              options={countryOptions}
+              options={inputValue.length > 0 ? countryOptions : []}
               getOptionLabel={option => typeof option === 'string' ? option : option.label}
               value={inputValue}
               inputValue={inputValue}
@@ -621,6 +673,7 @@ const Namle = () => {
                           setNamedCountries(prev => new Set([...prev, finalCountryName]));
                           setInputValue('');
                           setInputError('');
+                          showSuccessAnimation(); // Trigger success animation
                           
                           // Check if all countries are named
                           if (namedCountries.size + 1 >= totalCountries) {
@@ -706,6 +759,7 @@ const Namle = () => {
                       setNamedCountries(prev => new Set([...prev, finalCountryName]));
                       setInputValue('');
                       setInputError('');
+                      showSuccessAnimation(); // Trigger success animation
                       
                       // Check if all countries are named
                       if (namedCountries.size + 1 >= totalCountries) {
