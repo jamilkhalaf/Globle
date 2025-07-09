@@ -80,7 +80,7 @@ const OnlineGame = ({
   };
 
   useEffect(() => {
-    if (matchData?.gameType && gameState === 'playing' && !isSettingUp) {
+    if (matchData?.gameType && gameState === 'playing' && !isSettingUp && !gameComponentRef.current) {
       // Reset ready state when starting new game
       setIsGameReady(false);
       setIsSettingUp(true);
