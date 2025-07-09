@@ -75,6 +75,9 @@ const OnlineGame = ({
 
   useEffect(() => {
     if (matchData?.gameType && gameState === 'playing') {
+      // Reset ready state when starting new game
+      setIsGameReady(false);
+      
       // Add a delay to ensure everything is properly set up
       const setupGame = () => {
         // Set up game-specific props and component
@@ -191,16 +194,17 @@ const OnlineGame = ({
           
           // Add additional delay before marking game as ready
           setTimeout(() => {
+            console.log('Final props check before marking ready:', gameConfig.props);
             setIsGameReady(true);
             console.log('Game is now ready to render');
-          }, 1000); // 1 second delay
+          }, 1500); // Increased to 1.5 seconds
         } else {
           console.error('Failed to create game config for:', matchData.gameType);
         }
       };
 
       // Add initial delay to ensure everything is properly set
-      setTimeout(setupGame, 500); // 500ms delay before setting up game
+      setTimeout(setupGame, 1000); // Increased to 1 second
     } else if (gameState !== 'playing') {
       // Clear game component when not playing
       setGameComponent(null);
@@ -208,6 +212,34 @@ const OnlineGame = ({
       setIsGameReady(false);
     }
   }, [matchData, gameState, onAnswerSubmit]);
+
+  // Wrapper component to ensure Game component is only rendered when ready
+  const GameWrapper = ({ component, props }) => {
+    const [isComponentReady, setIsComponentReady] = useState(false);
+    
+    useEffect(() => {
+      // Double-check that props are valid before rendering
+      if (props && (props.targetCountry || props.targetWord || props.targetState)) {
+        console.log('GameWrapper: Props are valid, setting component ready');
+        setTimeout(() => {
+          setIsComponentReady(true);
+        }, 500); // Additional 500ms delay
+      }
+    }, [props]);
+    
+    if (!isComponentReady) {
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <CircularProgress sx={{ color: '#43cea2' }} />
+          <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
+            Initializing game component...
+          </Typography>
+        </Box>
+      );
+    }
+    
+    return React.createElement(component, props);
+  };
 
   const renderCountdown = () => (
     <Box sx={{ textAlign: 'center', p: 4 }}>
@@ -251,14 +283,25 @@ const OnlineGame = ({
 
       {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {gameState === 'playing' && isGameReady && gameComponent && gameProps && (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) ? (
-          React.createElement(gameComponent, gameProps)
+        {gameState === 'playing' && isGameReady && gameComponent && gameProps && 
+         (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) && 
+         gameProps.targetCountry !== null && gameProps.targetCountry !== undefined ? (
+          <GameWrapper component={gameComponent} props={gameProps} />
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress sx={{ color: '#43cea2' }} />
             <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
-              {gameState === 'countdown' ? 'Preparing game...' : gameState === 'playing' ? 'Loading game components...' : 'Loading game...'}
+              {gameState === 'countdown' ? 'Preparing game...' : 
+               gameState === 'playing' ? 'Loading game components...' : 'Loading game...'}
             </Typography>
+            {gameState === 'playing' && (
+              <Typography variant="caption" sx={{ ml: 2, color: '#999', display: 'block', width: '100%', textAlign: 'center' }}>
+                Ready: {isGameReady ? 'Yes' : 'No'}, 
+                Component: {gameComponent ? 'Yes' : 'No'}, 
+                Props: {gameProps && Object.keys(gameProps).length > 0 ? 'Yes' : 'No'}, 
+                Target: {gameProps?.targetCountry || 'Not set'}
+              </Typography>
+            )}
           </Box>
         )}
       </Box>
