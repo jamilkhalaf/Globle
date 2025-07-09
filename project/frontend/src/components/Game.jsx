@@ -16,6 +16,46 @@ import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
 
 const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
+  // Early return if targetCountry is null in online mode - this prevents useState from being called
+  if (isOnline && (!targetCountry || targetCountry === null || targetCountry === undefined)) {
+    console.log('Game component: Early return due to null targetCountry:', targetCountry);
+    return (
+      <Box sx={{ 
+        position: 'relative', 
+        width: '100vw', 
+        height: '100vh', 
+        overflow: 'hidden',
+        margin: 0,
+        padding: 0,
+        backgroundColor: '#2b2b2b',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column'
+      }}>
+        <Header />
+        <Toolbar />
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          gap: 2,
+          color: 'white'
+        }}>
+          <Typography variant="h6" sx={{ color: '#43cea2' }}>
+            Loading Game...
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#ccc' }}>
+            Preparing your multiplayer match
+          </Typography>
+          <Typography variant="caption" sx={{ color: '#999' }}>
+            Target: {targetCountry || 'Not set yet'}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -688,46 +728,6 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       console.error('Error updating badge progress:', error);
     }
   };
-
-  // Show loading state when waiting for targetCountry in online mode
-  if (isOnline && (!targetCountry || targetCountry === null || targetCountry === undefined)) {
-    console.log('Game component: Waiting for targetCountry, current value:', targetCountry);
-    return (
-      <Box sx={{ 
-        position: 'relative', 
-        width: '100vw', 
-        height: '100vh', 
-        overflow: 'hidden',
-        margin: 0,
-        padding: 0,
-        backgroundColor: '#2b2b2b',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'column'
-      }}>
-        <Header />
-        <Toolbar />
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          gap: 2,
-          color: 'white'
-        }}>
-          <Typography variant="h6" sx={{ color: '#43cea2' }}>
-            Loading Game...
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#ccc' }}>
-            Preparing your multiplayer match
-          </Typography>
-          <Typography variant="caption" sx={{ color: '#999' }}>
-            Target: {targetCountry || 'Not set yet'}
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
 
   if (showIntro) {
     return (

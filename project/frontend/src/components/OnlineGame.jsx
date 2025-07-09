@@ -283,9 +283,7 @@ const OnlineGame = ({
 
       {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {gameState === 'playing' && isGameReady && gameComponent && gameProps && 
-         (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) && 
-         gameProps.targetCountry !== null && gameProps.targetCountry !== undefined ? (
+        {gameState === 'playing' && isGameReady && gameComponent && gameProps ? (
           <GameWrapper component={gameComponent} props={gameProps} />
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
