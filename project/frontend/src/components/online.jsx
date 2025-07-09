@@ -86,6 +86,13 @@ const Online = () => {
     // Load leaderboard data
     fetchLeaderboard();
 
+    // Automatically connect to socket if user is logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('Auto-connecting to socket server...');
+      connectSocket();
+    }
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -139,10 +146,23 @@ const Online = () => {
 
     // Import socket.io-client dynamically
     const socketInstance = io('https://api.jamilweb.click', {
-      auth: { token }
+      auth: { token },
+      timeout: 10000, // 10 second timeout
+      forceNew: true
     });
 
+    // Set a timeout for connection
+    const connectionTimeout = setTimeout(() => {
+      if (!socketInstance.connected) {
+        console.log('Socket connection timeout');
+        setIsConnected(false);
+        setError('Connection timeout. Please try again.');
+        socketInstance.disconnect();
+      }
+    }, 10000);
+
     socketInstance.on('connect', () => {
+      clearTimeout(connectionTimeout);
       setIsConnected(true);
       setError('');
       console.log('Socket connected successfully');
@@ -158,6 +178,18 @@ const Online = () => {
     socketInstance.on('disconnect', () => {
       setIsConnected(false);
       console.log('Socket disconnected');
+    });
+
+    socketInstance.on('connect_error', (error) => {
+      console.log('Socket connection error:', error);
+      setIsConnected(false);
+      setError('Failed to connect to game server. Please try again.');
+    });
+
+    socketInstance.on('error', (error) => {
+      console.log('Socket error:', error);
+      setIsConnected(false);
+      setError('Connection error. Please try again.');
     });
 
     socketInstance.on('queueJoined', (data) => {
@@ -618,9 +650,16 @@ const Online = () => {
         </Typography>
 
         {/* Connection Status */}
-        {!isConnected && (
+        {!isConnected && localStorage.getItem('token') && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Not connected to game server. Please login to play online.
+            Connecting to game server... Please wait.
+          </Alert>
+        )}
+        
+        {/* Login Required */}
+        {!localStorage.getItem('token') && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Please login to play online games.
           </Alert>
         )}
 
