@@ -192,15 +192,22 @@ const OnlineGame = ({
           
           // Additional check to ensure props are valid before setting
           if (gameConfig.props && (gameConfig.props.targetCountry || gameConfig.props.targetWord || gameConfig.props.targetState)) {
-            setGameComponent(gameConfig.component);
-            setGameProps(gameConfig.props);
-            
-            // Add additional delay before marking game as ready
-            setTimeout(() => {
-              console.log('Final props check before marking ready:', gameConfig.props);
-              setIsGameReady(true);
-              console.log('Game is now ready to render');
-            }, 1500); // Increased to 1.5 seconds
+            // Double-check that the target is not null/undefined
+            const target = gameConfig.props.targetCountry || gameConfig.props.targetWord || gameConfig.props.targetState;
+            if (target && target !== null && target !== undefined) {
+              console.log('Props are valid, setting game component');
+              setGameComponent(gameConfig.component);
+              setGameProps(gameConfig.props);
+              
+              // Add additional delay before marking game as ready
+              setTimeout(() => {
+                console.log('Final props check before marking ready:', gameConfig.props);
+                setIsGameReady(true);
+                console.log('Game is now ready to render');
+              }, 1500); // Increased to 1.5 seconds
+            } else {
+              console.error('Target is null/undefined:', target);
+            }
           } else {
             console.error('Game config props are invalid:', gameConfig.props);
           }
@@ -223,17 +230,23 @@ const OnlineGame = ({
   const SafeGameComponent = ({ gameType, targetCountry, onAnswerSubmit }) => {
     console.log('SafeGameComponent: Rendering with targetCountry:', targetCountry);
     
-    if (!targetCountry) {
-      console.log('SafeGameComponent: No targetCountry, showing loading');
+    // More explicit null check
+    if (!targetCountry || targetCountry === null || targetCountry === undefined) {
+      console.log('SafeGameComponent: No valid targetCountry, showing loading');
       return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
           <CircularProgress sx={{ color: '#43cea2' }} />
           <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
             Loading game...
           </Typography>
+          <Typography variant="caption" sx={{ color: '#999', display: 'block', width: '100%', textAlign: 'center' }}>
+            Target: {targetCountry || 'Not set'}
+          </Typography>
         </Box>
       );
     }
+    
+    console.log('SafeGameComponent: TargetCountry is valid, rendering Game component');
     
     // Only render the actual game component when we have a valid target
     return (
@@ -289,11 +302,32 @@ const OnlineGame = ({
       {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         {gameState === 'playing' && isGameReady && gameComponent && gameProps ? (
-          <SafeGameComponent 
-            gameType={matchData.gameType} 
-            targetCountry={gameProps.targetCountry || gameProps.targetWord || gameProps.targetState} 
-            onAnswerSubmit={onAnswerSubmit} 
-          />
+          (() => {
+            console.log('OnlineGame: About to render SafeGameComponent with props:', gameProps);
+            const target = gameProps.targetCountry || gameProps.targetWord || gameProps.targetState;
+            console.log('OnlineGame: Target extracted:', target);
+            
+            // Final validation - don't render if target is invalid
+            if (!target || target === null || target === undefined) {
+              console.log('OnlineGame: Target is invalid, showing loading instead');
+              return (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                  <CircularProgress sx={{ color: '#43cea2' }} />
+                  <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
+                    Waiting for valid target...
+                  </Typography>
+                </Box>
+              );
+            }
+            
+            return (
+              <SafeGameComponent 
+                gameType={matchData.gameType} 
+                targetCountry={target} 
+                onAnswerSubmit={onAnswerSubmit} 
+              />
+            );
+          })()
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress sx={{ color: '#43cea2' }} />
