@@ -690,7 +690,8 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   };
 
   // Show loading state when waiting for targetCountry in online mode
-  if (isOnline && !targetCountry) {
+  if (isOnline && (!targetCountry || targetCountry === null || targetCountry === undefined)) {
+    console.log('Game component: Waiting for targetCountry, current value:', targetCountry);
     return (
       <Box sx={{ 
         position: 'relative', 
@@ -719,6 +720,9 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
           </Typography>
           <Typography variant="body2" sx={{ color: '#ccc' }}>
             Preparing your multiplayer match
+          </Typography>
+          <Typography variant="caption" sx={{ color: '#999' }}>
+            Target: {targetCountry || 'Not set yet'}
           </Typography>
         </Box>
       </Box>

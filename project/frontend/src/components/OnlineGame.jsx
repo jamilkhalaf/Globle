@@ -31,6 +31,7 @@ const OnlineGame = ({
   const [gameAnswer, setGameAnswer] = useState('');
   const [gameComponent, setGameComponent] = useState(null);
   const [gameProps, setGameProps] = useState({});
+  const [isGameReady, setIsGameReady] = useState(false);
 
   // Debug logging
   useEffect(() => {
@@ -74,124 +75,137 @@ const OnlineGame = ({
 
   useEffect(() => {
     if (matchData?.gameType && gameState === 'playing') {
-      // Set up game-specific props and component
-      const getGameConfig = (gameType) => {
-        const target = getTargetForGame(gameType, matchData?.sharedTarget);
-        
-        console.log(`Setting up game config for ${gameType} with target:`, target);
-        console.log(`Match data shared target:`, matchData?.sharedTarget);
-        
-        // Ensure we have a valid target
-        if (!target) {
-          console.error('No valid target found for game:', gameType);
-          return null;
-        }
-        
-        const baseProps = {
-          isOnline: true,
-          disabled: false, // Game is active when playing
-          onAnswerSubmit: (answer) => {
-            onAnswerSubmit(answer);
-            setGameAnswer('');
+      // Add a delay to ensure everything is properly set up
+      const setupGame = () => {
+        // Set up game-specific props and component
+        const getGameConfig = (gameType) => {
+          const target = getTargetForGame(gameType, matchData?.sharedTarget);
+          
+          console.log(`Setting up game config for ${gameType} with target:`, target);
+          console.log(`Match data shared target:`, matchData?.sharedTarget);
+          
+          // Ensure we have a valid target
+          if (!target) {
+            console.error('No valid target found for game:', gameType);
+            return null;
+          }
+          
+          const baseProps = {
+            isOnline: true,
+            disabled: false, // Game is active when playing
+            onAnswerSubmit: (answer) => {
+              onAnswerSubmit(answer);
+              setGameAnswer('');
+            }
+          };
+
+          switch (gameType) {
+            case 'Globle':
+              return {
+                component: Game,
+                props: {
+                  ...baseProps,
+                  targetCountry: target
+                }
+              };
+            case 'Population':
+              return {
+                component: Population,
+                props: {
+                  ...baseProps,
+                  targetCountry: target
+                }
+              };
+            case 'Findle':
+              return {
+                component: Wordle,
+                props: {
+                  ...baseProps,
+                  targetWord: target
+                }
+              };
+            case 'Flagle':
+              return {
+                component: Flagle,
+                props: {
+                  ...baseProps,
+                  targetCountry: target
+                }
+              };
+            case 'Worldle':
+              return {
+                component: Worldle,
+                props: {
+                  ...baseProps,
+                  targetCountry: target
+                }
+              };
+            case 'Capitals':
+              return {
+                component: Capitals,
+                props: {
+                  ...baseProps,
+                  targetCountry: target
+                }
+              };
+            case 'Hangman':
+              return {
+                component: Hangman,
+                props: {
+                  ...baseProps,
+                  targetWord: target
+                }
+              };
+            case 'Shaple':
+              return {
+                component: Shaple,
+                props: {
+                  ...baseProps,
+                  targetCountry: target
+                }
+              };
+            case 'US':
+              return {
+                component: US,
+                props: {
+                  ...baseProps,
+                  targetState: target
+                }
+              };
+            default:
+              return {
+                component: Game,
+                props: {
+                  ...baseProps,
+                  targetCountry: target
+                }
+              };
           }
         };
 
-        switch (gameType) {
-          case 'Globle':
-            return {
-              component: Game,
-              props: {
-                ...baseProps,
-                targetCountry: target
-              }
-            };
-          case 'Population':
-            return {
-              component: Population,
-              props: {
-                ...baseProps,
-                targetCountry: target
-              }
-            };
-          case 'Findle':
-            return {
-              component: Wordle,
-              props: {
-                ...baseProps,
-                targetWord: target
-              }
-            };
-          case 'Flagle':
-            return {
-              component: Flagle,
-              props: {
-                ...baseProps,
-                targetCountry: target
-              }
-            };
-          case 'Worldle':
-            return {
-              component: Worldle,
-              props: {
-                ...baseProps,
-                targetCountry: target
-              }
-            };
-          case 'Capitals':
-            return {
-              component: Capitals,
-              props: {
-                ...baseProps,
-                targetCountry: target
-              }
-            };
-          case 'Hangman':
-            return {
-              component: Hangman,
-              props: {
-                ...baseProps,
-                targetWord: target
-              }
-            };
-          case 'Shaple':
-            return {
-              component: Shaple,
-              props: {
-                ...baseProps,
-                targetCountry: target
-              }
-            };
-          case 'US':
-            return {
-              component: US,
-              props: {
-                ...baseProps,
-                targetState: target
-              }
-            };
-          default:
-            return {
-              component: Game,
-              props: {
-                ...baseProps,
-                targetCountry: target
-              }
-            };
+        const gameConfig = getGameConfig(matchData.gameType);
+        if (gameConfig) {
+          console.log('Setting game component with props:', gameConfig.props);
+          setGameComponent(gameConfig.component);
+          setGameProps(gameConfig.props);
+          
+          // Add additional delay before marking game as ready
+          setTimeout(() => {
+            setIsGameReady(true);
+            console.log('Game is now ready to render');
+          }, 1000); // 1 second delay
+        } else {
+          console.error('Failed to create game config for:', matchData.gameType);
         }
       };
 
-      const gameConfig = getGameConfig(matchData.gameType);
-      if (gameConfig) {
-        console.log('Setting game component with props:', gameConfig.props);
-        setGameComponent(gameConfig.component);
-        setGameProps(gameConfig.props);
-      } else {
-        console.error('Failed to create game config for:', matchData.gameType);
-      }
+      // Add initial delay to ensure everything is properly set
+      setTimeout(setupGame, 500); // 500ms delay before setting up game
     } else if (gameState !== 'playing') {
       // Clear game component when not playing
       setGameComponent(null);
       setGameProps({});
+      setIsGameReady(false);
     }
   }, [matchData, gameState, onAnswerSubmit]);
 
@@ -237,13 +251,13 @@ const OnlineGame = ({
 
       {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {gameState === 'playing' && gameComponent && gameProps && (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) ? (
+        {gameState === 'playing' && isGameReady && gameComponent && gameProps && (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) ? (
           React.createElement(gameComponent, gameProps)
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress sx={{ color: '#43cea2' }} />
             <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
-              {gameState === 'countdown' ? 'Preparing game...' : 'Loading game...'}
+              {gameState === 'countdown' ? 'Preparing game...' : gameState === 'playing' ? 'Loading game components...' : 'Loading game...'}
             </Typography>
           </Box>
         )}
