@@ -201,21 +201,26 @@ const OnlineGame = ({
             // Double-check that the target is not null/undefined
             const target = gameConfig.props.targetCountry || gameConfig.props.targetWord || gameConfig.props.targetState;
             if (target && target !== null && target !== undefined) {
-              console.log('Props are valid, setting game component');
-              setGameComponent(gameConfig.component);
-              setGameProps(gameConfig.props);
+              console.log('Props are valid, but not setting game component yet');
               
-              // Add much longer delay before marking game as ready
+              // Don't set the game component yet - wait until final delay
               setTimeout(() => {
                 console.log('Final props check before marking ready:', gameConfig.props);
                 setIsGameReady(true);
                 setIsSettingUp(false);
                 console.log('Game is now ready to render');
                 
-                // Add final delay before actually rendering the Game component
+                // Add final delay before actually setting the game component
                 setTimeout(() => {
-                  console.log('Now safe to render Game component');
-                  setCanRenderGame(true);
+                  console.log('Now safe to set game component');
+                  setGameComponent(gameConfig.component);
+                  setGameProps(gameConfig.props);
+                  
+                  // Additional delay before rendering
+                  setTimeout(() => {
+                    console.log('Now safe to render Game component');
+                    setCanRenderGame(true);
+                  }, 5000); // 5 more seconds
                 }, 12000); // Extended to 12 seconds
               }, 8000); // Keep at 8 seconds
             } else {
