@@ -156,17 +156,20 @@ const Online = () => {
 
     socketInstance.on('disconnect', () => {
       setIsConnected(false);
+      console.log('Socket disconnected');
     });
 
     socketInstance.on('queueJoined', (data) => {
-      console.log('Joined queue:', data);
+      console.log('Joined queue successfully:', data);
     });
 
     socketInstance.on('queueError', (data) => {
+      console.log('Queue error:', data);
       setError(data.message);
     });
 
     socketInstance.on('matchFound', (data) => {
+      console.log('Match found:', data);
       setCurrentMatch(data);
       setGameState('countdown');
       setGameQuestion(data.question);
@@ -175,18 +178,21 @@ const Online = () => {
     });
 
     socketInstance.on('gameStart', (data) => {
+      console.log('Game started:', data);
       setGameState('playing');
       setGameTimer(60); // 60 second game
       setGameQuestion(data.question);
     });
 
     socketInstance.on('gameEnd', (data) => {
+      console.log('Game ended:', data);
       setGameState('ended');
       setMatchResult(data);
       setGameTimer(0);
     });
 
     socketInstance.on('opponentDisconnected', () => {
+      console.log('Opponent disconnected');
       setError('Opponent disconnected');
       setGameState('waiting');
       setCurrentMatch(null);
@@ -225,6 +231,11 @@ const Online = () => {
   };
 
   const handleConfirmJoinGame = () => {
+    console.log('handleConfirmJoinGame called');
+    console.log('selectedGameType:', selectedGameType);
+    console.log('socket exists:', !!socket);
+    console.log('isConnected:', isConnected);
+    
     setJoinGameDialog(false);
     setIsWaitingForPlayer(true);
     setWaitingTime(0);
@@ -234,10 +245,11 @@ const Online = () => {
     
     // Connect socket if not connected
     if (!socket) {
+      console.log('No socket, connecting...');
       connectSocket();
     } else {
       // Socket already exists, join queue immediately
-      console.log('Joining queue for:', selectedGameType);
+      console.log('Socket exists, joining queue for:', selectedGameType);
       socket.emit('joinQueue', { gameType: selectedGameType });
     }
   };
