@@ -144,6 +144,13 @@ const Online = () => {
     socketInstance.on('connect', () => {
       setIsConnected(true);
       setError('');
+      console.log('Socket connected successfully');
+      
+      // If we're waiting to join a queue, do it now
+      if (isWaitingForPlayer && selectedGameType) {
+        console.log('Joining queue after connection for:', selectedGameType);
+        socketInstance.emit('joinQueue', { gameType: selectedGameType });
+      }
     });
 
     socketInstance.on('disconnect', () => {
@@ -227,10 +234,9 @@ const Online = () => {
     // Connect socket if not connected
     if (!socket) {
       connectSocket();
-    }
-    
-    // Join queue
-    if (socket && selectedGameType) {
+    } else {
+      // Socket already exists, join queue immediately
+      console.log('Joining queue for:', selectedGameType);
       socket.emit('joinQueue', { gameType: selectedGameType });
     }
   };
