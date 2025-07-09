@@ -222,9 +222,8 @@ const OnlineGame = ({
                   gameComponentRef.current = gameConfig.component;
                   gamePropsRef.current = gameConfig.props;
                   
-                  // Set the state flags to trigger rendering
-                  setGameComponent(gameConfig.component);
-                  setGameProps(gameConfig.props);
+                  // Don't set state - only use refs to prevent any Game component creation
+                  console.log('Game component and props stored in refs');
                   
                   // Additional delay before rendering
                   setTimeout(() => {
@@ -255,7 +254,9 @@ const OnlineGame = ({
       setGameProps({});
       setIsGameReady(false);
       setIsSettingUp(false);
-      setCanRenderGame(false); // Reset canRenderGame when game state changes
+      setCanRenderGame(false);
+      gameComponentRef.current = null;
+      gamePropsRef.current = null;
     }
   }, [matchData, gameState, onAnswerSubmit, isSettingUp]);
 
