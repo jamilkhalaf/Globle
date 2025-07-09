@@ -22,10 +22,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
-  profilePicture: {
-    type: String,
-    default: null
-  },
   joinDate: {
     type: Date,
     default: Date.now
@@ -33,6 +29,23 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: Date.now
+  },
+  // Online gaming points and statistics
+  onlinePoints: {
+    type: Number,
+    default: 0
+  },
+  onlineGamesPlayed: {
+    type: Number,
+    default: 0
+  },
+  onlineGamesWon: {
+    type: Number,
+    default: 0
+  },
+  onlineWinRate: {
+    type: Number,
+    default: 0
   },
   // Overall statistics
   totalGamesPlayed: {
@@ -152,6 +165,20 @@ userSchema.pre('save', async function(next) {
 // Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to update online points
+userSchema.methods.updateOnlinePoints = async function(pointsChange, isWin = false) {
+  this.onlinePoints += pointsChange;
+  this.onlineGamesPlayed += 1;
+  
+  if (isWin) {
+    this.onlineGamesWon += 1;
+  }
+  
+  this.onlineWinRate = (this.onlineGamesWon / this.onlineGamesPlayed) * 100;
+  
+  return await this.save();
 };
 
 module.exports = mongoose.model('User', userSchema); 

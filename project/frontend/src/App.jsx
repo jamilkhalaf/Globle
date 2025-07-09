@@ -18,6 +18,7 @@ import Signup from './components/Signup'
 import Shaple from './components/shaple'
 import US from './components/US'
 import Namle from './components/Namle'
+import Online from './components/online'
 import './App.css'
 
 const theme = createTheme({
@@ -51,6 +52,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/online" element={<Online />} />
           <Route path="/game" element={<Game />} />
           <Route path="/population" element={<Population />} />
           <Route path="/name" element={<Name />} />

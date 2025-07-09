@@ -379,3 +379,28 @@ router.post('/cleanup', auth, async (req, res) => {
 });
 
 module.exports = router; 
+            shouldRemove = gameStats.bestScore !== 1;
+            break;
+        }
+      }
+      
+      if (shouldRemove) {
+        badgesToRemove.push(badge.badgeId);
+        await Badge.findByIdAndDelete(badge._id);
+        console.log(`Removing badge: ${badge.badgeId}`);
+      }
+    }
+
+    res.json({ 
+      message: 'Badge cleanup completed',
+      removedBadges: badgesToRemove,
+      totalRemoved: badgesToRemove.length
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router; 

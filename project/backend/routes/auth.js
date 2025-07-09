@@ -1,50 +1,11 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, '../uploads/profile-pictures');
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'profile-' + req.user.id + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: function (req, file, cb) {
-    // Check file type
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'));
-    }
-  }
-});
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -101,7 +62,6 @@ router.post('/signup', [
         id: user._id,
         username: user.username,
         email: user.email,
-        profilePicture: user.profilePicture,
         joinDate: user.joinDate
       }
     });
@@ -172,7 +132,6 @@ router.post('/login', [
         id: user._id,
         username: user.username,
         email: user.email,
-        profilePicture: user.profilePicture,
         joinDate: user.joinDate,
         totalGamesPlayed: user.totalGamesPlayed,
         currentStreak: user.currentStreak,
@@ -190,57 +149,6 @@ router.post('/login', [
 // @desc    Get current user
 // @access  Private
 router.get('/me', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    res.json(user);
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// @route   PUT /api/auth/profile-picture
-// @desc    Update user profile picture
-// @access  Private
-router.put('/profile-picture', auth, upload.single('profilePicture'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No image file provided' });
-    }
-
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Delete old profile picture if it exists
-    if (user.profilePicture && user.profilePicture.startsWith('/uploads/')) {
-      const oldFilePath = path.join(__dirname, '..', user.profilePicture);
-      if (fs.existsSync(oldFilePath)) {
-        fs.unlinkSync(oldFilePath);
-      }
-    }
-
-    // Save the new profile picture path
-    const profilePicturePath = '/uploads/profile-pictures/' + req.file.filename;
-    user.profilePicture = profilePicturePath;
-    await user.save();
-
-    res.json({
-      message: 'Profile picture updated successfully',
-      profilePicture: profilePicturePath
-    });
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// @route   GET /api/auth/profile
-// @desc    Get user profile information
-// @access  Private
-router.get('/profile', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     res.json(user);

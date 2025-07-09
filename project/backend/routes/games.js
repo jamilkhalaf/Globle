@@ -226,4 +226,27 @@ router.get('/stats', auth, async (req, res) => {
   }
 });
 
+// Get leaderboard
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const leaderboard = await User.find({})
+      .select('username onlinePoints onlineGamesPlayed onlineWinRate')
+      .sort({ onlinePoints: -1 })
+      .limit(50);
+
+    const formattedLeaderboard = leaderboard.map((user, index) => ({
+      rank: index + 1,
+      username: user.username,
+      score: user.onlinePoints,
+      games: user.onlineGamesPlayed,
+      winRate: `${Math.round(user.onlineWinRate || 0)}%`
+    }));
+
+    res.json(formattedLeaderboard);
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).json({ message: 'Error fetching leaderboard' });
+  }
+});
+
 module.exports = router; 
