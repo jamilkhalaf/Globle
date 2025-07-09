@@ -73,7 +73,7 @@ const OnlineGame = ({
   };
 
   useEffect(() => {
-    if (matchData?.gameType) {
+    if (matchData?.gameType && gameState === 'playing') {
       // Set up game-specific props and component
       const getGameConfig = (gameType) => {
         const target = getTargetForGame(gameType, matchData?.sharedTarget);
@@ -89,7 +89,7 @@ const OnlineGame = ({
         
         const baseProps = {
           isOnline: true,
-          disabled: gameState !== 'playing',
+          disabled: false, // Game is active when playing
           onAnswerSubmit: (answer) => {
             onAnswerSubmit(answer);
             setGameAnswer('');
@@ -188,6 +188,10 @@ const OnlineGame = ({
       } else {
         console.error('Failed to create game config for:', matchData.gameType);
       }
+    } else if (gameState !== 'playing') {
+      // Clear game component when not playing
+      setGameComponent(null);
+      setGameProps({});
     }
   }, [matchData, gameState, onAnswerSubmit]);
 
@@ -231,15 +235,15 @@ const OnlineGame = ({
         </Box>
       </Box>
 
-      {/* Game Component */}
+      {/* Game Component - Only render when game is actually playing */}
       <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {gameComponent && gameProps && (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) ? (
+        {gameState === 'playing' && gameComponent && gameProps && (gameProps.targetCountry || gameProps.targetWord || gameProps.targetState) ? (
           React.createElement(gameComponent, gameProps)
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress sx={{ color: '#43cea2' }} />
             <Typography variant="body1" sx={{ ml: 2, color: 'white' }}>
-              Loading game...
+              {gameState === 'countdown' ? 'Preparing game...' : 'Loading game...'}
             </Typography>
           </Box>
         )}
