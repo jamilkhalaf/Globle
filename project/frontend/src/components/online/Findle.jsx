@@ -12,7 +12,7 @@ const OnlineFindle = ({ socket, matchId, gameState, onAnswerSubmit }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'playing' || gameState === 'countdown') {
       setQuestion('Find a country name that starts with the letter "U"');
       setMessage('Enter a country name starting with "U"');
       setGameOver(false);
@@ -34,7 +34,7 @@ const OnlineFindle = ({ socket, matchId, gameState, onAnswerSubmit }) => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && gameState === 'playing') {
+    if (e.key === 'Enter' && (gameState === 'playing' || gameState === 'countdown')) {
       handleSubmitAnswer();
     }
   };

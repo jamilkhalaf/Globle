@@ -25,7 +25,7 @@ const OnlineUS = ({ socket, matchId, gameState, onAnswerSubmit }) => {
   }, []);
 
   useEffect(() => {
-    if (gameState === 'playing' && statesGeo) {
+    if ((gameState === 'playing' || gameState === 'countdown') && statesGeo) {
       startNewRound();
     }
   }, [gameState, statesGeo]);

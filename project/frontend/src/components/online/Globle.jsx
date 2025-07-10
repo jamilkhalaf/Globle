@@ -38,7 +38,7 @@ const OnlineGloble = ({ socket, matchId, gameState, onAnswerSubmit }) => {
   }, []);
 
   useEffect(() => {
-    if (gameState === 'playing' && countries.length > 0) {
+    if ((gameState === 'playing' || gameState === 'countdown') && countries.length > 0) {
       startNewRound();
     }
   }, [gameState, countries]);

@@ -228,6 +228,7 @@ io.on('connection', (socket) => {
   // Join game queue
   socket.on('joinQueue', async (data) => {
     const { gameType } = data;
+    console.log(`User ${socket.username} joining queue for ${gameType}`);
     
     if (!gameQueues[gameType]) {
       gameQueues[gameType] = [];
@@ -251,6 +252,8 @@ io.on('connection', (socket) => {
     gameQueues[gameType].push(player);
     socket.join(`queue_${gameType}`);
     socket.emit('queueJoined', { gameType, position: gameQueues[gameType].length });
+    
+    console.log(`Queue for ${gameType}: ${gameQueues[gameType].length} players`);
 
     // Try to match players
     await tryMatchPlayers(gameType);
@@ -371,15 +374,19 @@ function leaveQueue(socket, gameType) {
 
 async function tryMatchPlayers(gameType) {
   const queue = gameQueues[gameType];
+  console.log(`Trying to match players for ${gameType}. Queue length: ${queue.length}`);
   
   if (queue.length >= 2) {
     const player1 = queue.shift();
     const player2 = queue.shift();
     
+    console.log(`Creating match: ${player1.username} vs ${player2.username}`);
+    
     const matchId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // Generate game-specific question
     const gameQuestion = generateQuestion(gameType);
+    console.log(`Generated question for ${gameType}:`, gameQuestion);
     
     // Create match
     const match = {
@@ -392,6 +399,7 @@ async function tryMatchPlayers(gameType) {
     };
     
     activeMatches.set(matchId, match);
+    console.log(`Match created with ID: ${matchId}`);
     
     // Join match room
     const socket1 = userSockets.get(player1.userId);
@@ -401,8 +409,10 @@ async function tryMatchPlayers(gameType) {
       socket1.join(matchId);
       socket2.join(matchId);
       
+      console.log(`Both players joined match room: ${matchId}`);
+      
       // Notify players
-      io.to(matchId).emit('matchFound', {
+      const matchData = {
         matchId,
         gameType,
         players: [
@@ -412,88 +422,114 @@ async function tryMatchPlayers(gameType) {
         question: gameQuestion.question,
         target: gameQuestion.target,
         startTime: Date.now() + 3000 // 3 second countdown
-      });
+      };
+      
+      console.log('Emitting matchFound with data:', matchData);
+      io.to(matchId).emit('matchFound', matchData);
       
       // Start game after countdown
       setTimeout(() => {
-        io.to(matchId).emit('gameStart', {
+        const gameStartData = {
           matchId,
           gameType,
           question: gameQuestion.question,
           target: gameQuestion.target,
           startTime: Date.now()
-        });
+        };
+        
+        console.log('Emitting gameStart with data:', gameStartData);
+        io.to(matchId).emit('gameStart', gameStartData);
       }, 3000);
+    } else {
+      console.log('Error: One or both sockets not found');
+      if (!socket1) console.log(`Socket not found for player1: ${player1.userId}`);
+      if (!socket2) console.log(`Socket not found for player2: ${player2.userId}`);
     }
+  } else {
+    console.log(`Not enough players in queue for ${gameType}. Need 2, have ${queue.length}`);
   }
 }
 
 function generateQuestion(gameType) {
+  console.log(`Generating question for game type: ${gameType}`);
+  
   switch (gameType) {
     case 'Globle':
       const globleCountries = gameData.Globle.countries;
       const randomGlobleCountry = globleCountries[Math.floor(Math.random() * globleCountries.length)];
-      return {
+      const globleQuestion = {
         question: `Find the country: ${randomGlobleCountry.name}`,
         target: randomGlobleCountry.name,
         answer: randomGlobleCountry.name,
         type: 'country',
         coordinates: randomGlobleCountry.coordinates
       };
+      console.log('Generated Globle question:', globleQuestion);
+      return globleQuestion;
     
     case 'Population':
       const populationCountries = gameData.Population.countries;
       const randomPopulationCountry = populationCountries[Math.floor(Math.random() * populationCountries.length)];
-      return {
+      const populationQuestion = {
         question: `Guess the population of ${randomPopulationCountry.name}`,
         target: randomPopulationCountry.name,
         answer: randomPopulationCountry.population.toString(),
         type: 'population',
         actualPopulation: randomPopulationCountry.population
       };
+      console.log('Generated Population question:', populationQuestion);
+      return populationQuestion;
     
     case 'US':
       const usStates = gameData.US.states;
       const randomUSState = usStates[Math.floor(Math.random() * usStates.length)];
-      return {
+      const usQuestion = {
         question: `Find the US state: ${randomUSState.name}`,
         target: randomUSState.name,
         answer: randomUSState.name,
         type: 'state',
         coordinates: randomUSState.coordinates
       };
+      console.log('Generated US question:', usQuestion);
+      return usQuestion;
     
     case 'Findle':
       const findleLetters = gameData.Findle.letters;
       const randomFindleLetter = findleLetters[Math.floor(Math.random() * findleLetters.length)];
       const randomFindleCountry = gameData.Findle.countries[randomFindleLetter][Math.floor(Math.random() * gameData.Findle.countries[randomFindleLetter].length)];
-      return {
+      const findleQuestion = {
         question: `Find a country starting with "${randomFindleLetter}": ${randomFindleCountry}`,
         target: randomFindleCountry,
         answer: randomFindleCountry,
         type: 'findle',
         letter: randomFindleLetter
       };
+      console.log('Generated Findle question:', findleQuestion);
+      return findleQuestion;
     
     case 'Flagle':
       const flags = gameData.Flagle.flags;
       const randomFlag = flags[Math.floor(Math.random() * flags.length)];
-      return {
+      const flagleQuestion = {
         question: `Identify the flag: ${randomFlag.flag}`,
         target: randomFlag.country,
         answer: randomFlag.country,
         type: 'flagle',
         flag: randomFlag.flag
       };
+      console.log('Generated Flagle question:', flagleQuestion);
+      return flagleQuestion;
     
     default:
       // Fallback for other games
-      return {
+      const fallbackQuestion = {
         question: 'What is the answer?',
         target: 'Answer',
         answer: 'Answer',
         type: 'general'
       };
+      console.log('Generated fallback question:', fallbackQuestion);
+      return fallbackQuestion;
   }
 }
 

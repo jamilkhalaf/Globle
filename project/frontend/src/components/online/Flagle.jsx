@@ -12,7 +12,7 @@ const OnlineFlagle = ({ socket, matchId, gameState, onAnswerSubmit }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'playing' || gameState === 'countdown') {
       setQuestion('What country does this flag belong to?');
       setMessage('Enter the country name for the displayed flag');
       setGameOver(false);
@@ -29,7 +29,7 @@ const OnlineFlagle = ({ socket, matchId, gameState, onAnswerSubmit }) => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && gameState === 'playing') {
+    if (e.key === 'Enter' && (gameState === 'playing' || gameState === 'countdown')) {
       handleSubmitAnswer();
     }
   };

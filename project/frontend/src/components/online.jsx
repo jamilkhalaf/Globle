@@ -124,6 +124,14 @@ const Online = () => {
     };
   }, [gameState, gameTimer]);
 
+  // Debug game state changes
+  useEffect(() => {
+    console.log('Game state changed to:', gameState);
+    if (gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') {
+      console.log('Should render online game for:', selectedGameType);
+    }
+  }, [gameState, selectedGameType]);
+
   const fetchLeaderboard = async () => {
     try {
       const response = await fetch('https://api.jamilweb.click/api/games/leaderboard');
@@ -166,6 +174,7 @@ const Online = () => {
     });
 
     socketInstance.on('matchFound', (data) => {
+      console.log('Match found:', data);
       setCurrentMatch(data);
       setGameState('countdown');
       setGameQuestion(data.question);
@@ -174,12 +183,14 @@ const Online = () => {
     });
 
     socketInstance.on('gameStart', (data) => {
+      console.log('Game start:', data);
       setGameState('playing');
       setGameTimer(60); // 60 second game
       setGameQuestion(data.question);
     });
 
     socketInstance.on('gameEnd', (data) => {
+      console.log('Game end:', data);
       setGameState('ended');
       setMatchResult(data);
       setGameTimer(0);
@@ -224,6 +235,7 @@ const Online = () => {
   };
 
   const handleConfirmJoinGame = () => {
+    console.log('Confirming join game for:', selectedGameType);
     setJoinGameDialog(false);
     setIsWaitingForPlayer(true);
     setWaitingTime(0);
@@ -232,12 +244,25 @@ const Online = () => {
     setMatchResult(null);
     
     // Connect socket if not connected
-    if (!socket) {
+    if (!socket || !isConnected) {
+      console.log('Connecting socket...');
       connectSocket();
-    }
-    
-    // Join queue
-    if (socket && selectedGameType) {
+      
+      // Wait for socket to connect before joining queue
+      const checkConnection = () => {
+        if (socket && isConnected) {
+          console.log('Socket connected, joining queue for:', selectedGameType);
+          socket.emit('joinQueue', { gameType: selectedGameType });
+        } else {
+          console.log('Socket not ready, retrying in 1 second...');
+          setTimeout(checkConnection, 1000);
+        }
+      };
+      
+      setTimeout(checkConnection, 1000);
+    } else {
+      // Socket already connected, join queue immediately
+      console.log('Joining queue for:', selectedGameType);
       socket.emit('joinQueue', { gameType: selectedGameType });
     }
   };
@@ -305,6 +330,8 @@ const Online = () => {
 
   // Render the appropriate online game component
   const renderOnlineGame = () => {
+    console.log('Rendering online game:', selectedGameType, 'Game state:', gameState);
+    
     const gameProps = {
       socket,
       matchId: currentMatch?.matchId,
@@ -868,6 +895,17 @@ const Online = () => {
         {/* Online Game Components */}
         {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && 
          ['Globle', 'Population', 'US', 'Findle', 'Flagle'].includes(selectedGameType) && renderOnlineGame()}
+        
+        {/* Debug Info */}
+        {process.env.NODE_ENV === 'development' && (
+          <Box sx={{ position: 'fixed', bottom: 10, right: 10, bgcolor: 'rgba(0,0,0,0.8)', color: 'white', p: 2, borderRadius: 1, fontSize: '12px' }}>
+            <div>Game State: {gameState}</div>
+            <div>Selected Game: {selectedGameType}</div>
+            <div>Current Match: {currentMatch ? 'Yes' : 'No'}</div>
+            <div>Socket Connected: {isConnected ? 'Yes' : 'No'}</div>
+            <div>Waiting: {isWaitingForPlayer ? 'Yes' : 'No'}</div>
+          </Box>
+        )}
       </Box>
     </Box>
   );
