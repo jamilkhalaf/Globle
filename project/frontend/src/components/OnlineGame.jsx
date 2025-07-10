@@ -28,7 +28,15 @@ const OnlineGame = ({
   onNewOpponent,
   matchResult 
 }) => {
+  // Game state
+  const [gameState, setGameState] = useState('waiting'); // waiting, countdown, playing, ended
+  const [gameTimer, setGameTimer] = useState(0);
   const [gameAnswer, setGameAnswer] = useState('');
+  const [gameQuestion, setGameQuestion] = useState('');
+  const [matchResult, setMatchResult] = useState(null);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [playerRoundsWon, setPlayerRoundsWon] = useState(0);
+  const [opponentRoundsWon, setOpponentRoundsWon] = useState(0);
   const [gameComponent, setGameComponent] = useState(null);
   const [gameProps, setGameProps] = useState({});
   const [isGameReady, setIsGameReady] = useState(false);
@@ -316,6 +324,7 @@ const OnlineGame = ({
         isOnline={true}
         disabled={false}
         onAnswerSubmit={onAnswerSubmit}
+        opponentRoundsWon={matchData?.player2Rounds || 0}
       />
     );
   };
@@ -387,6 +396,7 @@ const OnlineGame = ({
             return (
               <ComponentToRender 
                 {...gamePropsRef.current}
+                opponentRoundsWon={matchData?.player2Rounds || 0}
               />
             );
           })()
@@ -411,6 +421,41 @@ const OnlineGame = ({
       </Box>
     </Box>
   );
+
+  const renderRoundEnd = () => {
+    const currentUsername = localStorage.getItem('username') || matchData?.players?.[0]?.username;
+    const isRoundWinner = matchResult?.roundWinner === currentUsername;
+    const isRoundLoser = matchResult?.roundLoser === currentUsername;
+    
+    return (
+      <Box sx={{ textAlign: 'center', p: 4 }}>
+        <Typography variant="h3" sx={{ mb: 3, color: isRoundWinner ? '#4caf50' : isRoundLoser ? '#f44336' : '#ff9800' }}>
+          {isRoundWinner ? '🎉 Round Won!' : isRoundLoser ? '😔 Round Lost' : 'Round Complete'}
+        </Typography>
+        
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Round {matchResult?.currentRound - 1} Results
+        </Typography>
+        
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" sx={{ color: '#4caf50' }}>
+            Score: {matchResult?.player1Rounds} - {matchResult?.player2Rounds}
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#ff9800' }}>
+            Correct Answer: {matchResult?.correctAnswer}
+          </Typography>
+        </Box>
+        
+        <Typography variant="body1" sx={{ mb: 3 }}>
+          {isRoundWinner ? 'You won this round!' : isRoundLoser ? 'You lost this round.' : 'Both players were incorrect.'}
+        </Typography>
+        
+        <Typography variant="h6" sx={{ color: '#43cea2' }}>
+          Next round starting in 2 seconds...
+        </Typography>
+      </Box>
+    );
+  };
 
   const renderGameEnd = () => {
     // Get current user's username from localStorage or match data
@@ -540,6 +585,10 @@ const OnlineGame = ({
 
   if (gameState === 'playing') {
     return renderGame();
+  }
+
+  if (gameState === 'roundEnd' && matchResult) {
+    return renderRoundEnd();
   }
 
   if (gameState === 'ended' && matchResult) {

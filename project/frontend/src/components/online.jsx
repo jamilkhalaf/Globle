@@ -230,11 +230,40 @@ const Online = () => {
         points: data.points,
         bothCorrect: data.bothCorrect,
         bothWrong: data.bothWrong,
-        timeout: data.timeout
+        timeout: data.timeout,
+        gameOver: data.gameOver,
+        finalScore: data.finalScore
       });
       setGameState('ended');
       setMatchResult(data);
       setGameTimer(0);
+    });
+
+    socketInstance.on('roundEnd', (data) => {
+      console.log('Round ended:', data);
+      setGameState('roundEnd');
+      setMatchResult(data);
+      // Update round information
+      setCurrentMatch(prev => ({
+        ...prev,
+        player1Rounds: data.player1Rounds,
+        player2Rounds: data.player2Rounds,
+        currentRound: data.currentRound
+      }));
+    });
+
+    socketInstance.on('nextRound', (data) => {
+      console.log('Next round starting:', data);
+      setGameState('playing');
+      setMatchResult(null);
+      setGameTimer(0);
+      // Update match data with new round information
+      setCurrentMatch(prev => ({
+        ...prev,
+        sharedTarget: data.sharedTarget,
+        currentRound: data.currentRound,
+        startTime: data.startTime
+      }));
     });
 
     socketInstance.on('opponentDisconnected', () => {

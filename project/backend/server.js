@@ -131,6 +131,9 @@ const gameQueues = {
 const activeMatches = new Map();
 const userSockets = new Map();
 
+// Track multi-round game state
+const multiRoundGames = new Map(); // matchId -> { player1Rounds: 0, player2Rounds: 0, currentRound: 1 }
+
 // Socket.IO middleware for authentication
 io.use(async (socket, next) => {
   try {
@@ -255,100 +258,131 @@ io.on('connection', (socket) => {
       console.log(`Both players answered. Player1: ${player1.username} (${player1.answer}, correct: ${player1.isCorrect}, time: ${player1.timeTaken})`);
       console.log(`Player2: ${player2.username} (${player2.answer}, correct: ${player2.isCorrect}, time: ${player2.timeTaken})`);
       
-      let winner, loser, winnerTime, loserTime;
+      let roundWinner, roundLoser, winnerTime, loserTime;
       let points = {};
       
+      // Get current multi-round state
+      const multiRoundState = multiRoundGames.get(matchId) || { player1Rounds: 0, player2Rounds: 0, currentRound: 1 };
+      
       if (player1.isCorrect && !player2.isCorrect) {
-        // Player 1 wins
-        winner = player1.username;
-        loser = player2.username;
+        // Player 1 wins this round
+        roundWinner = player1.username;
+        roundLoser = player2.username;
         winnerTime = player1.timeTaken;
         loserTime = player2.timeTaken;
-        points[player1.userId] = 100;
-        points[player2.userId] = -100;
-        match.winner = player1.userId;
+        multiRoundState.player1Rounds++;
         
-        console.log(`Player1 wins: ${player1.username} (correct answer)`);
-        
-        await updatePlayerPoints(player1.userId, 100, true);
-        await updatePlayerPoints(player2.userId, -100, false);
+        console.log(`Player1 wins round: ${player1.username} (correct answer)`);
       } else if (!player1.isCorrect && player2.isCorrect) {
-        // Player 2 wins
-        winner = player2.username;
-        loser = player1.username;
+        // Player 2 wins this round
+        roundWinner = player2.username;
+        roundLoser = player1.username;
         winnerTime = player2.timeTaken;
         loserTime = player1.timeTaken;
-        points[player2.userId] = 100;
-        points[player1.userId] = -100;
-        match.winner = player2.userId;
+        multiRoundState.player2Rounds++;
         
-        console.log(`Player2 wins: ${player2.username} (correct answer)`);
-        
-        await updatePlayerPoints(player2.userId, 100, true);
-        await updatePlayerPoints(player1.userId, -100, false);
+        console.log(`Player2 wins round: ${player2.username} (correct answer)`);
       } else if (player1.isCorrect && player2.isCorrect) {
-        // Both correct - faster player wins
+        // Both correct - faster player wins this round
         if (player1.timeTaken < player2.timeTaken) {
-          winner = player1.username;
-          loser = player2.username;
+          roundWinner = player1.username;
+          roundLoser = player2.username;
           winnerTime = player1.timeTaken;
           loserTime = player2.timeTaken;
-          points[player1.userId] = 100;
-          points[player2.userId] = -100;
-          match.winner = player1.userId;
+          multiRoundState.player1Rounds++;
           
-          console.log(`Player1 wins: ${player1.username} (faster time: ${player1.timeTaken}s vs ${player2.timeTaken}s)`);
-          
-          await updatePlayerPoints(player1.userId, 100, true);
-          await updatePlayerPoints(player2.userId, -100, false);
+          console.log(`Player1 wins round: ${player1.username} (faster time: ${player1.timeTaken}s vs ${player2.timeTaken}s)`);
         } else {
-          winner = player2.username;
-          loser = player1.username;
+          roundWinner = player2.username;
+          roundLoser = player1.username;
           winnerTime = player2.timeTaken;
           loserTime = player1.timeTaken;
-          points[player2.userId] = 100;
-          points[player1.userId] = -100;
-          match.winner = player2.userId;
+          multiRoundState.player2Rounds++;
           
-          console.log(`Player2 wins: ${player2.username} (faster time: ${player2.timeTaken}s vs ${player1.timeTaken}s)`);
-          
-          await updatePlayerPoints(player2.userId, 100, true);
-          await updatePlayerPoints(player1.userId, -100, false);
+          console.log(`Player2 wins round: ${player2.username} (faster time: ${player2.timeTaken}s vs ${player1.timeTaken}s)`);
         }
       } else {
-        // Both wrong - no winner, both lose points
-        winner = null;
-        loser = null;
-        points[player1.userId] = -100;
-        points[player2.userId] = -100;
-        match.winner = null;
-        
-        console.log(`Both players wrong - no winner`);
-        
-        await updatePlayerPoints(player1.userId, -100, false);
-        await updatePlayerPoints(player2.userId, -100, false);
+        // Both wrong - no round winner
+        roundWinner = null;
+        roundLoser = null;
+        console.log(`Both players wrong - no round winner`);
       }
       
-      match.endTime = Date.now();
+      // Check if game is over (first to 5 rounds)
+      const gameOver = multiRoundState.player1Rounds >= 5 || multiRoundState.player2Rounds >= 5;
       
-      console.log(`Final result - Winner: ${winner}, Loser: ${loser}, Points:`, points);
-      
-      // Notify both players
-      io.to(matchId).emit('gameEnd', {
-        winner: winner,
-        loser: loser,
-        winnerTime: winnerTime,
-        loserTime: loserTime,
-        correctAnswer: match.sharedTarget.target,
-        points: points,
-        bothCorrect: player1.isCorrect && player2.isCorrect,
-        bothWrong: !player1.isCorrect && !player2.isCorrect
-      });
-      
-      // Clean up match after delay
-      setTimeout(() => {
-        activeMatches.delete(matchId);
-      }, 5000);
+      if (gameOver) {
+        // Game is over, determine overall winner
+        const overallWinner = multiRoundState.player1Rounds >= 5 ? player1.username : player2.username;
+        const overallLoser = multiRoundState.player1Rounds >= 5 ? player2.username : player1.username;
+        
+        // Award 100 points to overall winner, -100 to loser
+        points[player1.userId] = multiRoundState.player1Rounds >= 5 ? 100 : -100;
+        points[player2.userId] = multiRoundState.player2Rounds >= 5 ? 100 : -100;
+        match.winner = multiRoundState.player1Rounds >= 5 ? player1.userId : player2.userId;
+        
+        console.log(`Game over! Overall winner: ${overallWinner} (${multiRoundState.player1Rounds}-${multiRoundState.player2Rounds})`);
+        
+        await updatePlayerPoints(player1.userId, points[player1.userId], multiRoundState.player1Rounds >= 5);
+        await updatePlayerPoints(player2.userId, points[player2.userId], multiRoundState.player2Rounds >= 5);
+        
+        match.endTime = Date.now();
+        
+        // Notify both players of game end
+        io.to(matchId).emit('gameEnd', {
+          winner: overallWinner,
+          loser: overallLoser,
+          winnerTime: winnerTime,
+          loserTime: loserTime,
+          correctAnswer: match.sharedTarget.target,
+          points: points,
+          bothCorrect: player1.isCorrect && player2.isCorrect,
+          bothWrong: !player1.isCorrect && !player2.isCorrect,
+          gameOver: true,
+          finalScore: `${multiRoundState.player1Rounds}-${multiRoundState.player2Rounds}`
+        });
+        
+        // Clean up match after delay
+        setTimeout(() => {
+          activeMatches.delete(matchId);
+          multiRoundGames.delete(matchId);
+        }, 5000);
+      } else {
+        // Game continues to next round
+        multiRoundState.currentRound++;
+        multiRoundGames.set(matchId, multiRoundState);
+        
+        console.log(`Round ${multiRoundState.currentRound - 1} complete. Score: ${multiRoundState.player1Rounds}-${multiRoundState.player2Rounds}`);
+        
+        // Notify both players of round result
+        io.to(matchId).emit('roundEnd', {
+          roundWinner: roundWinner,
+          roundLoser: roundLoser,
+          winnerTime: winnerTime,
+          loserTime: loserTime,
+          correctAnswer: match.sharedTarget.target,
+          player1Rounds: multiRoundState.player1Rounds,
+          player2Rounds: multiRoundState.player2Rounds,
+          currentRound: multiRoundState.currentRound,
+          gameOver: false
+        });
+        
+        // Generate new target for next round
+        const newSharedTarget = generateSharedTarget(match.gameType);
+        match.sharedTarget = newSharedTarget;
+        match.answers = []; // Reset answers for next round
+        
+        // Start next round after short delay
+        setTimeout(() => {
+          io.to(matchId).emit('nextRound', {
+            matchId,
+            gameType: match.gameType,
+            sharedTarget: newSharedTarget,
+            startTime: Date.now(),
+            currentRound: multiRoundState.currentRound
+          });
+        }, 2000);
+      }
     } else {
       // First player to answer - wait for second player
       console.log(`Waiting for second player to answer...`);
@@ -419,6 +453,13 @@ async function tryMatchPlayers(gameType) {
     };
     
     activeMatches.set(matchId, match);
+    
+    // Initialize multi-round game state
+    multiRoundGames.set(matchId, {
+      player1Rounds: 0,
+      player2Rounds: 0,
+      currentRound: 1
+    });
     
     // Join match room
     const socket1 = userSockets.get(player1.userId);
