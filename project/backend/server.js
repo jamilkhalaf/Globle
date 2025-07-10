@@ -232,9 +232,21 @@ io.on('connection', (socket) => {
       return;
     }
     
+    // Validate playerIndex is within bounds
+    if (playerIndex < 0 || playerIndex >= 2) {
+      console.error(`Invalid playerIndex: ${playerIndex} for user ${socket.username}`);
+      socket.emit('error', { message: 'Invalid player index' });
+      return;
+    }
+    
     // Initialize answers array if it doesn't exist
     if (!match.answers) {
       match.answers = [];
+    }
+    
+    // Ensure answers array has 2 slots
+    while (match.answers.length < 2) {
+      match.answers.push(undefined);
     }
     
     // Store this player's answer
@@ -254,6 +266,12 @@ io.on('connection', (socket) => {
       // Both players have answered, determine winner
       const player1 = match.answers[0];
       const player2 = match.answers[1];
+      
+      // Add null checks to prevent the username error
+      if (!player1 || !player2) {
+        console.error('One or both players missing from answers:', match.answers);
+        return;
+      }
       
       console.log(`Both players answered. Player1: ${player1.username} (${player1.answer}, correct: ${player1.isCorrect}, time: ${player1.timeTaken})`);
       console.log(`Player2: ${player2.username} (${player2.answer}, correct: ${player2.isCorrect}, time: ${player2.timeTaken})`);
@@ -386,6 +404,7 @@ io.on('connection', (socket) => {
     } else {
       // First player to answer - wait for second player
       console.log(`Waiting for second player to answer...`);
+      console.log(`Current answers:`, match.answers.map(a => a ? `${a.username}: ${a.answer}` : 'undefined'));
     }
   });
 
