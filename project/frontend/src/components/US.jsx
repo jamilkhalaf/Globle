@@ -21,9 +21,8 @@ const US = () => {
 
   // Load state options and start new game
   useEffect(() => {
-    // Set up state options for autocomplete
+    // Set up state options for autocomplete from stateList
     const options = stateList
-      .map(state => state.name)
       .sort((a, b) => a.localeCompare(b));
     setStateOptions(options);
     
@@ -32,8 +31,8 @@ const US = () => {
   }, []);
 
   const startNewGame = () => {
-    const randomState = stateList[Math.floor(Math.random() * stateList.length)];
-    setTargetState(randomState);
+    const randomStateName = stateList[Math.floor(Math.random() * stateList.length)];
+    setTargetState(randomStateName);
     setGuess('');
     setMessage('Guess the US state!');
     setGameOver(false);
@@ -58,7 +57,7 @@ const US = () => {
     }
 
     const guessedState = guess.trim().toLowerCase();
-    const correctState = targetState.name.toLowerCase();
+    const correctState = targetState.toLowerCase();
 
     // Check if the guess is correct (exact match or common variations)
     const isCorrect = correctState === guessedState || 
@@ -89,7 +88,7 @@ const US = () => {
       setGuess(selectedState);
       
       const guessedState = selectedState.trim().toLowerCase();
-      const correctState = targetState.name.toLowerCase();
+      const correctState = targetState.toLowerCase();
 
       // Check if the guess is correct (exact match or common variations)
       const isCorrect = correctState === guessedState || 
@@ -329,7 +328,7 @@ const US = () => {
                   color="error"
                   onClick={() => {
                     setGameOver(true);
-                    setMessage(`Game Over! The state was ${targetState?.name}`);
+                    setMessage(`Game Over! The state was ${targetState}`);
                   }}
                   fullWidth
                   size="small"
@@ -392,7 +391,7 @@ const US = () => {
                         fontSize: { xs: '0.8rem', md: '1rem' }
                       }}
                     >
-                      {targetState?.name || 'N/A'}
+                      {targetState || 'N/A'}
                     </Typography>
                   </Box>
                 )}

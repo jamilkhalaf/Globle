@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import Header from './Header';
-import officialCountries from './officialCountries';
+import countryInfo from './countryInfo';
 
 const OnlinePopulation = ({ 
   targetCountry = null, 
@@ -77,9 +77,8 @@ const OnlinePopulation = ({
 
   // Load country options
   useEffect(() => {
-    // Set up country options for autocomplete
-    const options = officialCountries
-      .map(country => country.name)
+    // Set up country options for autocomplete from countryInfo
+    const options = Object.keys(countryInfo)
       .sort((a, b) => a.localeCompare(b));
     setCountryOptions(options);
   }, []);
@@ -99,7 +98,14 @@ const OnlinePopulation = ({
       return;
     }
 
-    const correctPopulation = targetCountry.population;
+    // Get the target country data from countryInfo
+    const targetCountryData = countryInfo[targetCountry];
+    if (!targetCountryData) {
+      setMessage('Error: Target country not found');
+      return;
+    }
+
+    const correctPopulation = targetCountryData.population;
     const guessedPopulation = parseInt(guess.replace(/,/g, ''));
 
     if (isNaN(guessedPopulation)) {
@@ -152,7 +158,14 @@ const OnlinePopulation = ({
       const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
       setGuess(selectedCountry);
       
-      const correctPopulation = targetCountry.population;
+      // Get the target country data from countryInfo
+      const targetCountryData = countryInfo[targetCountry];
+      if (!targetCountryData) {
+        setMessage('Error: Target country not found');
+        return;
+      }
+
+      const correctPopulation = targetCountryData.population;
       const guessedPopulation = parseInt(selectedCountry.replace(/,/g, ''));
 
       if (isNaN(guessedPopulation)) {

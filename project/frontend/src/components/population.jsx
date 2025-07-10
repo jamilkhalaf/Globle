@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import Header from './Header';
-import officialCountries from './officialCountries';
+import countryInfo from './countryInfo';
 
 const Population = () => {
   const theme = useTheme();
@@ -21,9 +21,8 @@ const Population = () => {
 
   // Load country options and start new game
   useEffect(() => {
-    // Set up country options for autocomplete
-    const options = officialCountries
-      .map(country => country.name)
+    // Set up country options for autocomplete from countryInfo
+    const options = Object.keys(countryInfo)
       .sort((a, b) => a.localeCompare(b));
     setCountryOptions(options);
     
@@ -32,7 +31,12 @@ const Population = () => {
   }, []);
 
   const startNewGame = () => {
-    const randomCountry = officialCountries[Math.floor(Math.random() * officialCountries.length)];
+    const countryNames = Object.keys(countryInfo);
+    const randomCountryName = countryNames[Math.floor(Math.random() * countryNames.length)];
+    const randomCountry = {
+      name: randomCountryName,
+      ...countryInfo[randomCountryName]
+    };
     setTargetCountry(randomCountry);
     setGuess('');
     setMessage('Guess the population!');

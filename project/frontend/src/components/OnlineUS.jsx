@@ -77,9 +77,8 @@ const OnlineUS = ({
 
   // Load state options
   useEffect(() => {
-    // Set up state options for autocomplete
+    // Set up state options for autocomplete from stateList
     const options = stateList
-      .map(state => state.name)
       .sort((a, b) => a.localeCompare(b));
     setStateOptions(options);
   }, []);
@@ -100,7 +99,7 @@ const OnlineUS = ({
     }
 
     const guessedState = guess.trim().toLowerCase();
-    const correctState = targetState.name.toLowerCase();
+    const correctState = targetState.toLowerCase();
 
     // Check if the guess is correct (exact match or common variations)
     const isCorrect = correctState === guessedState || 
@@ -136,7 +135,7 @@ const OnlineUS = ({
       setGuess(selectedState);
       
       const guessedState = selectedState.trim().toLowerCase();
-      const correctState = targetState.name.toLowerCase();
+      const correctState = targetState.toLowerCase();
 
       // Check if the guess is correct (exact match or common variations)
       const isCorrect = correctState === guessedState || 

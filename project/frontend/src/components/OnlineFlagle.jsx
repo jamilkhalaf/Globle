@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import Header from './Header';
-import officialCountries from './officialCountries';
+import countryInfo from './countryInfo';
 
 const OnlineFlagle = ({ 
   targetCountry = null, 
@@ -77,9 +77,8 @@ const OnlineFlagle = ({
 
   // Load country options
   useEffect(() => {
-    // Set up country options for autocomplete
-    const options = officialCountries
-      .map(country => country.name)
+    // Set up country options for autocomplete from countryInfo
+    const options = Object.keys(countryInfo)
       .sort((a, b) => a.localeCompare(b));
     setCountryOptions(options);
   }, []);
@@ -99,28 +98,20 @@ const OnlineFlagle = ({
       return;
     }
 
-    // Find the target country data
-    const targetCountryData = officialCountries.find(c => c.name === targetCountry);
-    if (!targetCountryData) {
-      setMessage('Error: Target country not found');
-      return;
-    }
-
-    const correctFlag = targetCountryData.flag;
-    const guessedFlag = guess.trim().toLowerCase();
+    const guessedCountry = guess.trim().toLowerCase();
+    const correctCountry = targetCountry.toLowerCase();
 
     // Check if the guess is correct (exact match or common variations)
-    const isCorrect = correctFlag.toLowerCase() === guessedFlag || 
-                     targetCountry.toLowerCase() === guessedFlag;
+    const isCorrect = correctCountry === guessedCountry;
 
     if (isCorrect) {
       const timeTaken = Math.round((Date.now() - gameStartTime) / 1000);
       
       // Online mode: just call onAnswerSubmit and let parent handle round logic
-      console.log('OnlineFlagle: Correct answer, calling onAnswerSubmit with:', guessedFlag);
+      console.log('OnlineFlagle: Correct answer, calling onAnswerSubmit with:', guessedCountry);
       
       if (onAnswerSubmit) {
-        onAnswerSubmit(guessedFlag);
+        onAnswerSubmit(guessedCountry);
       }
       
       // Dispatch event for opponent notification
@@ -141,28 +132,20 @@ const OnlineFlagle = ({
       const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
       setGuess(selectedCountry);
       
-      // Find the target country data
-      const targetCountryData = officialCountries.find(c => c.name === targetCountry);
-      if (!targetCountryData) {
-        setMessage('Error: Target country not found');
-        return;
-      }
-
-      const correctFlag = targetCountryData.flag;
-      const guessedFlag = selectedCountry.trim().toLowerCase();
+      const guessedCountry = selectedCountry.trim().toLowerCase();
+      const correctCountry = targetCountry.toLowerCase();
 
       // Check if the guess is correct (exact match or common variations)
-      const isCorrect = correctFlag.toLowerCase() === guessedFlag || 
-                       targetCountry.toLowerCase() === guessedFlag;
+      const isCorrect = correctCountry === guessedCountry;
 
       if (isCorrect) {
         const timeTaken = Math.round((Date.now() - gameStartTime) / 1000);
         
         // Online mode: just call onAnswerSubmit and let parent handle round logic
-        console.log('OnlineFlagle: Correct answer via dropdown, calling onAnswerSubmit with:', guessedFlag);
+        console.log('OnlineFlagle: Correct answer via dropdown, calling onAnswerSubmit with:', guessedCountry);
         
         if (onAnswerSubmit) {
-          onAnswerSubmit(guessedFlag);
+          onAnswerSubmit(guessedCountry);
         }
         
         // Dispatch event for opponent notification

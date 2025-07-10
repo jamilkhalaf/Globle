@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import Header from './Header';
-import officialCountries from './officialCountries';
+import countryInfo from './countryInfo';
 
 const Flagle = () => {
   const theme = useTheme();
@@ -21,9 +21,8 @@ const Flagle = () => {
 
   // Load country options and start new game
   useEffect(() => {
-    // Set up country options for autocomplete
-    const options = officialCountries
-      .map(country => country.name)
+    // Set up country options for autocomplete from countryInfo
+    const options = Object.keys(countryInfo)
       .sort((a, b) => a.localeCompare(b));
     setCountryOptions(options);
     
@@ -32,7 +31,12 @@ const Flagle = () => {
   }, []);
 
   const startNewGame = () => {
-    const randomCountry = officialCountries[Math.floor(Math.random() * officialCountries.length)];
+    const countryNames = Object.keys(countryInfo);
+    const randomCountryName = countryNames[Math.floor(Math.random() * countryNames.length)];
+    const randomCountry = {
+      name: randomCountryName,
+      ...countryInfo[randomCountryName]
+    };
     setTargetCountry(randomCountry);
     setGuess('');
     setMessage('Guess the flag!');
@@ -57,12 +61,11 @@ const Flagle = () => {
       return;
     }
 
-    const correctFlag = targetCountry.flag;
-    const guessedFlag = guess.trim().toLowerCase();
+    const guessedCountry = guess.trim().toLowerCase();
+    const correctCountry = targetCountry.name.toLowerCase();
 
     // Check if the guess is correct (exact match or common variations)
-    const isCorrect = correctFlag.toLowerCase() === guessedFlag || 
-                     targetCountry.name.toLowerCase() === guessedFlag;
+    const isCorrect = correctCountry === guessedCountry;
 
     if (isCorrect) {
       const endTime = Date.now();
@@ -87,12 +90,11 @@ const Flagle = () => {
       const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
       setGuess(selectedCountry);
       
-      const correctFlag = targetCountry.flag;
-      const guessedFlag = selectedCountry.trim().toLowerCase();
+      const guessedCountry = selectedCountry.trim().toLowerCase();
+      const correctCountry = targetCountry.name.toLowerCase();
 
       // Check if the guess is correct (exact match or common variations)
-      const isCorrect = correctFlag.toLowerCase() === guessedFlag || 
-                       targetCountry.name.toLowerCase() === guessedFlag;
+      const isCorrect = correctCountry === guessedCountry;
 
       if (isCorrect) {
         const endTime = Date.now();
