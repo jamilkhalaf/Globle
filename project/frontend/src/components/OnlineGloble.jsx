@@ -1,31 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
-import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, Tooltip, useTheme, useMediaQuery, IconButton } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import Header from './Header';
 import 'leaflet/dist/leaflet.css';
 import countryInfo from './countryInfo';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import NotificationModal from './NotificationModal';
-import officialCountries from './officialCountries';
 
-const Game = () => {
-  const navigate = useNavigate();
+const OnlineGloble = ({ 
+  targetCountry = null, 
+  onAnswerSubmit = null, 
+  disabled = false, 
+  opponentRoundsWon = 0,
+  currentRoundNumber = 1,
+  playerRoundsWon = 0
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [countries, setCountries] = useState([]);
   const [secretCountry, setSecretCountry] = useState(null);
   const [guessedCountries, setGuessedCountries] = useState([]);
   const [guess, setGuess] = useState('');
-  const [message, setMessage] = useState('Guess a country!');
-  const [gameOver, setGameOver] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
+  const [message, setMessage] = useState('Guess the country!');
   const [lastDistance, setLastDistance] = useState(null);
   const [countryOptions, setCountryOptions] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -34,104 +28,28 @@ const Game = () => {
   
   // Game state
   const [gameStartTime, setGameStartTime] = useState(null);
-  const [gameEndTime, setGameEndTime] = useState(null);
-  const [score, setScore] = useState(0);
-  const [bestScore, setBestScore] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [showStats, setShowStats] = useState(false);
 
-  // Add state for showing more info
-  const [showCountryInfo, setShowCountryInfo] = useState(false);
+  // Debug logging for props
+  useEffect(() => {
+    console.log('OnlineGloble component props:', { targetCountry, disabled, currentRoundNumber, playerRoundsWon, opponentRoundsWon });
+  }, [targetCountry, disabled, currentRoundNumber, playerRoundsWon, opponentRoundsWon]);
 
-  // Add state for contact dialog
-  const [contactOpen, setContactOpen] = useState(false);
-
-  // Add state to track recently used countries for better variety
-  const [recentlyUsedCountries, setRecentlyUsedCountries] = useState([]);
-
-  // Add state for showing the intro modal
-  const [showIntro, setShowIntro] = useState(true);
-
-  // Helper function to select a random country
-  const selectRandomCountry = (countriesList) => {
-    if (!countriesList || countriesList.length === 0) {
-      console.error('No countries list provided to selectRandomCountry');
-      return null;
-    }
-    
-    // Filter out countries that don't have valid geometry
-    const validCountries = countriesList.filter(country => 
-      country && 
-      country.properties && 
-      country.properties.name && 
-      country.geometry && 
-      country.geometry.coordinates &&
-      country.geometry.coordinates.length > 0
-    );
-    
-    if (validCountries.length === 0) {
-      console.error('No valid countries found in list');
-      return null;
-    }
-    
-    // Avoid recently used countries for better variety
-    const availableCountries = validCountries.filter(country => 
-      !recentlyUsedCountries.includes(country.properties.name)
-    );
-    
-    const countryList = availableCountries.length > 0 ? availableCountries : validCountries;
-    
-    if (countryList.length === 0) {
-      console.error('No countries available after filtering');
-      return null;
-    }
-    
-    const randomIndex = Math.floor(Math.random() * countryList.length);
-    const randomCountry = countryList[randomIndex];
-    
-    if (!randomCountry) {
-      console.error('Failed to select random country from list');
-      return null;
-    }
-    
-    console.log('Selected random country:', randomCountry?.properties?.name);
-    return randomCountry;
-  };
-
-  // Function to start a new round
-  const startNewRound = (countriesList) => {
-    if (!countriesList || countriesList.length === 0) {
-      console.error('No countries list provided to startNewRound');
-      setMessage('Error: No countries available');
-      return;
-    }
-    
-    const newSecretCountry = selectRandomCountry(countriesList);
-    if (newSecretCountry) {
-      setSecretCountry(newSecretCountry);
-      setGuessedCountries([]);
+  // Initialize online mode
+  useEffect(() => {
+    if (targetCountry) {
+      console.log('Initializing online mode with target:', targetCountry);
       setMessage('Guess the country!');
-      setGameOver(false);
-      setShowSecret(false);
-      setLastDistance(null);
-      setGuess('');
       setGameStartTime(Date.now());
-      setGameEndTime(null);
-      setScore(0);
       
-      // Add to recently used countries
-      if (newSecretCountry.properties && newSecretCountry.properties.name) {
-        setRecentlyUsedCountries(prev => {
-          const updated = [...prev, newSecretCountry.properties.name];
-          // Keep only last 10 to prevent memory issues
-          return updated.slice(-10);
-        });
+      // For online mode, we need to find the country object from the countries list
+      if (countries.length > 0) {
+        const targetCountryObj = countries.find(c => c.properties.name === targetCountry);
+        if (targetCountryObj) {
+          setSecretCountry(targetCountryObj);
+        }
       }
-    } else {
-      console.error('Failed to select random country for new round');
-      setMessage('Error starting new game - no valid countries available');
     }
-  };
+  }, [targetCountry, countries]);
 
   // Load countries data
   useEffect(() => {
@@ -150,28 +68,32 @@ const Game = () => {
         console.log(`Loaded ${validCountries.length} valid countries out of ${data.features.length} total`);
         setCountries(validCountries);
         
-        // Start with a random country
-        if (validCountries.length > 0) {
-          startNewRound(validCountries);
-        } else {
-          console.error('No valid countries available for offline mode');
-          setMessage('Error: No valid countries available');
+        if (targetCountry) {
+          // For online mode, find the target country object
+          const targetCountryObj = validCountries.find(c => c.properties.name === targetCountry);
+          if (targetCountryObj) {
+            setSecretCountry(targetCountryObj);
+            setMessage('Guess the country!');
+          } else {
+            console.error('Target country not found in valid countries:', targetCountry);
+            setMessage('Error: Target country not found');
+          }
         }
         
         setGameStartTime(Date.now());
         
         // Set up country options for autocomplete
         const options = validCountries
-          .filter(country => country.properties.name) // Remove the countryInfo filter to include all countries
+          .filter(country => country.properties.name) // Include all countries
           .map(country => country.properties.name)
-          .sort((a, b) => a.localeCompare(b)); // Proper alphabetical sorting
+          .sort((a, b) => a.localeCompare(b));
         setCountryOptions(options);
       })
       .catch(error => {
         console.error('Error loading countries:', error);
         setMessage('Error loading countries data');
       });
-  }, []);
+  }, [targetCountry]);
 
   // Handle map initialization and viewport fitting
   useEffect(() => {
@@ -228,12 +150,6 @@ const Game = () => {
     // Cap the distance to prevent extreme values
     const cappedDistance = Math.min(distance, 20000);
 
-    // Debug logging for specific countries
-    if ((lat1 > 43 && lat1 < 44 && lon1 > 6 && lon1 < 8) || 
-        (lat2 > 43 && lat2 < 44 && lon2 > 6 && lon2 < 8)) {
-      console.log(`Distance calculation: (${lat1}, ${lon1}) to (${lat2}, ${lon2}) = ${cappedDistance} km`);
-    }
-
     return cappedDistance;
   };
 
@@ -246,9 +162,6 @@ const Game = () => {
 
     // Cap distance to prevent extreme values
     const cappedDistance = Math.min(distance, 10000);
-
-    // Debug logging
-    console.log(`Distance: ${cappedDistance}km`);
 
     // Simple color logic - yellow to dark red
     if (cappedDistance < 100) {
@@ -359,11 +272,6 @@ const Game = () => {
       lon: sumLon / count
     };
 
-    // Debug logging for problematic countries
-    if (country.properties.name === 'Monaco' || country.properties.name === 'France' || country.properties.name === 'Spain') {
-      console.log(`Country: ${country.properties.name}, Center: ${center.lat}, ${center.lon}`);
-    }
-
     return center;
   };
 
@@ -378,7 +286,8 @@ const Game = () => {
   };
 
   const handleGuess = () => {
-    if (!guess || gameOver) {
+    if (!guess || disabled) {
+      console.log('OnlineGloble: handleGuess blocked - guess:', guess, 'disabled:', disabled);
       return;
     }
 
@@ -400,19 +309,15 @@ const Game = () => {
     setGuessedCountries(newGuessedCountries);
 
     if (guessedCountry.properties.name === secretCountry.properties.name) {
-      const endTime = Date.now();
-      const timeTaken = endTime - gameStartTime;
-      const finalScore = calculateScore(timeTaken, newGuessedCountries.length);
+      // Online mode: just call onAnswerSubmit and let parent handle round logic
+      console.log('OnlineGloble: Correct answer, calling onAnswerSubmit with:', guessedCountry.properties.name);
       
-      setGameEndTime(endTime);
-      setScore(finalScore);
-      saveBestScore(newGuessedCountries.length);
+      if (onAnswerSubmit) {
+        onAnswerSubmit(guessedCountry.properties.name);
+      }
       
-      // Update stats when game is won
-      updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
-      
-      setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
-      setGameOver(true);
+      // Disable the game while waiting for round result
+      setMessage('🎉 Correct! Waiting for round result... 🎉');
     } else {
       // Calculate distance between guessed country and secret country
       const guessedCenter = getCountryCenter(guessedCountry);
@@ -432,7 +337,7 @@ const Game = () => {
   };
 
   const handleCountrySelect = (event, newValue) => {
-    if (newValue && !gameOver) {
+    if (newValue && !disabled) {
       const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
       setGuess(selectedCountry);
       
@@ -450,19 +355,15 @@ const Game = () => {
         setGuessedCountries(newGuessedCountries);
 
         if (guessedCountry.properties.name === secretCountry.properties.name) {
-          const endTime = Date.now();
-          const timeTaken = endTime - gameStartTime;
-          const finalScore = calculateScore(timeTaken, newGuessedCountries.length);
+          // Online mode: just call onAnswerSubmit and let parent handle round logic
+          console.log('OnlineGloble: Correct answer via dropdown, calling onAnswerSubmit with:', guessedCountry.properties.name);
           
-          setGameEndTime(endTime);
-          setScore(finalScore);
-          saveBestScore(newGuessedCountries.length);
+          if (onAnswerSubmit) {
+            onAnswerSubmit(guessedCountry.properties.name);
+          }
           
-          // Update stats when game is won
-          updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
-          
-          setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
-          setGameOver(true);
+          // Disable the game while waiting for round result
+          setMessage('🎉 Correct! Waiting for round result... 🎉');
         } else {
           const guessedCenter = getCountryCenter(guessedCountry);
           const secretCenter = getCountryCenter(secretCountry);
@@ -482,164 +383,17 @@ const Game = () => {
     }
   };
 
-  const resetGame = () => {
-    // Start new game with different country
-    let newSecretCountry;
-    let attempts = 0;
-    const maxAttempts = 10; // Prevent infinite loop
-    
-    do {
-      newSecretCountry = selectRandomCountry(countries);
-      attempts++;
-    } while (
-      newSecretCountry.properties.name === secretCountry?.properties.name && 
-      attempts < maxAttempts
-    );
-    
-    // Track recently used countries for better variety
-    if (secretCountry) {
-      setRecentlyUsedCountries(prev => {
-        const updated = [secretCountry.properties.name, ...prev.slice(0, 4)]; // Keep last 5
-        console.log(`Recently used countries: ${updated.join(', ')}`);
-        return updated;
-      });
+  // Handle online game state changes from parent
+  useEffect(() => {
+    if (!disabled) {
+      console.log('OnlineGloble: New round starting, resetting game state');
+      setLastDistance(null);
+      setGuess('');
+      setGuessedCountries([]);
+      setGameStartTime(Date.now());
+      setMessage('Guess the country!');
     }
-    
-    setSecretCountry(newSecretCountry);
-    setGuessedCountries([]);
-    setMessage('Guess the country!');
-    setGameOver(false);
-    setShowSecret(false);
-    setLastDistance(null);
-    setGuess('');
-    setGameStartTime(Date.now());
-    setGameEndTime(null);
-    setScore(0);
-  };
-
-  const handleGiveUp = () => {
-    setGameOver(true);
-    setShowSecret(true);
-    const endTime = Date.now();
-    const timeTaken = endTime - gameStartTime;
-    const finalScore = calculateScore(timeTaken, guessedCountries.length);
-    
-    setGameEndTime(endTime);
-    setScore(finalScore);
-    saveBestScore(guessedCountries.length);
-    
-    // Update stats when game is given up
-    updateGameStats(finalScore, Math.round(timeTaken / 1000), guessedCountries.length);
-    
-    setMessage(`Game Over! The secret country was ${secretCountry.properties.name}`);
-  };
-
-  // Calculate score based on time and guesses
-  const calculateScore = (timeTaken, numGuesses) => {
-    const baseScore = 1000;
-    const timePenalty = Math.floor(timeTaken / 1000) * 10; // 10 points per second
-    const guessPenalty = (numGuesses - 1) * 50; // 50 points per extra guess
-    return Math.max(0, baseScore - timePenalty - guessPenalty);
-  };
-
-  // Format time for display
-  const formatTime = (milliseconds) => {
-    const seconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  // Load best score (fewest attempts) from localStorage
-  const loadBestScore = () => {
-    const saved = localStorage.getItem('globleBestScore');
-    if (saved) {
-      setBestScore(parseInt(saved));
-    }
-  };
-
-  // Save best score (fewest attempts) to localStorage
-  const saveBestScore = (attempts) => {
-    if (bestScore === 0 || attempts < bestScore) {
-      setBestScore(attempts);
-      localStorage.setItem('globleBestScore', attempts.toString());
-    }
-  };
-
-  const updateGameStats = async (finalScore, gameTime, bestStreak) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('https://api.jamilweb.click/api/games/update-stats', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gameId: 'globle',
-          score: finalScore,
-          gameTime,
-          bestStreak,
-          attempts: guessedCountries.length
-        }),
-      });
-
-      if (response.ok) {
-        // Update badge progress
-        await updateBadgeProgress('globle', finalScore, guessedCountries.length, bestStreak);
-      }
-    } catch (error) {
-      console.error('Error updating game stats:', error);
-    }
-  };
-
-  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await fetch('https://api.jamilweb.click/api/badges/update', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gameId,
-          score,
-          attempts,
-          streak
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.totalNewBadges > 0) {
-          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
-        }
-      }
-    } catch (error) {
-      console.error('Error updating badge progress:', error);
-    }
-  };
-
-  if (showIntro) {
-    return (
-      <>
-        <Header />
-        <Toolbar />
-        <NotificationModal
-          open={showIntro}
-          onClose={() => setShowIntro(false)}
-          title="How to Play Globle"
-          description={"Guess the secret country! Each guess shows how close you are. The color indicates distance: red (close), yellow (far). Try to find the country in as few guesses as possible!"}
-          color="primary"
-        />
-      </>
-    );
-  }
+  }, [disabled, targetCountry]); // Reset when target country changes (new round)
 
   return (
     <Box sx={{ 
@@ -650,11 +404,52 @@ const Game = () => {
       margin: 0,
       padding: 0,
       backgroundColor: '#2b2b2b',
-      touchAction: 'none', // Prevent touch scrolling on the page
+      touchAction: 'none',
       WebkitOverflowScrolling: 'touch'
     }}>
       <Header />
-      <Toolbar /> {/* This creates space for the fixed AppBar */}
+      <Toolbar />
+      
+      {/* Online Mode Banner */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: { xs: 90, md: 100 },
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2000,
+          backgroundColor: 'rgba(67, 206, 162, 0.95)',
+          color: 'white',
+          padding: { xs: '6px 12px', md: '12px 24px' },
+          borderRadius: 2,
+          boxShadow: 3,
+          backdropFilter: 'blur(10px)',
+          border: '2px solid rgba(255,255,255,0.2)',
+          maxWidth: { xs: '90%', md: 'auto' },
+          width: { xs: 'auto', md: 'auto' }
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 'bold',
+            textAlign: 'center',
+            fontSize: { xs: '0.8rem', md: '1.1rem' }
+          }}
+        >
+          🎮 ONLINE MODE - Round {currentRoundNumber}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            textAlign: 'center',
+            fontSize: { xs: '0.6rem', md: '0.9rem' },
+            opacity: 0.9
+          }}
+        >
+          You: {playerRoundsWon} | Opponent: {opponentRoundsWon} | First to 5 wins!
+        </Typography>
+      </Box>
       
       <Box sx={{
         position: 'absolute', 
@@ -668,8 +463,8 @@ const Game = () => {
         padding: 0,
         zIndex: 1,
         backgroundColor: '#2b2b2b',
-        overflow: 'hidden', // Prevent scrolling
-        touchAction: 'none' // Prevent touch scrolling
+        overflow: 'hidden',
+        touchAction: 'none'
       }}>
         <MapContainer
           center={[20, 0]}
@@ -686,7 +481,7 @@ const Game = () => {
             padding: 0,
             zIndex: 1,
             backgroundColor: '#2b2b2b',
-            touchAction: 'pan-x pan-y', // Allow only map panning
+            touchAction: 'pan-x pan-y',
             overflow: 'hidden'
           }}
           zoomControl={!isMobile}
@@ -745,11 +540,6 @@ const Game = () => {
               secretCenter.lat, secretCenter.lon
             ) : null;
             
-            // Debug logging for specific countries
-            if (isGuessed && (country.properties.name === 'France' || country.properties.name === 'Spain' || country.properties.name === 'Monaco')) {
-              console.log(`${country.properties.name}: distance=${distance}km, color=${getColor(distance)}`);
-            }
-            
             // Determine fill color
             let fillColor = '#333'; // Default for unguessed countries
             if (isGuessed && distance !== null) {
@@ -769,17 +559,6 @@ const Game = () => {
               />
             );
           })}
-          {showSecret && secretCountry && (
-            <GeoJSON
-              data={secretCountry}
-              style={{
-                fillColor: '#FF0000',
-                fillOpacity: 1,
-                color: '#fff',
-                weight: 2
-              }}
-            />
-          )}
         </MapContainer>
       </Box>
 
@@ -810,7 +589,7 @@ const Game = () => {
               variant="caption"
               sx={{ 
                 fontWeight: 'bold',
-                color: gameOver ? '#4CAF50' : '#1976d2',
+                color: '#1976d2',
                 fontSize: { xs: '0.75rem', md: '1.1rem' },
                 lineHeight: 1.2,
                 flex: 1,
@@ -830,7 +609,7 @@ const Game = () => {
                 '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
               }}
             >
-              {isMenuExpanded ? <ExpandLessIcon sx={{ fontSize: '16px' }} /> : <ExpandMoreIcon sx={{ fontSize: '16px' }} />}
+              {isMenuExpanded ? '−' : '+'}
             </IconButton>
           </Box>
 
@@ -851,15 +630,15 @@ const Game = () => {
                 <TextField
                   {...params}
                   placeholder="Country"
-                  disabled={gameOver}
+                  disabled={disabled}
                   fullWidth
                   variant="outlined"
                   size="small"
                   inputProps={{
                     ...params.inputProps,
                     style: {
-                      fontSize: '16px', // Prevents zoom on iOS
-                      transform: 'scale(1)', // Prevents zoom
+                      fontSize: '16px',
+                      transform: 'scale(1)',
                     },
                     onKeyDown: handleInputKeyDown
                   }}
@@ -874,17 +653,17 @@ const Game = () => {
                       '& input': {
                         padding: { xs: '6px 8px', md: '8px 12px' },
                         fontSize: { xs: '0.7rem', md: '0.9rem' },
-                        fontSize: '16px !important', // Prevents zoom on iOS
-                        transform: 'scale(1) !important', // Prevents zoom
+                        fontSize: '16px !important',
+                        transform: 'scale(1) !important',
                         '&:focus': {
-                          fontSize: '16px !important', // Maintains size on focus
+                          fontSize: '16px !important',
                         }
                       }
                     },
                   }}
                 />
               )}
-              disabled={gameOver}
+              disabled={disabled}
               fullWidth
               sx={{ flexGrow: 1 }}
               open={isDropdownOpen}
@@ -900,7 +679,7 @@ const Game = () => {
                 const filtered = options.filter(option => 
                   option.toLowerCase().includes(inputValue.toLowerCase())
                 );
-                return filtered.slice(0, 10); // Limit to 10 options for better performance
+                return filtered.slice(0, 10);
               }}
               isOptionEqualToValue={(option, value) => 
                 option.toLowerCase() === value.toLowerCase()
@@ -909,7 +688,7 @@ const Game = () => {
             <Button
               variant="contained"
               onClick={handleGuess}
-              disabled={gameOver || !guess.trim()}
+              disabled={disabled || !guess.trim()}
               size="small"
               sx={{
                 minWidth: { xs: '40px', md: '60px' },
@@ -933,49 +712,6 @@ const Game = () => {
           {/* Collapsible content */}
           {isMenuExpanded && (
             <>
-              <Box sx={{ display: 'flex', gap: 0.5 }}>
-                {!gameOver && (
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={handleGiveUp}
-                    fullWidth
-                    size="small"
-                    sx={{
-                      borderColor: '#d32f2f',
-                      color: '#d32f2f',
-                      fontSize: { xs: '0.6rem', md: '0.8rem' },
-                      height: { xs: '28px', md: '36px' },
-                      '&:hover': {
-                        borderColor: '#b71c1c',
-                        backgroundColor: 'rgba(211, 47, 47, 0.04)',
-                      },
-                    }}
-                  >
-                    {isMobile ? 'X' : 'Give Up'}
-                  </Button>
-                )}
-                {gameOver && (
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={resetGame}
-                    fullWidth
-                    size="small"
-                    sx={{
-                      backgroundColor: '#4CAF50',
-                      fontSize: { xs: '0.6rem', md: '0.8rem' },
-                      height: { xs: '28px', md: '36px' },
-                      '&:hover': {
-                        backgroundColor: '#388E3C',
-                      },
-                    }}
-                  >
-                    {isMobile ? '↻' : 'Next Country'}
-                  </Button>
-                )}
-              </Box>
-
               <Box sx={{ 
                 display: 'flex', 
                 justifyContent: 'space-between',
@@ -999,76 +735,12 @@ const Game = () => {
                   {guessedCountries.length}
                 </Typography>
               </Box>
-
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                padding: { xs: 0.5, md: 1 },
-                borderRadius: 0.5,
-                fontSize: { xs: '0.6rem', md: '0.75rem' }
-              }}>
-                <Typography variant="caption" sx={{ fontSize: { xs: '0.6rem', md: '0.75rem' }, color: '#ccc' }}>
-                  Best:
-                </Typography>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    color: '#4CAF50',
-                    fontSize: { xs: '0.6rem', md: '0.75rem' }
-                  }}
-                >
-                  {bestScore || '--'}
-                </Typography>
-              </Box>
             </>
           )}
         </Stack>
       </Paper>
-
-      {/* Footer with ? button */}
-      <Box sx={{
-        position: 'fixed',
-        bottom: { xs: 20, md: 16 },
-        left: 0,
-        width: '100vw',
-        display: 'flex',
-        justifyContent: 'center',
-        zIndex: 2001
-      }}>
-        <Button
-          variant="outlined"
-          sx={{ 
-            borderRadius: '50%', 
-            minWidth: 0, 
-            width: { xs: 48, md: 40 }, 
-            height: { xs: 48, md: 40 }, 
-            fontSize: { xs: 28, md: 24 }, 
-            color: 'white', 
-            borderColor: 'white', 
-            backgroundColor: 'rgba(0,0,0,0.7)', 
-            '&:hover': { backgroundColor: 'rgba(0,0,0,0.9)' } 
-          }}
-          onClick={() => setContactOpen(true)}
-          aria-label="Contact Info"
-        >
-          ?
-        </Button>
-      </Box>
-      <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
-        <DialogTitle>Contact</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            For questions, contact: <br />
-            <b>Jamil Khalaf</b><br />
-            <a href="mailto:jamilkhalaf04@gmail.com">jamilkhalaf04@gmail.com</a>
-          </DialogContentText>
-        </DialogContent>
-      </Dialog>
     </Box>
   );
 };
 
-export default Game; 
+export default OnlineGloble; 

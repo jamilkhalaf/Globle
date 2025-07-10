@@ -279,7 +279,7 @@ io.on('connection', (socket) => {
       let roundWinner, roundLoser, winnerTime, loserTime;
       let points = {};
       
-      // Get current multi-round state
+      // Get current multi-round game state
       const multiRoundState = multiRoundGames.get(matchId) || { player1Rounds: 0, player2Rounds: 0, currentRound: 1 };
       
       if (player1.isCorrect && !player2.isCorrect) {
@@ -629,7 +629,29 @@ function checkAnswer(gameType, answer, sharedTarget) {
       'brazil': ['brasil'],
       'switzerland': ['swiss'],
       'france': ['republic of france'],
-      'italy': ['italian republic']
+      'italy': ['italian republic'],
+      'united kingdom': ['uk', 'great britain', 'britain', 'england'],
+      'russia': ['russian federation'],
+      'germany': ['deutschland'],
+      'spain': ['espana'],
+      'netherlands': ['holland'],
+      'czech republic': ['czechia'],
+      'vatican city': ['holy see'],
+      'myanmar': ['burma'],
+      'congo': ['republic of the congo'],
+      'democratic republic of the congo': ['drc', 'zaire'],
+      'ivory coast': ['cote divoire'],
+      'east timor': ['timor-leste'],
+      'bosnia and herzegovina': ['bosnia'],
+      'trinidad and tobago': ['trinidad'],
+      'antigua and barbuda': ['antigua'],
+      'saint kitts and nevis': ['st kitts'],
+      'saint vincent and the grenadines': ['st vincent'],
+      'sao tome and principe': ['sao tome'],
+      'marshall islands': ['marshall'],
+      'solomon islands': ['solomon'],
+      'micronesia, fed. sts.': ['micronesia'],
+      'united arab emirates': ['uae', 'emirates']
     };
     
     const targetVariations = variations[targetAnswer] || [];
@@ -638,19 +660,76 @@ function checkAnswer(gameType, answer, sharedTarget) {
     }
   }
   
-  // For US states, accept abbreviations
+  // For US states, accept abbreviations and common variations
   if (sharedTarget.type === 'state') {
     const stateAbbreviations = {
+      'alabama': ['al'],
+      'alaska': ['ak'],
+      'arizona': ['az'],
+      'arkansas': ['ar'],
       'california': ['ca', 'cal'],
-      'texas': ['tx'],
-      'new york': ['ny'],
+      'colorado': ['co'],
+      'connecticut': ['ct'],
+      'delaware': ['de'],
       'florida': ['fl'],
-      'illinois': ['il']
+      'georgia': ['ga'],
+      'hawaii': ['hi'],
+      'idaho': ['id'],
+      'illinois': ['il'],
+      'indiana': ['in'],
+      'iowa': ['ia'],
+      'kansas': ['ks'],
+      'kentucky': ['ky'],
+      'louisiana': ['la'],
+      'maine': ['me'],
+      'maryland': ['md'],
+      'massachusetts': ['ma'],
+      'michigan': ['mi'],
+      'minnesota': ['mn'],
+      'mississippi': ['ms'],
+      'missouri': ['mo'],
+      'montana': ['mt'],
+      'nebraska': ['ne'],
+      'nevada': ['nv'],
+      'new hampshire': ['nh'],
+      'new jersey': ['nj'],
+      'new mexico': ['nm'],
+      'new york': ['ny'],
+      'north carolina': ['nc'],
+      'north dakota': ['nd'],
+      'ohio': ['oh'],
+      'oklahoma': ['ok'],
+      'oregon': ['or'],
+      'pennsylvania': ['pa'],
+      'rhode island': ['ri'],
+      'south carolina': ['sc'],
+      'south dakota': ['sd'],
+      'tennessee': ['tn'],
+      'texas': ['tx'],
+      'utah': ['ut'],
+      'vermont': ['vt'],
+      'virginia': ['va'],
+      'washington': ['wa'],
+      'west virginia': ['wv'],
+      'wisconsin': ['wi'],
+      'wyoming': ['wy']
     };
     
     const targetAbbreviations = stateAbbreviations[targetAnswer] || [];
     if (targetAbbreviations.includes(userAnswer)) {
       return true;
+    }
+  }
+  
+  // For Population game, check if answer is within 5% of target
+  if (gameType === 'Population') {
+    const targetPopulation = parseInt(sharedTarget.target);
+    const guessedPopulation = parseInt(answer.replace(/,/g, ''));
+    
+    if (!isNaN(targetPopulation) && !isNaN(guessedPopulation)) {
+      const difference = Math.abs(guessedPopulation - targetPopulation);
+      const percentageError = (difference / targetPopulation) * 100;
+      return percentageError <= 5; // Within 5% is considered correct
     }
   }
   

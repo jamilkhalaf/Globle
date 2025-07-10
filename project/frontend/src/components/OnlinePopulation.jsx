@@ -3,7 +3,14 @@ import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar
 import Header from './Header';
 import officialCountries from './officialCountries';
 
-const Population = () => {
+const OnlinePopulation = ({ 
+  targetCountry = null, 
+  onAnswerSubmit = null, 
+  disabled = false, 
+  opponentRoundsWon = 0,
+  currentRoundNumber = 1,
+  playerRoundsWon = 0
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [guess, setGuess] = useState('');
@@ -11,36 +18,32 @@ const Population = () => {
   const [countryOptions, setCountryOptions] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
-  const [targetCountry, setTargetCountry] = useState(null);
-  const [gameOver, setGameOver] = useState(false);
-  const [score, setScore] = useState(0);
-  const [gameStartTime, setGameStartTime] = useState(null);
   
   // Game state
-  const [gameEndTime, setGameEndTime] = useState(null);
+  const [gameStartTime, setGameStartTime] = useState(null);
 
-  // Load country options and start new game
+  // Debug logging for props
+  useEffect(() => {
+    console.log('OnlinePopulation component props:', { targetCountry, disabled, currentRoundNumber, playerRoundsWon, opponentRoundsWon });
+  }, [targetCountry, disabled, currentRoundNumber, playerRoundsWon, opponentRoundsWon]);
+
+  // Initialize online mode
+  useEffect(() => {
+    if (targetCountry) {
+      console.log('Initializing online mode with target:', targetCountry);
+      setMessage('Guess the population!');
+      setGameStartTime(Date.now());
+    }
+  }, [targetCountry]);
+
+  // Load country options
   useEffect(() => {
     // Set up country options for autocomplete
     const options = officialCountries
       .map(country => country.name)
       .sort((a, b) => a.localeCompare(b));
     setCountryOptions(options);
-    
-    // Start with a random country
-    startNewGame();
   }, []);
-
-  const startNewGame = () => {
-    const randomCountry = officialCountries[Math.floor(Math.random() * officialCountries.length)];
-    setTargetCountry(randomCountry);
-    setGuess('');
-    setMessage('Guess the population!');
-    setGameOver(false);
-    setScore(0);
-    setGameStartTime(Date.now());
-    setGameEndTime(null);
-  };
 
   const handleInputKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -53,11 +56,19 @@ const Population = () => {
   };
 
   const handleGuess = () => {
-    if (!guess || gameOver) {
+    if (!guess || disabled) {
+      console.log('OnlinePopulation: handleGuess blocked - guess:', guess, 'disabled:', disabled);
       return;
     }
 
-    const correctPopulation = targetCountry.population;
+    // Find the target country data
+    const targetCountryData = officialCountries.find(c => c.name === targetCountry);
+    if (!targetCountryData) {
+      setMessage('Error: Target country not found');
+      return;
+    }
+
+    const correctPopulation = targetCountryData.population;
     const guessedPopulation = parseInt(guess.replace(/,/g, ''));
 
     if (isNaN(guessedPopulation)) {
@@ -71,15 +82,15 @@ const Population = () => {
 
     // Determine if the guess is correct (within 5% error)
     if (percentageError <= 5) {
-      const endTime = Date.now();
-      const timeTaken = endTime - gameStartTime;
-      const finalScore = calculateScore(timeTaken, percentageError);
+      // Online mode: just call onAnswerSubmit and let parent handle round logic
+      console.log('OnlinePopulation: Correct answer, calling onAnswerSubmit with:', guessedPopulation);
       
-      setGameEndTime(endTime);
-      setScore(finalScore);
-      setGameOver(true);
+      if (onAnswerSubmit) {
+        onAnswerSubmit(guessedPopulation.toString());
+      }
       
-      setMessage('🎉 Correct! You got it right! 🎉');
+      // Disable the game while waiting for round result
+      setMessage('🎉 Correct! Waiting for round result... 🎉');
     } else {
       // Show feedback based on how close the guess was
       let feedback = '';
@@ -101,11 +112,18 @@ const Population = () => {
   };
 
   const handleCountrySelect = (event, newValue) => {
-    if (newValue && !gameOver) {
+    if (newValue && !disabled) {
       const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
       setGuess(selectedCountry);
       
-      const correctPopulation = targetCountry.population;
+      // Find the target country data
+      const targetCountryData = officialCountries.find(c => c.name === targetCountry);
+      if (!targetCountryData) {
+        setMessage('Error: Target country not found');
+        return;
+      }
+
+      const correctPopulation = targetCountryData.population;
       const guessedPopulation = parseInt(selectedCountry.replace(/,/g, ''));
 
       if (isNaN(guessedPopulation)) {
@@ -119,15 +137,15 @@ const Population = () => {
 
       // Determine if the guess is correct (within 5% error)
       if (percentageError <= 5) {
-        const endTime = Date.now();
-        const timeTaken = endTime - gameStartTime;
-        const finalScore = calculateScore(timeTaken, percentageError);
+        // Online mode: just call onAnswerSubmit and let parent handle round logic
+        console.log('OnlinePopulation: Correct answer via dropdown, calling onAnswerSubmit with:', guessedPopulation);
         
-        setGameEndTime(endTime);
-        setScore(finalScore);
-        setGameOver(true);
+        if (onAnswerSubmit) {
+          onAnswerSubmit(guessedPopulation.toString());
+        }
         
-        setMessage('🎉 Correct! You got it right! 🎉');
+        // Disable the game while waiting for round result
+        setMessage('🎉 Correct! Waiting for round result... 🎉');
       } else {
         // Show feedback based on how close the guess was
         let feedback = '';
@@ -150,17 +168,15 @@ const Population = () => {
     }
   };
 
-  const resetGame = () => {
-    startNewGame();
-  };
-
-  // Calculate score based on time and accuracy
-  const calculateScore = (timeTaken, percentageError) => {
-    const baseScore = 1000;
-    const timePenalty = Math.floor(timeTaken / 1000) * 5; // 5 points per second
-    const accuracyBonus = Math.max(0, 100 - percentageError * 10); // Bonus for accuracy
-    return Math.max(0, baseScore - timePenalty + accuracyBonus);
-  };
+  // Handle online game state changes from parent
+  useEffect(() => {
+    if (!disabled) {
+      console.log('OnlinePopulation: New round starting, resetting game state');
+      setGuess('');
+      setGameStartTime(Date.now());
+      setMessage('Guess the population!');
+    }
+  }, [disabled, targetCountry]); // Reset when target country changes (new round)
 
   return (
     <Box sx={{ 
@@ -176,6 +192,47 @@ const Population = () => {
     }}>
       <Header />
       <Toolbar />
+      
+      {/* Online Mode Banner */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: { xs: 90, md: 100 },
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2000,
+          backgroundColor: 'rgba(67, 206, 162, 0.95)',
+          color: 'white',
+          padding: { xs: '6px 12px', md: '12px 24px' },
+          borderRadius: 2,
+          boxShadow: 3,
+          backdropFilter: 'blur(10px)',
+          border: '2px solid rgba(255,255,255,0.2)',
+          maxWidth: { xs: '90%', md: 'auto' },
+          width: { xs: 'auto', md: 'auto' }
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 'bold',
+            textAlign: 'center',
+            fontSize: { xs: '0.8rem', md: '1.1rem' }
+          }}
+        >
+          🎮 ONLINE MODE - Round {currentRoundNumber}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            textAlign: 'center',
+            fontSize: { xs: '0.6rem', md: '0.9rem' },
+            opacity: 0.9
+          }}
+        >
+          You: {playerRoundsWon} | Opponent: {opponentRoundsWon} | First to 5 wins!
+        </Typography>
+      </Box>
       
       {/* Main Game Area */}
       <Box sx={{
@@ -207,7 +264,7 @@ const Population = () => {
           border: '2px solid rgba(67, 206, 162, 0.5)'
         }}>
           <Typography variant="h3" sx={{ color: '#43cea2', mb: 2 }}>
-            {targetCountry?.name || 'Loading...'}
+            {targetCountry}
           </Typography>
           <Typography variant="h6" sx={{ color: '#ccc' }}>
             What is the population?
@@ -236,7 +293,7 @@ const Population = () => {
                 variant="h6"
                 sx={{ 
                   fontWeight: 'bold',
-                  color: gameOver ? '#4CAF50' : '#1976d2',
+                  color: '#1976d2',
                   fontSize: { xs: '1rem', md: '1.25rem' },
                   lineHeight: 1.2,
                   flex: 1,
@@ -266,7 +323,7 @@ const Population = () => {
                 value={guess}
                 onChange={(e) => setGuess(e.target.value)}
                 placeholder="Enter population (e.g., 1000000)"
-                disabled={gameOver}
+                disabled={disabled}
                 fullWidth
                 variant="outlined"
                 size="large"
@@ -300,7 +357,7 @@ const Population = () => {
               <Button
                 variant="contained"
                 onClick={handleGuess}
-                disabled={gameOver || !guess.trim()}
+                disabled={disabled || !guess.trim()}
                 size="large"
                 sx={{
                   minWidth: { xs: '60px', md: '80px' },
@@ -319,53 +376,6 @@ const Population = () => {
               >
                 Guess
               </Button>
-            </Box>
-
-            {/* Game controls */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {!gameOver && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => {
-                    setGameOver(true);
-                    setMessage(`Game Over! The population was ${targetCountry?.population?.toLocaleString()}`);
-                  }}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    borderColor: '#d32f2f',
-                    color: '#d32f2f',
-                    fontSize: { xs: '0.8rem', md: '1rem' },
-                    height: { xs: '40px', md: '48px' },
-                    '&:hover': {
-                      borderColor: '#b71c1c',
-                      backgroundColor: 'rgba(211, 47, 47, 0.04)',
-                    },
-                  }}
-                >
-                  Give Up
-                </Button>
-              )}
-              {gameOver && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={resetGame}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    backgroundColor: '#4CAF50',
-                    fontSize: { xs: '0.8rem', md: '1rem' },
-                    height: { xs: '40px', md: '48px' },
-                    '&:hover': {
-                      backgroundColor: '#388E3C',
-                    },
-                  }}
-                >
-                  Next Country
-                </Button>
-              )}
             </Box>
 
             {/* Collapsible content */}
@@ -391,35 +401,9 @@ const Population = () => {
                       fontSize: { xs: '0.8rem', md: '1rem' }
                     }}
                   >
-                    {targetCountry?.name || 'Loading...'}
+                    {targetCountry}
                   </Typography>
                 </Box>
-
-                {gameOver && (
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    padding: { xs: 1, md: 1.5 },
-                    borderRadius: 1,
-                    fontSize: { xs: '0.8rem', md: '1rem' }
-                  }}>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', md: '1rem' }, color: '#ccc' }}>
-                      Actual Population:
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 'bold',
-                        color: '#4CAF50',
-                        fontSize: { xs: '0.8rem', md: '1rem' }
-                      }}
-                    >
-                      {targetCountry?.population?.toLocaleString() || 'N/A'}
-                    </Typography>
-                  </Box>
-                )}
 
                 <Box sx={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -443,4 +427,4 @@ const Population = () => {
   );
 };
 
-export default Population; 
+export default OnlinePopulation; 

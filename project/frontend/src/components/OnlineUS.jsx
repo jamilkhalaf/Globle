@@ -1,46 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import Header from './Header';
-import officialCountries from './officialCountries';
+import stateList from './stateList.json';
 
-const Flagle = () => {
+const OnlineUS = ({ 
+  targetState = null, 
+  onAnswerSubmit = null, 
+  disabled = false, 
+  opponentRoundsWon = 0,
+  currentRoundNumber = 1,
+  playerRoundsWon = 0
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [guess, setGuess] = useState('');
-  const [message, setMessage] = useState('Guess the flag!');
-  const [countryOptions, setCountryOptions] = useState([]);
+  const [message, setMessage] = useState('Guess the US state!');
+  const [stateOptions, setStateOptions] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
-  const [targetCountry, setTargetCountry] = useState(null);
-  const [gameOver, setGameOver] = useState(false);
-  const [score, setScore] = useState(0);
-  const [gameStartTime, setGameStartTime] = useState(null);
   
   // Game state
-  const [gameEndTime, setGameEndTime] = useState(null);
+  const [gameStartTime, setGameStartTime] = useState(null);
 
-  // Load country options and start new game
+  // Debug logging for props
   useEffect(() => {
-    // Set up country options for autocomplete
-    const options = officialCountries
-      .map(country => country.name)
-      .sort((a, b) => a.localeCompare(b));
-    setCountryOptions(options);
-    
-    // Start with a random country
-    startNewGame();
-  }, []);
+    console.log('OnlineUS component props:', { targetState, disabled, currentRoundNumber, playerRoundsWon, opponentRoundsWon });
+  }, [targetState, disabled, currentRoundNumber, playerRoundsWon, opponentRoundsWon]);
 
-  const startNewGame = () => {
-    const randomCountry = officialCountries[Math.floor(Math.random() * officialCountries.length)];
-    setTargetCountry(randomCountry);
-    setGuess('');
-    setMessage('Guess the flag!');
-    setGameOver(false);
-    setScore(0);
-    setGameStartTime(Date.now());
-    setGameEndTime(null);
-  };
+  // Initialize online mode
+  useEffect(() => {
+    if (targetState) {
+      console.log('Initializing online mode with target:', targetState);
+      setMessage('Guess the US state!');
+      setGameStartTime(Date.now());
+    }
+  }, [targetState]);
+
+  // Load state options
+  useEffect(() => {
+    // Set up state options for autocomplete
+    const options = stateList
+      .map(state => state.name)
+      .sort((a, b) => a.localeCompare(b));
+    setStateOptions(options);
+  }, []);
 
   const handleInputKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -53,27 +56,29 @@ const Flagle = () => {
   };
 
   const handleGuess = () => {
-    if (!guess || gameOver) {
+    if (!guess || disabled) {
+      console.log('OnlineUS: handleGuess blocked - guess:', guess, 'disabled:', disabled);
       return;
     }
 
-    const correctFlag = targetCountry.flag;
-    const guessedFlag = guess.trim().toLowerCase();
+    const guessedState = guess.trim().toLowerCase();
+    const correctState = targetState.toLowerCase();
 
     // Check if the guess is correct (exact match or common variations)
-    const isCorrect = correctFlag.toLowerCase() === guessedFlag || 
-                     targetCountry.name.toLowerCase() === guessedFlag;
+    const isCorrect = correctState === guessedState || 
+                     correctState === guessedState.replace(/ /g, '') ||
+                     correctState.replace(/ /g, '') === guessedState;
 
     if (isCorrect) {
-      const endTime = Date.now();
-      const timeTaken = endTime - gameStartTime;
-      const finalScore = calculateScore(timeTaken);
+      // Online mode: just call onAnswerSubmit and let parent handle round logic
+      console.log('OnlineUS: Correct answer, calling onAnswerSubmit with:', guessedState);
       
-      setGameEndTime(endTime);
-      setScore(finalScore);
-      setGameOver(true);
+      if (onAnswerSubmit) {
+        onAnswerSubmit(guessedState);
+      }
       
-      setMessage('🎉 Correct! You got it right! 🎉');
+      // Disable the game while waiting for round result
+      setMessage('🎉 Correct! Waiting for round result... 🎉');
     } else {
       // Show feedback
       setMessage('❌ Incorrect! Try again!');
@@ -82,28 +87,29 @@ const Flagle = () => {
     setGuess('');
   };
 
-  const handleCountrySelect = (event, newValue) => {
-    if (newValue && !gameOver) {
-      const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
-      setGuess(selectedCountry);
+  const handleStateSelect = (event, newValue) => {
+    if (newValue && !disabled) {
+      const selectedState = typeof newValue === 'string' ? newValue : newValue.label;
+      setGuess(selectedState);
       
-      const correctFlag = targetCountry.flag;
-      const guessedFlag = selectedCountry.trim().toLowerCase();
+      const guessedState = selectedState.trim().toLowerCase();
+      const correctState = targetState.toLowerCase();
 
       // Check if the guess is correct (exact match or common variations)
-      const isCorrect = correctFlag.toLowerCase() === guessedFlag || 
-                       targetCountry.name.toLowerCase() === guessedFlag;
+      const isCorrect = correctState === guessedState || 
+                       correctState === guessedState.replace(/ /g, '') ||
+                       correctState.replace(/ /g, '') === guessedState;
 
       if (isCorrect) {
-        const endTime = Date.now();
-        const timeTaken = endTime - gameStartTime;
-        const finalScore = calculateScore(timeTaken);
+        // Online mode: just call onAnswerSubmit and let parent handle round logic
+        console.log('OnlineUS: Correct answer via dropdown, calling onAnswerSubmit with:', guessedState);
         
-        setGameEndTime(endTime);
-        setScore(finalScore);
-        setGameOver(true);
+        if (onAnswerSubmit) {
+          onAnswerSubmit(guessedState);
+        }
         
-        setMessage('🎉 Correct! You got it right! 🎉');
+        // Disable the game while waiting for round result
+        setMessage('🎉 Correct! Waiting for round result... 🎉');
       } else {
         // Show feedback
         setMessage('❌ Incorrect! Try again!');
@@ -114,16 +120,15 @@ const Flagle = () => {
     }
   };
 
-  const resetGame = () => {
-    startNewGame();
-  };
-
-  // Calculate score based on time
-  const calculateScore = (timeTaken) => {
-    const baseScore = 1000;
-    const timePenalty = Math.floor(timeTaken / 1000) * 10; // 10 points per second
-    return Math.max(0, baseScore - timePenalty);
-  };
+  // Handle online game state changes from parent
+  useEffect(() => {
+    if (!disabled) {
+      console.log('OnlineUS: New round starting, resetting game state');
+      setGuess('');
+      setGameStartTime(Date.now());
+      setMessage('Guess the US state!');
+    }
+  }, [disabled, targetState]); // Reset when target state changes (new round)
 
   return (
     <Box sx={{ 
@@ -139,6 +144,47 @@ const Flagle = () => {
     }}>
       <Header />
       <Toolbar />
+      
+      {/* Online Mode Banner */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: { xs: 90, md: 100 },
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2000,
+          backgroundColor: 'rgba(67, 206, 162, 0.95)',
+          color: 'white',
+          padding: { xs: '6px 12px', md: '12px 24px' },
+          borderRadius: 2,
+          boxShadow: 3,
+          backdropFilter: 'blur(10px)',
+          border: '2px solid rgba(255,255,255,0.2)',
+          maxWidth: { xs: '90%', md: 'auto' },
+          width: { xs: 'auto', md: 'auto' }
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 'bold',
+            textAlign: 'center',
+            fontSize: { xs: '0.8rem', md: '1.1rem' }
+          }}
+        >
+          🎮 ONLINE MODE - Round {currentRoundNumber}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            textAlign: 'center',
+            fontSize: { xs: '0.6rem', md: '0.9rem' },
+            opacity: 0.9
+          }}
+        >
+          You: {playerRoundsWon} | Opponent: {opponentRoundsWon} | First to 5 wins!
+        </Typography>
+      </Box>
       
       {/* Main Game Area */}
       <Box sx={{
@@ -160,7 +206,7 @@ const Flagle = () => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        {/* Target Flag Display */}
+        {/* Target State Display */}
         <Box sx={{ 
           textAlign: 'center', 
           mb: 4,
@@ -170,10 +216,10 @@ const Flagle = () => {
           border: '2px solid rgba(67, 206, 162, 0.5)'
         }}>
           <Typography variant="h3" sx={{ color: '#43cea2', mb: 2 }}>
-            🏁
+            🇺🇸
           </Typography>
           <Typography variant="h6" sx={{ color: '#ccc' }}>
-            What country does this flag belong to?
+            What US state is this?
           </Typography>
         </Box>
 
@@ -199,7 +245,7 @@ const Flagle = () => {
                 variant="h6"
                 sx={{ 
                   fontWeight: 'bold',
-                  color: gameOver ? '#4CAF50' : '#1976d2',
+                  color: '#1976d2',
                   fontSize: { xs: '1rem', md: '1.25rem' },
                   lineHeight: 1.2,
                   flex: 1,
@@ -223,24 +269,24 @@ const Flagle = () => {
               </IconButton>
             </Box>
 
-            {/* Country input */}
+            {/* State input */}
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Autocomplete
                 value={guess}
-                onChange={handleCountrySelect}
+                onChange={handleStateSelect}
                 onInputChange={(event, newInputValue) => {
                   setGuess(newInputValue);
                   setIsDropdownOpen(newInputValue.length > 0);
                 }}
-                options={countryOptions}
+                options={stateOptions}
                 getOptionLabel={(option) => 
                   typeof option === 'string' ? option : option.label
                 }
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    placeholder="Enter country name"
-                    disabled={gameOver}
+                    placeholder="Enter US state name"
+                    disabled={disabled}
                     fullWidth
                     variant="outlined"
                     size="large"
@@ -273,7 +319,7 @@ const Flagle = () => {
                     }}
                   />
                 )}
-                disabled={gameOver}
+                disabled={disabled}
                 fullWidth
                 sx={{ flexGrow: 1 }}
                 open={isDropdownOpen}
@@ -298,7 +344,7 @@ const Flagle = () => {
               <Button
                 variant="contained"
                 onClick={handleGuess}
-                disabled={gameOver || !guess.trim()}
+                disabled={disabled || !guess.trim()}
                 size="large"
                 sx={{
                   minWidth: { xs: '60px', md: '80px' },
@@ -319,81 +365,32 @@ const Flagle = () => {
               </Button>
             </Box>
 
-            {/* Game controls */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {!gameOver && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => {
-                    setGameOver(true);
-                    setMessage(`Game Over! The flag belongs to ${targetCountry?.name}`);
-                  }}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    borderColor: '#d32f2f',
-                    color: '#d32f2f',
-                    fontSize: { xs: '0.8rem', md: '1rem' },
-                    height: { xs: '40px', md: '48px' },
-                    '&:hover': {
-                      borderColor: '#b71c1c',
-                      backgroundColor: 'rgba(211, 47, 47, 0.04)',
-                    },
-                  }}
-                >
-                  Give Up
-                </Button>
-              )}
-              {gameOver && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={resetGame}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    backgroundColor: '#4CAF50',
-                    fontSize: { xs: '0.8rem', md: '1rem' },
-                    height: { xs: '40px', md: '48px' },
-                    '&:hover': {
-                      backgroundColor: '#388E3C',
-                    },
-                  }}
-                >
-                  Next Flag
-                </Button>
-              )}
-            </Box>
-
             {/* Collapsible content */}
             {isMenuExpanded && (
               <>
-                {gameOver && (
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    padding: { xs: 1, md: 1.5 },
-                    borderRadius: 1,
-                    fontSize: { xs: '0.8rem', md: '1rem' }
-                  }}>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', md: '1rem' }, color: '#ccc' }}>
-                      Correct Answer:
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 'bold',
-                        color: '#4CAF50',
-                        fontSize: { xs: '0.8rem', md: '1rem' }
-                      }}
-                    >
-                      {targetCountry?.name || 'N/A'}
-                    </Typography>
-                  </Box>
-                )}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  padding: { xs: 1, md: 1.5 },
+                  borderRadius: 1,
+                  fontSize: { xs: '0.8rem', md: '1rem' }
+                }}>
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', md: '1rem' }, color: '#ccc' }}>
+                    Target State:
+                  </Typography>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      color: '#43cea2',
+                      fontSize: { xs: '0.8rem', md: '1rem' }
+                    }}
+                  >
+                    {targetState}
+                  </Typography>
+                </Box>
 
                 <Box sx={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -402,10 +399,10 @@ const Flagle = () => {
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
                   <Typography variant="body2" sx={{ color: '#ccc', mb: 1 }}>
-                    💡 Tip: Enter the country name that matches this flag!
+                    💡 Tip: Enter the US state name that matches this shape!
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#999' }}>
-                    You can type the country name or select from the dropdown
+                    You can type the state name or select from the dropdown
                   </Typography>
                 </Box>
               </>
@@ -417,4 +414,4 @@ const Flagle = () => {
   );
 };
 
-export default Flagle; 
+export default OnlineUS; 
