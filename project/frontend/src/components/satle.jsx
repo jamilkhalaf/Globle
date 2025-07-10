@@ -128,10 +128,69 @@ const Satle = () => {
 
   const [currentCity, setCurrentCity] = useState(null);
   const [satelliteImage, setSatelliteImage] = useState('');
+  const [gameStartTime, setGameStartTime] = useState(null);
 
   useEffect(() => {
     startNewGame();
   }, []);
+
+  const updateGameStats = async (finalScore, gameTime, attempts) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('https://api.jamilweb.click/api/games/update-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'satle',
+          score: finalScore,
+          gameTime,
+          attempts
+        }),
+      });
+
+      if (response.ok) {
+        // Update badge progress
+        await updateBadgeProgress(finalScore, gameTime, attempts);
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
+
+  const updateBadgeProgress = async (finalScore, gameTime, attempts) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('https://api.jamilweb.click/api/badges/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'satle',
+          score: finalScore,
+          gameTime,
+          attempts
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.totalNewBadges > 0) {
+          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
+    }
+  };
 
   const startNewGame = () => {
     const randomCity = cities[Math.floor(Math.random() * cities.length)];
@@ -143,6 +202,7 @@ const Satle = () => {
     setShowAnswer(false);
     setCurrentZoom(14);
     setError('');
+    setGameStartTime(Date.now());
     generateSatelliteImage(randomCity.coords, 14);
   };
 
@@ -230,9 +290,18 @@ const Satle = () => {
 
     if (newGuess.correct) {
       setGameState('won');
+      // Update stats when game is won
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      const attempts = newGuesses.length;
+      const score = 6 - attempts; // Score based on attempts (5 for perfect, 1 for barely won)
+      updateGameStats(score, gameTime, attempts);
     } else if (newGuesses.length >= 5) {
       setGameState('lost');
       setShowAnswer(true);
+      // Update stats when game is lost
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      const attempts = newGuesses.length;
+      updateGameStats(0, gameTime, attempts);
     } else {
       // More reliable zoom progression for satellite imagery
       const zoomLevels = [14, 13, 12, 11, 10]; // Start at 14, decrease by 1 each time
@@ -245,6 +314,10 @@ const Satle = () => {
   const handleGiveUp = () => {
     setGameState('lost');
     setShowAnswer(true);
+    // Update stats when player gives up
+    const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+    const attempts = guesses.length;
+    updateGameStats(0, gameTime, attempts);
   };
 
   const handleKeyPress = (e) => {

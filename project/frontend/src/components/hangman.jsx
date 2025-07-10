@@ -300,10 +300,10 @@ const Hangman = () => {
       <Toolbar />
       <Fade in timeout={600}>
         <Paper elevation={8} sx={{ 
-          mt: { xs: 2, md: 6 }, 
-          p: { xs: 2, md: 4 }, 
+          mt: { xs: 0.5, sm: 1, md: 6 }, 
+          p: { xs: 1, sm: 1.5, md: 4 }, 
           borderRadius: 4, 
-          maxWidth: { xs: 350, sm: 600, md: 800 }, 
+          maxWidth: { xs: '98vw', sm: 450, md: 800 }, 
           width: '100%', 
           textAlign: 'center', 
           position: 'relative', 
@@ -312,32 +312,34 @@ const Hangman = () => {
           boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' 
         }}>
           <Typography variant="h3" sx={{ 
-            mb: 3, 
+            mb: { xs: 1, sm: 2, md: 3 }, 
             fontWeight: 900, 
             color: 'transparent', 
             background: 'linear-gradient(90deg, #f44336 30%, #e91e63 100%)', 
             WebkitBackgroundClip: 'text', 
             WebkitTextFillColor: 'transparent', 
             letterSpacing: 2, 
-            textShadow: '0 2px 8px rgba(0,0,0,0.3)' 
+            textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' }
           }}>
             Hangman
           </Typography>
 
           <Typography variant="h5" sx={{ 
-            mb: 3, 
+            mb: { xs: 1, sm: 2, md: 3 }, 
             color: '#b0c4de', 
             fontWeight: 700, 
             textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-            minHeight: '2.5rem'
+            minHeight: '2rem',
+            fontSize: { xs: '0.9rem', sm: '1rem', md: '1.5rem' }
           }}>
             {message || 'Guess the country name!'}
           </Typography>
 
           <Box sx={{ 
             display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' }, 
-            gap: 4, 
+            flexDirection: { xs: 'column', lg: 'row' }, 
+            gap: { xs: 1, sm: 2, md: 4 }, 
             alignItems: 'center', 
             justifyContent: 'center' 
           }}>
@@ -346,18 +348,25 @@ const Hangman = () => {
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center',
-              minWidth: 300
+              minWidth: { xs: 200, sm: 250, md: 300 }
             }}>
               <canvas
                 ref={canvasRef}
                 style={{
                   border: '2px solid rgba(255,255,255,0.2)',
                   borderRadius: '8px',
-                  backgroundColor: 'rgba(0,0,0,0.3)'
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  width: isMobile ? 200 : 300,
+                  height: isMobile ? 200 : 300
                 }}
               />
-              <Typography variant="h6" sx={{ mt: 2, color: '#f44336', fontWeight: 'bold' }}>
-                Wrong Guesses: {wrongGuesses}/6
+              <Typography variant="h6" sx={{ 
+                mt: 1, 
+                color: '#f44336', 
+                fontWeight: 'bold',
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.25rem' }
+              }}>
+                Wrong: {wrongGuesses}/6
               </Typography>
             </Box>
 
@@ -366,30 +375,33 @@ const Hangman = () => {
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center',
-              minWidth: 300
+              minWidth: { xs: 200, sm: 250, md: 300 }
             }}>
               <Typography variant="h4" sx={{ 
-                mb: 3, 
+                mb: { xs: 1, sm: 2, md: 3 }, 
                 fontFamily: 'monospace', 
-                letterSpacing: '0.5rem',
+                letterSpacing: { xs: '0.1rem', sm: '0.2rem', md: '0.5rem' },
                 color: gameWon ? '#4caf50' : '#fff',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2.5rem' },
+                wordBreak: 'break-word',
+                lineHeight: 1.2
               }}>
                 {displayWord}
               </Typography>
 
-              <Stack spacing={1} sx={{ mb: 3, width: '100%' }}>
+              <Stack spacing={0.5} sx={{ mb: { xs: 1, sm: 2, md: 3 }, width: '100%' }}>
                 <Box sx={{ 
                   display: 'flex', 
                   justifyContent: 'space-between',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  padding: 1,
+                  padding: { xs: 0.3, sm: 0.5 },
                   borderRadius: 1
                 }}>
-                  <Typography variant="body2" sx={{ color: '#ccc' }}>
+                  <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                     Streak:
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4CAF50' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#4CAF50', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                     {streak}
                   </Typography>
                 </Box>
@@ -397,58 +409,51 @@ const Hangman = () => {
                   display: 'flex', 
                   justifyContent: 'space-between',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  padding: 1,
+                  padding: { xs: 0.3, sm: 0.5 },
                   borderRadius: 1
                 }}>
-                  <Typography variant="body2" sx={{ color: '#ccc' }}>
-                    Best Score:
+                  <Typography variant="body2" sx={{ color: '#ccc', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
+                    Best:
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#FFD700' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: '#43cea2', fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                     {bestScore}
                   </Typography>
                 </Box>
               </Stack>
 
-              {/* Letter Buttons */}
+              {/* Alphabet Grid */}
               <Box sx={{ 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(7, 1fr)', 
-                gap: 1, 
-                maxWidth: 350,
-                width: '100%'
+                gridTemplateColumns: { xs: 'repeat(6, 1fr)', sm: 'repeat(7, 1fr)', md: 'repeat(9, 1fr)' },
+                gap: { xs: 0.3, sm: 0.5 },
+                width: '100%',
+                maxWidth: { xs: 240, sm: 280, md: 400 }
               }}>
                 {alphabet.map((letter) => (
                   <Button
                     key={letter}
                     variant="outlined"
                     size="small"
-                    disabled={guessedLetters.has(letter) || gameOver}
                     onClick={() => handleLetterGuess(letter)}
+                    disabled={guessedLetters.has(letter) || gameOver}
                     sx={{
-                      color: guessedLetters.has(letter) 
-                        ? (word.includes(letter) ? '#4caf50' : '#f44336')
-                        : '#fff',
-                      borderColor: guessedLetters.has(letter) 
-                        ? (word.includes(letter) ? '#4caf50' : '#f44336')
-                        : 'rgba(255,255,255,0.3)',
-                      backgroundColor: guessedLetters.has(letter) 
-                        ? (word.includes(letter) ? 'rgba(76,175,80,0.1)' : 'rgba(244,67,54,0.1)')
-                        : 'transparent',
-                      minWidth: letter === ' ' ? '80px' : '40px',
-                      height: '40px',
-                      fontSize: letter === ' ' ? '0.7rem' : '1.2rem',
+                      color: guessedLetters.has(letter) ? '#666' : '#fff',
+                      borderColor: guessedLetters.has(letter) ? '#666' : 'rgba(255,255,255,0.3)',
+                      minWidth: { xs: 28, sm: 32, md: 40 },
+                      minHeight: { xs: 28, sm: 32, md: 40 },
+                      fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.9rem' },
                       fontWeight: 'bold',
-                      gridColumn: letter === ' ' ? 'span 2' : 'span 1',
                       '&:hover': {
                         borderColor: '#fff',
                         backgroundColor: 'rgba(255,255,255,0.1)',
                       },
                       '&:disabled': {
-                        opacity: 0.7,
+                        color: '#666',
+                        borderColor: '#666',
                       }
                     }}
                   >
-                    {letter === ' ' ? 'SPACE' : letter}
+                    {letter}
                   </Button>
                 ))}
               </Box>
@@ -457,13 +462,17 @@ const Hangman = () => {
               <Button
                 variant="contained"
                 onClick={resetGame}
+                size="small"
                 sx={{
-                  mt: 3,
-                  backgroundColor: '#f44336',
+                  mt: { xs: 1, sm: 1.5, md: 3 },
+                  backgroundColor: '#43cea2',
                   color: 'white',
                   fontWeight: 'bold',
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 0.5, sm: 0.8 },
                   '&:hover': {
-                    backgroundColor: '#d32f2f',
+                    backgroundColor: '#3bb08f',
                   }
                 }}
               >

@@ -164,12 +164,12 @@ const Capitals = () => {
   };
 
   useEffect(() => {
-    // Disable scrolling when component mounts
-    document.body.style.overflow = 'hidden';
+    // Enable scrolling for mobile devices
+    document.body.style.overflow = 'auto';
     
-    // Re-enable scrolling when component unmounts
+    // Clean up when component unmounts
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = 'auto';
     };
   }, []);
 
@@ -189,19 +189,14 @@ const Capitals = () => {
   const styles = {
     container: {
       minHeight: '100vh',
-      height: '100vh',
       background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)',
       padding: '20px',
       paddingTop: '100px',
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
+      overflow: 'visible',
+      WebkitOverflowScrolling: 'touch',
     },
     gameHeader: {
       textAlign: 'center',

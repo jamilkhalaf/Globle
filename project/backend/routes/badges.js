@@ -32,7 +32,8 @@ router.get('/', auth, async (req, res) => {
       capitals: badges.filter(badge => badge.category === 'capitals'),
       hangman: badges.filter(badge => badge.category === 'hangman'),
       usstates: badges.filter(badge => badge.category === 'usstates'),
-      namle: badges.filter(badge => badge.category === 'namle')
+      namle: badges.filter(badge => badge.category === 'namle'),
+      satle: badges.filter(badge => badge.category === 'satle')
     };
 
     res.json(badgesByCategory);
@@ -68,7 +69,8 @@ router.get('/progress', auth, async (req, res) => {
         capitals: badges.filter(badge => badge.category === 'capitals').length,
         hangman: badges.filter(badge => badge.category === 'hangman').length,
         usstates: badges.filter(badge => badge.category === 'usstates').length,
-        namle: badges.filter(badge => badge.category === 'namle').length
+        namle: badges.filter(badge => badge.category === 'namle').length,
+        satle: badges.filter(badge => badge.category === 'satle').length
       }
     });
   } catch (error) {
@@ -272,6 +274,22 @@ router.post('/update', auth, async (req, res) => {
         { id: 'namle_streak_3', category: 'namle', condition: gameStats.currentStreak >= 3 },
         { id: 'namle_streak_5', category: 'namle', condition: gameStats.currentStreak >= 5 },
         { id: 'namle_streak_10', category: 'namle', condition: gameStats.currentStreak >= 10 }
+      );
+    } else if (gameId === 'satle') {
+      const gameStats = user.games?.satle || {};
+      const score = req.body.score || 0; // Score based on guesses used (5 = perfect, 1 = barely won)
+      const attempts = req.body.attempts || 0; // Number of guesses used
+      
+      badgesToCheck.push(
+        { id: 'satle_first_win', category: 'satle', condition: gameStats.gamesPlayed >= 1 },
+        { id: 'satle_10_games', category: 'satle', condition: gameStats.gamesPlayed >= 10 },
+        { id: 'satle_50_games', category: 'satle', condition: gameStats.gamesPlayed >= 50 },
+        { id: 'satle_perfect_guess', category: 'satle', condition: attempts === 1 && score > 0 }, // Correct on first guess
+        { id: 'satle_quick_guess', category: 'satle', condition: attempts <= 2 && score > 0 }, // Correct within 2 guesses
+        { id: 'satle_efficient_guess', category: 'satle', condition: attempts <= 3 && score > 0 }, // Correct within 3 guesses
+        { id: 'satle_streak_3', category: 'satle', condition: gameStats.currentStreak >= 3 },
+        { id: 'satle_streak_5', category: 'satle', condition: gameStats.currentStreak >= 5 },
+        { id: 'satle_streak_10', category: 'satle', condition: gameStats.currentStreak >= 10 }
       );
     }
 

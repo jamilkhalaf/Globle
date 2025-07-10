@@ -200,12 +200,12 @@ const US = () => {
       <Fade in timeout={600}>
         <Paper elevation={8} sx={{
           position: 'absolute',
-          top: { xs: 16, md: 80 },
+          top: { xs: 100, sm: 120, md: 80 },
           left: { xs: '50%', md: 32 },
           transform: { xs: 'translateX(-50%)', md: 'none' },
-          width: { xs: '90vw', md: 340 },
-          maxWidth: 400,
-          p: { xs: 2, md: 3 },
+          width: { xs: '85vw', sm: '80vw', md: 340 },
+          maxWidth: { xs: 320, sm: 350, md: 400 },
+          p: { xs: 1, sm: 1.5, md: 3 },
           borderRadius: 4,
           background: 'rgba(30,34,44,0.98)',
           color: 'white',
@@ -216,17 +216,84 @@ const US = () => {
           flexDirection: 'column',
           alignItems: 'center',
         }}>
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: 900, color: 'transparent', background: 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>US States</Typography>
-          <Typography variant="h6" sx={{ mb: 2, color: '#43cea2', textAlign: 'center' }}>Find: <b>{targetState}</b></Typography>
-          <Typography variant="h6" sx={{ mb: 2, color: message.startsWith('Correct') ? '#43cea2' : '#f44336', minHeight: 32, textAlign: 'center' }}>{message}</Typography>
-          <Stack direction="row" spacing={3} sx={{ mb: 2, width: '100%', justifyContent: 'center' }}>
-            <Typography>Score: {score}</Typography>
-            <Typography>Streak: {streak}</Typography>
+          <Typography variant="h4" sx={{ 
+            mb: { xs: 0.5, sm: 1, md: 2 }, 
+            fontWeight: 900, 
+            color: 'transparent', 
+            background: 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent', 
+            letterSpacing: 2, 
+            textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2.125rem' }
+          }}>
+            US States
+          </Typography>
+          <Typography variant="h6" sx={{ 
+            mb: { xs: 0.5, sm: 1, md: 2 }, 
+            color: '#43cea2', 
+            textAlign: 'center',
+            fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' }
+          }}>
+            Find: <b>{targetState}</b>
+          </Typography>
+          <Typography variant="h6" sx={{ 
+            mb: { xs: 0.5, sm: 1, md: 2 }, 
+            color: message.startsWith('Correct') ? '#43cea2' : '#f44336', 
+            minHeight: { xs: 24, sm: 28, md: 32 }, 
+            textAlign: 'center',
+            fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1.25rem' }
+          }}>
+            {message}
+          </Typography>
+          <Stack direction="row" spacing={2} sx={{ 
+            mb: { xs: 0.5, sm: 1, md: 2 }, 
+            width: '100%', 
+            justifyContent: 'center',
+            fontSize: { xs: '0.7rem', sm: '0.8rem', md: '1rem' }
+          }}>
+            <Typography sx={{ fontSize: 'inherit' }}>Score: {score}</Typography>
+            <Typography sx={{ fontSize: 'inherit' }}>Streak: {streak}</Typography>
           </Stack>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: '100%', justifyContent: 'center' }}>
-            <Button variant="outlined" onClick={startNewRound} sx={{ color: '#ccc', borderColor: '#666', fontWeight: 'bold', '&:hover': { borderColor: '#999', backgroundColor: 'rgba(255,255,255,0.1)' } }}>Reset</Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ 
+            width: '100%', 
+            justifyContent: 'center',
+            gap: { xs: 0.5, sm: 1 }
+          }}>
+            <Button 
+              variant="outlined" 
+              onClick={startNewRound} 
+              size="small"
+              sx={{ 
+                color: '#ccc', 
+                borderColor: '#666', 
+                fontWeight: 'bold', 
+                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                py: { xs: 0.3, sm: 0.5 },
+                px: { xs: 1, sm: 1.5 },
+                '&:hover': { 
+                  borderColor: '#999', 
+                  backgroundColor: 'rgba(255,255,255,0.1)' 
+                } 
+              }}
+            >
+              Reset
+            </Button>
             {showContinue && (
-              <Button variant="contained" color="success" onClick={handleContinue} sx={{ fontWeight: 'bold' }}>Continue</Button>
+              <Button 
+                variant="contained" 
+                color="success" 
+                onClick={handleContinue} 
+                size="small"
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                  py: { xs: 0.3, sm: 0.5 },
+                  px: { xs: 1, sm: 1.5 }
+                }}
+              >
+                Continue
+              </Button>
             )}
           </Stack>
         </Paper>
