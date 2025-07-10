@@ -77,7 +77,6 @@ const Online = () => {
   const [waitingTime, setWaitingTime] = useState(0);
   
   // WebSocket and game state
-  const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [currentMatch, setCurrentMatch] = useState(null);
   const [gameState, setGameState] = useState('waiting'); // waiting, countdown, playing, ended
@@ -86,9 +85,9 @@ const Online = () => {
   const [gameQuestion, setGameQuestion] = useState('');
   const [matchResult, setMatchResult] = useState(null);
 
+  // Socket management
   const socketRef = useRef(null);
-  const isWaitingForPlayerRef = useRef(false);
-  const selectedGameTypeRef = useRef('');
+  const isConnectingRef = useRef(false);
 
   useEffect(() => {
     // Monitor online/offline status
@@ -101,91 +100,17 @@ const Online = () => {
     // Load leaderboard data
     fetchLeaderboard();
 
+    // Initialize socket connection if user is logged in
+    if (localStorage.getItem('token')) {
+      initializeSocket();
+    }
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      disconnectSocket();
     };
   }, []);
-
-  // Keep refs in sync with state
-  useEffect(() => {
-    isWaitingForPlayerRef.current = isWaitingForPlayer;
-    selectedGameTypeRef.current = selectedGameType;
-  }, [isWaitingForPlayer, selectedGameType]);
-
-  // Attach socket event handlers ONCE per socket instance
-  useEffect(() => {
-    const socket = socketRef.current;
-    if (!socket) return;
-
-    const onConnect = () => {
-      setIsConnected(true);
-      setError('');
-      // If we were waiting to join a queue, do it now
-      if (isWaitingForPlayerRef.current && selectedGameTypeRef.current) {
-        socket.emit('joinQueue', { gameType: selectedGameTypeRef.current });
-      }
-    };
-    const onDisconnect = () => setIsConnected(false);
-    const onConnectError = (error) => setError('Failed to connect to game server: ' + error.message);
-    const onError = (error) => setError('Socket error: ' + error.message);
-    const onQueueJoined = (data) => { console.log('Joined queue:', data); };
-    const onQueueError = (data) => setError(data.message);
-    const onMatchFound = (data) => {
-      console.log('🎮 Match found event received:', data);
-      console.log('Setting currentMatch to:', data);
-      console.log('Setting gameState to countdown');
-      console.log('Setting isWaitingForPlayer to false');
-      
-      setCurrentMatch(data);
-      setGameState('countdown');
-      setGameQuestion(data.question || data.correctAnswer?.answer || 'Game starting...');
-      setIsWaitingForPlayer(false);
-      setWaitingTime(0);
-      setGameTimer(3);
-      
-      console.log('Match found event handlers completed');
-    };
-    const onGameStart = (data) => {
-      setGameState('playing');
-      setGameTimer(60);
-      setGameQuestion(data.question);
-    };
-    const onGameEnd = (data) => {
-      setGameState('ended');
-      setMatchResult(data);
-      setGameTimer(0);
-    };
-    const onOpponentDisconnected = () => {
-      setError('Opponent disconnected');
-      setGameState('waiting');
-      setCurrentMatch(null);
-    };
-
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-    socket.on('connect_error', onConnectError);
-    socket.on('error', onError);
-    socket.on('queueJoined', onQueueJoined);
-    socket.on('queueError', onQueueError);
-    socket.on('matchFound', onMatchFound);
-    socket.on('gameStart', onGameStart);
-    socket.on('gameEnd', onGameEnd);
-    socket.on('opponentDisconnected', onOpponentDisconnected);
-
-    return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-      socket.off('connect_error', onConnectError);
-      socket.off('error', onError);
-      socket.off('queueJoined', onQueueJoined);
-      socket.off('queueError', onQueueError);
-      socket.off('matchFound', onMatchFound);
-      socket.off('gameStart', onGameStart);
-      socket.off('gameEnd', onGameEnd);
-      socket.off('opponentDisconnected', onOpponentDisconnected);
-    };
-  }, [socketRef.current]);
 
   // Timer effect for game countdown and playing state
   useEffect(() => {
@@ -245,35 +170,143 @@ const Online = () => {
     }
   };
 
-  // Connect socket function
-  const connectSocket = () => {
+  const initializeSocket = async () => {
+    if (socketRef.current || isConnectingRef.current) {
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Please login to play online');
       return;
     }
-    fetch('https://api.jamilweb.click/api/auth/verify', {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(response => {
-      if (response.ok) {
-        if (!socketRef.current) {
-          const socketInstance = io('https://api.jamilweb.click', {
-            auth: { token },
-            transports: ['websocket', 'polling'],
-            upgrade: true,
-            rememberUpgrade: true,
-            timeout: 20000
-          });
-          socketRef.current = socketInstance;
-        }
-      } else {
-        setError('Please login again');
-        localStorage.removeItem('token');
+
+    isConnectingRef.current = true;
+    console.log('🔌 Initializing socket connection...');
+
+    try {
+      // Verify token first
+      const verifyResponse = await fetch('https://api.jamilweb.click/api/auth/verify', {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!verifyResponse.ok) {
+        throw new Error('Token verification failed');
       }
-    })
-    .catch(() => setError('Failed to verify authentication'));
+
+      // Create socket connection
+      const socket = io('https://api.jamilweb.click', {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+        upgrade: true,
+        rememberUpgrade: true,
+        timeout: 20000
+      });
+
+      // Socket event handlers
+      socket.on('connect', () => {
+        console.log('🔌 Socket connected successfully');
+        setIsConnected(true);
+        setError('');
+        isConnectingRef.current = false;
+      });
+
+      socket.on('disconnect', () => {
+        console.log('🔌 Socket disconnected');
+        setIsConnected(false);
+        isConnectingRef.current = false;
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('🔌 Socket connection error:', error);
+        setError('Failed to connect to game server: ' + error.message);
+        setIsConnected(false);
+        isConnectingRef.current = false;
+      });
+
+      socket.on('queueJoined', (data) => {
+        console.log('✅ Joined queue:', data);
+      });
+
+      socket.on('queueError', (data) => {
+        console.log('❌ Queue error:', data);
+        setError(data.message);
+      });
+
+      socket.on('matchFound', (data) => {
+        console.log('🎮 Match found:', data);
+        console.log('🎮 Setting currentMatch to:', data);
+        console.log('🎮 Setting gameState to countdown');
+        console.log('🎮 Setting isWaitingForPlayer to false');
+        setCurrentMatch(data);
+        setGameState('countdown');
+        setGameQuestion(data.question || 'Game starting...');
+        setIsWaitingForPlayer(false);
+        setWaitingTime(0);
+        setGameTimer(3);
+        console.log('🎮 Match found event handlers completed');
+      });
+
+      socket.on('gameStart', (data) => {
+        console.log('🎮 Game start:', data);
+        console.log('🎮 Setting gameState to playing');
+        setGameState('playing');
+        setGameTimer(60);
+        setGameQuestion(data.question);
+        console.log('🎮 Game start event handlers completed');
+      });
+
+      socket.on('gameEnd', (data) => {
+        console.log('🎮 Game end:', data);
+        setGameState('ended');
+        setMatchResult(data);
+        setGameTimer(0);
+      });
+
+      socket.on('roundEnd', (data) => {
+        console.log('🎮 Round end:', data);
+        // Handle round end for Globle games
+        if (data.roundWinner) {
+          setCurrentRoundWinner(data.roundWinner);
+          setRoundNumber(data.nextRound);
+          // Update player wins based on the round winner
+          // This will be handled by the backend
+        }
+      });
+
+      socket.on('guessResult', (data) => {
+        console.log('🎮 Guess result:', data);
+        // Handle incorrect guess feedback
+        if (!data.isCorrect) {
+          // Update the message or show feedback
+          setMessage(data.message);
+        }
+      });
+
+      socket.on('opponentDisconnected', () => {
+        console.log('🎮 Opponent disconnected');
+        setError('Opponent disconnected');
+        setGameState('waiting');
+        setCurrentMatch(null);
+      });
+
+      socketRef.current = socket;
+
+    } catch (error) {
+      console.error('🔌 Socket initialization error:', error);
+      setError('Failed to connect to game server');
+      isConnectingRef.current = false;
+    }
+  };
+
+  const disconnectSocket = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    setIsConnected(false);
+    isConnectingRef.current = false;
   };
 
   const handleTabChange = (event, newValue) => {
@@ -286,7 +319,6 @@ const Online = () => {
   };
 
   const handleConfirmJoinLobby = () => {
-    // Simulate joining lobby
     console.log(`Joining lobby: ${selectedLobby?.name}`);
     setJoinLobbyDialog(false);
     setSelectedLobby(null);
@@ -295,7 +327,6 @@ const Online = () => {
   const handleJoinGameNow = () => {
     if (!selectedGameType) return;
     
-    // If random is selected, pick a random game type
     if (selectedGameType === 'random') {
       const gameTypes = ['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'];
       const randomGameType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
@@ -306,17 +337,28 @@ const Online = () => {
   };
 
   const handleConfirmJoinGame = () => {
+    console.log('🎮 Confirming join game for:', selectedGameType);
     setJoinGameDialog(false);
     setIsWaitingForPlayer(true);
-    isWaitingForPlayerRef.current = true; // Fix race condition
     setWaitingTime(0);
     setGameState('waiting');
     setCurrentMatch(null);
     setMatchResult(null);
+    
+    // Ensure socket is connected
     if (!socketRef.current) {
-      connectSocket();
+      console.log('🔌 No socket, initializing...');
+      initializeSocket().then(() => {
+        if (socketRef.current && isConnected) {
+          console.log('🔌 Joining queue after socket initialization');
+          socketRef.current.emit('joinQueue', { gameType: selectedGameType });
+        }
+      });
     } else if (isConnected) {
+      console.log('🔌 Socket connected, joining queue');
       socketRef.current.emit('joinQueue', { gameType: selectedGameType });
+    } else {
+      console.log('🔌 Socket exists but not connected, waiting for connection...');
     }
   };
 
@@ -326,6 +368,7 @@ const Online = () => {
     setSelectedGameType('');
     setGameState('waiting');
     setCurrentMatch(null);
+    
     if (socketRef.current) {
       socketRef.current.emit('leaveQueue', { gameType: selectedGameType });
     }
@@ -333,6 +376,7 @@ const Online = () => {
 
   const handleSubmitAnswer = (answerData) => {
     if (!socketRef.current || !currentMatch) return;
+    
     socketRef.current.emit('submitAnswer', {
       matchId: currentMatch.matchId,
       answer: answerData.answer,
@@ -342,12 +386,14 @@ const Online = () => {
 
   const handleNewOpponent = () => {
     if (!socketRef.current || !selectedGameType) return;
+    
     setGameState('waiting');
     setCurrentMatch(null);
     setMatchResult(null);
     setGameAnswer('');
     setGameQuestion('');
     setGameTimer(0);
+    
     socketRef.current.emit('requestNewOpponent', { gameType: selectedGameType });
   };
 
@@ -361,6 +407,7 @@ const Online = () => {
     setIsWaitingForPlayer(false);
     setWaitingTime(0);
     setSelectedGameType('');
+    
     if (socketRef.current) {
       socketRef.current.emit('leaveQueue', { gameType: selectedGameType });
     }
@@ -406,7 +453,6 @@ const Online = () => {
       case 'Namle':
         return <NamleOnline {...gameProps} />;
       default:
-        // Fallback to generic game interface
         return renderGenericGameInterface();
     }
   };
@@ -612,7 +658,7 @@ const Online = () => {
             
             <Grid container spacing={2}>
               {['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'].map((gameType) => (
-                <Grid item key={gameType} xs={12} sm={6} md={4}>
+                <Grid item key={gameType} xs={12} sm={6}>
                   <Card 
                     sx={{ 
                       bgcolor: selectedGameType === gameType ? '#43cea2' : '#2a2a2a', 
@@ -801,7 +847,7 @@ const Online = () => {
         </Typography>
 
         {/* Connection Status */}
-        {!isConnected && (
+        {!isConnected && localStorage.getItem('token') && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             Not connected to game server. Please login to play online.
           </Alert>
@@ -999,12 +1045,22 @@ const Online = () => {
 
         {/* Game Page - Render specific game component or generic interface */}
         {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && (
-          <>
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 10002, // Higher than waiting page
+              bgcolor: 'rgba(0,0,0,0.9)'
+            }}
+          >
             {console.log('🎮 Rendering game component:', { gameState, currentMatch, isWaitingForPlayer })}
             {console.log('🎮 Game state conditions met, rendering game component')}
             {console.log('🎮 currentMatch?.gameType:', currentMatch?.gameType)}
             {renderGameComponent()}
-          </>
+          </Box>
         )}
       </Box>
     </Box>

@@ -7,11 +7,337 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
+const fetch = require('node-fetch');
 
 // Import routes
 const authRoutes = require('./routes/auth');
 const gamesRoutes = require('./routes/games');
 const badgesRoutes = require('./routes/badges');
+
+// Import the official countries list
+const officialCountries = [
+  "India","China","United States of America","Indonesia","Pakistan","Nigeria","Brazil","Bangladesh","Russia","Ethiopia","Mexico","Japan","Egypt","Kosovo","Philippines","Democratic Republic of the Congo","Vietnam","Iran","Turkey","Germany","Thailand","United Republic of Tanzania","United Kingdom","France","South Africa","Italy","Kenya","Myanmar","Colombia","South Korea","Sudan","Uganda","Spain","Algeria","Iraq","Argentina","Afghanistan","Yemen","Canada","Angola","Ukraine","Morocco","Poland","Uzbekistan","Malaysia","Mozambique","Ghana","Peru","Saudi Arabia","Madagascar","Ivory Coast","Cameroon","Nepal","Venezuela","Niger","Australia","North Korea","Syria","Mali","Burkina Faso","Sri Lanka","Malawi","Zambia","Chad","Kazakhstan","Chile","Somalia","Senegal","Romania","Guatemala","Netherlands","Ecuador","Cambodia","Zimbabwe","Guinea","Benin","Rwanda","Burundi","Bolivia","Tunisia","South Sudan","Haiti","Belgium","Jordan","Dominican Republic","United Arab Emirates","Honduras","Cuba","Tajikistan","Papua New Guinea","Sweden","Czechia","Portugal","Azerbaijan","Greece","Togo","Hungary","Israel","Austria","Belarus","Switzerland","Sierra Leone","Laos","Turkmenistan","Libya","Kyrgyzstan","Paraguay","Nicaragua","Bulgaria","Republic of Serbia","Republic of the Congo","El Salvador","Denmark","Singapore","Lebanon","Liberia","Finland","Norway","Palestine","Central African Republic","Oman","Slovakia","Mauritania","Ireland","New Zealand","Costa Rica","Kuwait","Panama","Croatia","Georgia","Eritrea","Mongolia","Uruguay","Bosnia and Herzegovina","Qatar","Namibia","Moldova","Armenia","Jamaica","Lithuania","Gambia","Albania","Gabon","Botswana","Lesotho","Guinea-Bissau","Slovenia","Equatorial Guinea","Latvia","North Macedonia","Bahrain","Trinidad and Tobago","East Timor","Cyprus","Estonia","Mauritius","eSwatini","Djibouti","Fiji","Comoros","Solomon Islands","Guyana","Bhutan","Luxembourg","Suriname","Montenegro","Malta","Maldives","Cabo Verde","Brunei","Belize","Bahamas, The","Iceland","Vanuatu","Barbados","Sao Tome and Principe","Samoa","St. Lucia","Kiribati","Seychelles","Grenada","Micronesia, Fed. Sts.","Tonga","St. Vincent and the Grenadines","Antigua and Barbuda","Andorra","Dominica","Saint Kitts and Nevis","Liechtenstein","Monaco","Marshall Islands","San Marino","Palau","Nauru","Tuvalu","Vatican City"
+];
+
+// Country info for population and capital data
+const countryInfo = {
+  'United States of America': { capital: 'Washington D.C.', population: 343_477_000 },
+  'China': { capital: 'Beijing', population: 1_425_180_000 },
+  'India': { capital: 'New Delhi', population: 1_425_423_000 },
+  'Indonesia': { capital: 'Jakarta', population: 276_361_000 },
+  'Pakistan': { capital: 'Islamabad', population: 241_500_000 },
+  'Nigeria': { capital: 'Abuja', population: 236_747_000 },
+  'Brazil': { capital: 'Brasilia', population: 203_262_000 },
+  'Bangladesh': { capital: 'Dhaka', population: 171_467_000 },
+  'Russia': { capital: 'Moscow', population: 145_034_000 },
+  'Ethiopia': { capital: 'Addis Ababa', population: 123_379_000 },
+  'Mexico': { capital: 'Mexico City', population: 129_740_000 },
+  'Japan': { capital: 'Tokyo', population: 125_584_000 },
+  'Egypt': { capital: 'Cairo', population: 110_990_000 },
+  'Philippines': { capital: 'Manila', population: 113_524_000 },
+  'Democratic Republic of the Congo': { capital: 'Kinshasa', population: 108_396_000 },
+  'Vietnam': { capital: 'Hanoi', population: 98_858_000 },
+  'Iran': { capital: 'Tehran', population: 88_289_000 },
+  'Turkey': { capital: 'Ankara', population: 86_277_000 },
+  'Germany': { capital: 'Berlin', population: 83_238_000 },
+  'Thailand': { capital: 'Bangkok', population: 71_887_000 },
+  'United Republic of Tanzania': { capital: 'Dodoma', population: 64_700_000 },
+  'United Kingdom': { capital: 'London', population: 67_508_000 },
+  'France': { capital: 'Paris', population: 65_707_000 },
+  'South Africa': { capital: 'Pretoria', population: 60_415_000 },
+  'Italy': { capital: 'Rome', population: 58_983_000 },
+  'Kenya': { capital: 'Nairobi', population: 54_027_000 },
+  'Myanmar': { capital: 'Naypyidaw', population: 54_797_000 },
+  'Colombia': { capital: 'Bogota', population: 51_069_000 },
+  'South Korea': { capital: 'Seoul', population: 51_925_000 },
+  'Sudan': { capital: 'Khartoum', population: 49_390_000 },
+  'Uganda': { capital: 'Kampala', population: 49_123_000 },
+  'Spain': { capital: 'Madrid', population: 47_581_000 },
+  'Algeria': { capital: 'Algiers', population: 44_178_000 },
+  'Iraq': { capital: 'Baghdad', population: 43_533_000 },
+  'Argentina': { capital: 'Buenos Aires', population: 46_175_000 },
+  'Afghanistan': { capital: 'Kabul', population: 41_315_000 },
+  'Yemen': { capital: 'Sanaa', population: 34_449_000 },
+  'Canada': { capital: 'Ottawa', population: 39_087_000 },
+  'Angola': { capital: 'Luanda', population: 36_698_000 },
+  'Ukraine': { capital: 'Kiev', population: 36_159_000 },
+  'Morocco': { capital: 'Rabat', population: 38_162_000 },
+  'Poland': { capital: 'Warsaw', population: 37_651_000 },
+  'Uzbekistan': { capital: 'Tashkent', population: 35_648_000 },
+  'Malaysia': { capital: 'Kuala Lumpur', population: 33_871_000 },
+  'Mozambique': { capital: 'Maputo', population: 33_899_000 },
+  'Ghana': { capital: 'Accra', population: 34_169_000 },
+  'Peru': { capital: 'Lima', population: 34_482_000 },
+  'Saudi Arabia': { capital: 'Riyadh', population: 36_017_000 },
+  'Madagascar': { capital: 'Antananarivo', population: 29_719_000 },
+  'Ivory Coast': { capital: 'Yamoussoukro', population: 29_017_000 },
+  'Cameroon': { capital: 'Yaounde', population: 28_060_000 },
+  'Nepal': { capital: 'Kathmandu', population: 30_035_000 },
+  'Venezuela': { capital: 'Caracas', population: 28_436_000 },
+  'Niger': { capital: 'Niamey', population: 28_950_000 },
+  'Australia': { capital: 'Canberra', population: 27_232_000 },
+  'North Korea': { capital: 'Pyongyang', population: 26_043_000 },
+  'Syria': { capital: 'Damascus', population: 23_204_000 },
+  'Mali': { capital: 'Bamako', population: 20_250_000 },
+  'Burkina Faso': { capital: 'Ouagadougou', population: 22_102_000 },
+  'Sri Lanka': { capital: 'Colombo', population: 21_456_000 },
+  'Malawi': { capital: 'Lilongwe', population: 20_675_000 },
+  'Zambia': { capital: 'Lusaka', population: 20_017_000 },
+  'Chad': { capital: 'NDjamena', population: 18_264_000 },
+  'Kazakhstan': { capital: 'Astana', population: 19_542_000 },
+  'Chile': { capital: 'Santiago', population: 19_725_000 },
+  'Somalia': { capital: 'Mogadishu', population: 18_476_000 },
+  'Senegal': { capital: 'Dakar', population: 18_901_000 },
+  'Romania': { capital: 'Bucharest', population: 19_121_000 },
+  'Guatemala': { capital: 'Guatemala City', population: 17_633_000 },
+  'Netherlands': { capital: 'Amsterdam', population: 17_757_000 },
+  'Ecuador': { capital: 'Quito', population: 18_057_000 },
+  'Cambodia': { capital: 'Phnom Penh', population: 17_170_000 },
+  'Zimbabwe': { capital: 'Harare', population: 16_665_000 },
+  'Guinea': { capital: 'Conakry', population: 14_764_000 },
+  'Benin': { capital: 'Porto-Novo', population: 13_411_000 },
+  'Rwanda': { capital: 'Kigali', population: 13_033_000 },
+  'Burundi': { capital: 'Bujumbura', population: 13_398_000 },
+  'Bolivia': { capital: 'La Paz', population: 12_055_000 },
+  'Tunisia': { capital: 'Tunis', population: 12_103_000 },
+  'South Sudan': { capital: 'Juba', population: 11_709_000 },
+  'Haiti': { capital: 'Port-au-Prince', population: 11_825_000 },
+  'Belgium': { capital: 'Brussels', population: 11_716_000 },
+  'Jordan': { capital: 'Amman', population: 11_235_000 },
+  'Dominican Republic': { capital: 'Santo Domingo', population: 11_377_000 },
+  'United Arab Emirates': { capital: 'Abu Dhabi', population: 9_993_000 },
+  'Honduras': { capital: 'Tegucigalpa', population: 10_178_000 },
+  'Cuba': { capital: 'Havana', population: 11_234_000 },
+  'Tajikistan': { capital: 'Dushanbe', population: 10_678_000 },
+  'Papua New Guinea': { capital: 'Port Moresby', population: 9_397_000 },
+  'Sweden': { capital: 'Stockholm', population: 10_502_000 },
+  'Czechia': { capital: 'Prague', population: 10_594_000 },
+  'Portugal': { capital: 'Lisbon', population: 10_298_000 },
+  'Azerbaijan': { capital: 'Baku', population: 10_348_000 },
+  'Greece': { capital: 'Athens', population: 10_432_000 },
+  'Togo': { capital: 'Lome', population: 8_798_000 },
+  'Hungary': { capital: 'Budapest', population: 9_605_000 },
+  'Israel': { capital: 'Tel Aviv', population: 9_523_000 },
+  'Austria': { capital: 'Vienna', population: 9_089_000 },
+  'Belarus': { capital: 'Minsk', population: 9_237_000 },
+  'Switzerland': { capital: 'Bern', population: 8_822_000 },
+  'Sierra Leone': { capital: 'Freetown', population: 8_308_000 },
+  'Laos': { capital: 'Vientiane', population: 7_633_000 },
+  'Turkmenistan': { capital: 'Ashgabat', population: 7_145_000 },
+  'Libya': { capital: 'Tripoli', population: 7_352_000 },
+  'Kyrgyzstan': { capital: 'Bishkek', population: 7_059_000 },
+  'Paraguay': { capital: 'Asuncion', population: 7_456_000 },
+  'Nicaragua': { capital: 'Managua', population: 7_198_000 },
+  'Bulgaria': { capital: 'Sofia', population: 6_886_000 },
+  'Republic of Serbia': { capital: 'Belgrade', population: 6_642_000 },
+  'Republic of the Congo': { capital: 'Brazzaville', population: 5_821_000 },
+  'El Salvador': { capital: 'San Salvador', population: 6_519_000 },
+  'Denmark': { capital: 'Copenhagen', population: 5_920_000 },
+  'Singapore': { capital: 'Singapore', population: 5_703_000 },
+  'Lebanon': { capital: 'Beirut', population: 6_089_000 },
+  'Liberia': { capital: 'Monrovia', population: 5_343_000 },
+  'Finland': { capital: 'Helsinki', population: 5_571_000 },
+  'Norway': { capital: 'Oslo', population: 5_499_000 },
+  'Palestine': { capital: 'Jerusalem', population: 5_357_000 },
+  'Central African Republic': { capital: 'Bangui', population: 5_683_000 },
+  'Oman': { capital: 'Muscat', population: 5_628_000 },
+  'Slovakia': { capital: 'Bratislava', population: 5_466_000 },
+  'Mauritania': { capital: 'Nouakchott', population: 5_428_000 },
+  'Ireland': { capital: 'Dublin', population: 5_253_000 },
+  'New Zealand': { capital: 'Wellington', population: 5_124_000 },
+  'Costa Rica': { capital: 'San Jose', population: 5_274_000 },
+  'Kuwait': { capital: 'Kuwait City', population: 4_415_000 },
+  'Panama': { capital: 'Panama City', population: 4_385_000 },
+  'Croatia': { capital: 'Zagreb', population: 3_865_000 },
+  'Georgia': { capital: 'Tbilisi', population: 3_728_000 },
+  'Eritrea': { capital: 'Asmara', population: 3_669_000 },
+  'Mongolia': { capital: 'Ulaanbaatar', population: 3_442_000 },
+  'Uruguay': { capital: 'Montevideo', population: 3_517_000 },
+  'Bosnia and Herzegovina': { capital: 'Sarajevo', population: 3_263_000 },
+  'Qatar': { capital: 'Doha', population: 2_877_000 },
+  'Namibia': { capital: 'Windhoek', population: 2_679_000 },
+  'Moldova': { capital: 'Chisinau', population: 2_603_000 },
+  'Armenia': { capital: 'Yerevan', population: 2_793_000 },
+  'Jamaica': { capital: 'Kingston', population: 2_732_000 },
+  'Lithuania': { capital: 'Vilnius', population: 2_801_000 },
+  'Gambia': { capital: 'Banjul', population: 2_731_000 },
+  'Albania': { capital: 'Tirane', population: 2_793_000 },
+  'Gabon': { capital: 'Libreville', population: 2_433_000 },
+  'Botswana': { capital: 'Gaborone', population: 2_643_000 },
+  'Lesotho': { capital: 'Maseru', population: 2_204_000 },
+  'Guinea-Bissau': { capital: 'Bissau', population: 2_047_000 },
+  'Slovenia': { capital: 'Ljubljana', population: 2_108_000 },
+  'Equatorial Guinea': { capital: 'Malabo', population: 1_632_000 },
+  'Latvia': { capital: 'Riga', population: 1_826_000 },
+  'North Macedonia': { capital: 'Skopje', population: 2_068_000 },
+  'Bahrain': { capital: 'Manama', population: 1_772_000 },
+  'Trinidad and Tobago': { capital: 'Port-of-Spain', population: 1_410_000 },
+  'East Timor': { capital: 'Dili', population: 1_371_000 },
+  'Cyprus': { capital: 'Nicosia', population: 945_000 },
+  'Estonia': { capital: 'Tallinn', population: 1_326_000 },
+  'Mauritius': { capital: 'Port Louis', population: 1_323_000 },
+  'eSwatini': { capital: 'Mbabane', population: 1_187_000 },
+  'Djibouti': { capital: 'Djibouti', population: 1_079_000 },
+  'Fiji': { capital: 'Suva', population: 923_000 },
+  'Comoros': { capital: 'Moroni', population: 931_000 },
+  'Solomon Islands': { capital: 'Honiara', population: 768_000 },
+  'Guyana': { capital: 'Georgetown', population: 822_000 },
+  'Bhutan': { capital: 'Thimphu', population: 773_000 },
+  'Luxembourg': { capital: 'Luxembourg', population: 645_000 },
+  'Suriname': { capital: 'Paramaribo', population: 609_000 },
+  'Montenegro': { capital: 'Podgorica', population: 601_000 },
+  'Malta': { capital: 'Valletta', population: 518_000 },
+  'Maldives': { capital: 'Male', population: 551_000 },
+  'Cabo Verde': { capital: 'Praia', population: 608_000 },
+  'Brunei': { capital: 'Bandar Seri Begawan', population: 453_000 },
+  'Belize': { capital: 'Belmopan', population: 419_000 },
+  'Bahamas, The': { capital: 'Nassau', population: 420_000 },
+  'Iceland': { capital: 'Reykjavik', population: 396_000 },
+  'Vanuatu': { capital: 'Port Vila', population: 334_000 },
+  'Barbados': { capital: 'Bridgetown', population: 293_000 },
+  'Sao Tome and Principe': { capital: 'Sao Tome', population: 226_000 },
+  'Samoa': { capital: 'Apia', population: 225_000 },
+  'St. Lucia': { capital: 'Castries', population: 190_000 },
+  'Kiribati': { capital: 'Tarawa', population: 137_000 },
+  'Seychelles': { capital: 'Victoria', population: 101_000 },
+  'Grenada': { capital: 'Saint Georges', population: 124_000 },
+  'Micronesia, Fed. Sts.': { capital: 'Palikir', population: 118_000 },
+  'Tonga': { capital: 'Nukualofa', population: 108_000 },
+  'St. Vincent and the Grenadines': { capital: 'Kingstown', population: 111_000 },
+  'Antigua and Barbuda': { capital: 'Saint Johns', population: 102_000 },
+  'Andorra': { capital: 'Andorra la Vella', population: 77_000 },
+  'Dominica': { capital: 'Roseau', population: 73_000 },
+  'Saint Kitts and Nevis': { capital: 'Basseterre', population: 55_000 },
+  'Liechtenstein': { capital: 'Vaduz', population: 38_000 },
+  'Monaco': { capital: 'Monaco', population: 39_000 },
+  'Marshall Islands': { capital: 'Majuro', population: 61_000 },
+  'San Marino': { capital: 'San Marino', population: 34_000 },
+  'Palau': { capital: 'Koror', population: 18_000 },
+  'Nauru': { capital: 'Yaren District', population: 12_000 },
+  'Tuvalu': { capital: 'Funafuti', population: 12_000 },
+  'Vatican City': { capital: 'Vatican City', population: 825 }
+};
+
+// Helper function to get country center coordinates
+const getCountryCenter = (country) => {
+  if (!country || !country.geometry) return { lat: 0, lon: 0 };
+  
+  const coordinates = country.geometry.coordinates;
+  if (country.geometry.type === 'Polygon') {
+    // Calculate centroid of polygon
+    let sumLat = 0, sumLon = 0, count = 0;
+    coordinates[0].forEach(coord => {
+      sumLon += coord[0];
+      sumLat += coord[1];
+      count++;
+    });
+    return { lat: sumLat / count, lon: sumLon / count };
+  } else if (country.geometry.type === 'MultiPolygon') {
+    // Calculate centroid of first polygon
+    let sumLat = 0, sumLon = 0, count = 0;
+    coordinates[0][0].forEach(coord => {
+      sumLon += coord[0];
+      sumLat += coord[1];
+      count++;
+    });
+    return { lat: sumLat / count, lon: sumLon / count };
+  }
+  return { lat: 0, lon: 0 };
+};
+
+// Function to categorize countries by difficulty
+const getCountryDifficulty = (countryName) => {
+  // Well-known countries (easy)
+  const easyCountries = [
+    'United States of America', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Chile',
+    'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Portugal',
+    'China', 'Japan', 'India', 'Australia', 'South Africa', 'Egypt',
+    'Russia', 'Turkey', 'Iran', 'Saudi Arabia', 'Thailand', 'Vietnam'
+  ];
+  
+  // Medium difficulty countries
+  const mediumCountries = [
+    'Netherlands', 'Belgium', 'Switzerland', 'Austria', 'Poland', 'Czechia',
+    'Hungary', 'Romania', 'Bulgaria', 'Greece', 'Ukraine', 'Belarus',
+    'Pakistan', 'Bangladesh', 'Sri Lanka', 'Myanmar', 'Malaysia', 'Indonesia',
+    'Philippines', 'New Zealand', 'Fiji', 'Papua New Guinea',
+    'Nigeria', 'Kenya', 'Morocco', 'Algeria', 'Tunisia', 'Libya',
+    'Sudan', 'Ethiopia', 'Somalia', 'Madagascar', 'Zimbabwe', 'Botswana',
+    'Namibia', 'Mozambique', 'Tanzania', 'Uganda', 'Rwanda', 'Burundi',
+    'Colombia', 'Venezuela', 'Ecuador', 'Peru', 'Bolivia', 'Paraguay',
+    'Uruguay', 'Guyana', 'Suriname',
+    'Guatemala', 'Belize', 'El Salvador', 'Honduras', 'Nicaragua',
+    'Costa Rica', 'Panama', 'Cuba', 'Jamaica', 'Haiti', 'Dominican Republic'
+  ];
+  
+  if (easyCountries.includes(countryName)) return 'easy';
+  if (mediumCountries.includes(countryName)) return 'medium';
+  return 'hard';
+};
+
+// Cache for countries data
+let countriesData = null;
+
+// Function to load countries data
+const loadCountriesData = async () => {
+  if (countriesData) return countriesData;
+  
+  try {
+    const response = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+    const data = await response.json();
+    countriesData = data.features;
+    return countriesData;
+  } catch (error) {
+    console.error('Error loading countries data:', error);
+    return [];
+  }
+};
+
+// Function to select random country using same logic as frontend
+const selectRandomCountry = async () => {
+  const countries = await loadCountriesData();
+  
+  // Filter out countries that are too small, have invalid coordinates, or aren't in the official 195 countries
+  const validCountries = countries.filter(country => {
+    try {
+      const center = getCountryCenter(country);
+      const hasValidCoordinates = center.lat !== 0 && center.lon !== 0;
+      const isOfficialCountry = officialCountries.includes(country.properties.name);
+      return hasValidCoordinates && isOfficialCountry;
+    } catch (e) {
+      return false;
+    }
+  });
+  
+  // Add slight bias toward easier countries (70% chance for easy/medium, 30% for hard)
+  const random = Math.random();
+  let filteredCountries = validCountries;
+  
+  if (random < 0.7) {
+    // 70% chance: prefer easy and medium countries
+    const easyMediumCountries = validCountries.filter(country => {
+      const difficulty = getCountryDifficulty(country.properties.name);
+      return difficulty === 'easy' || difficulty === 'medium';
+    });
+    
+    if (easyMediumCountries.length > 0) {
+      filteredCountries = easyMediumCountries;
+      console.log('Using easy/medium bias - filtered to', filteredCountries.length, 'countries');
+    }
+  } else {
+    // 30% chance: include all countries (including hard ones)
+    console.log('Using full country pool - no difficulty bias');
+  }
+  
+  // Use a more robust random selection
+  const randomIndex = Math.floor(Math.random() * filteredCountries.length);
+  const selectedCountry = filteredCountries[randomIndex];
+  
+  console.log(`Selected country: ${selectedCountry.properties.name}`);
+  console.log(`Difficulty: ${getCountryDifficulty(selectedCountry.properties.name)}`);
+  
+  return selectedCountry;
+};
 
 const app = express();
 const server = createServer(app);
@@ -98,6 +424,9 @@ const gameQueues = {
 const activeMatches = new Map();
 const userSockets = new Map();
 
+// Track round results for Globle games
+const globleRoundResults = new Map(); // matchId -> { player1Wins: 0, player2Wins: 0, currentRound: 1 }
+
 // Socket.IO middleware for authentication
 io.use(async (socket, next) => {
   try {
@@ -183,7 +512,7 @@ io.on('connection', (socket) => {
 
   // Submit answer
   socket.on('submitAnswer', async (data) => {
-    const { matchId, answer, timeTaken } = data;
+    const { matchId, answer, timeTaken, isCorrect, distance } = data;
     const match = activeMatches.get(matchId);
     
     if (!match) {
@@ -196,59 +525,148 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Check if answer is correct (simplified for now)
-    const isCorrect = checkAnswer(match.gameType, answer);
-    
-    if (isCorrect) {
-      // Player wins
-      match.winner = socket.userId;
-      match.winnerTime = timeTaken;
-      match.endTime = Date.now();
-      
-      // Update points
-      await updatePlayerPoints(socket.userId, 100, true);
-      await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, -100, false);
-      
-      // Notify both players
-      io.to(matchId).emit('gameEnd', {
-        winner: socket.username,
-        winnerTime: timeTaken,
-        correctAnswer: match.correctAnswer,
-        points: {
-          [socket.userId]: 100,
-          [match.players.find(p => p.userId !== socket.userId).userId]: -100
+    // Handle Globle games with 3-round system
+    if (match.gameType === 'Globle') {
+      const roundResults = globleRoundResults.get(matchId);
+      if (!roundResults) {
+        socket.emit('error', { message: 'Round tracking not found' });
+        return;
+      }
+
+      if (isCorrect) {
+        // Determine which player won this round
+        const playerIndex = match.players.findIndex(p => p.userId === socket.userId);
+        const isPlayer1 = playerIndex === 0;
+        
+        if (isPlayer1) {
+          roundResults.player1Wins++;
+        } else {
+          roundResults.player2Wins++;
         }
-      });
-      
-      // Clean up match after delay
-      setTimeout(() => {
-        activeMatches.delete(matchId);
-      }, 5000);
+
+        // Check if someone has won 2 out of 3 rounds
+        const hasWinner = roundResults.player1Wins >= 2 || roundResults.player2Wins >= 2;
+        
+        if (hasWinner) {
+          // Game is over - determine final winner
+          const finalWinner = roundResults.player1Wins >= 2 ? match.players[0] : match.players[1];
+          const finalLoser = roundResults.player1Wins >= 2 ? match.players[1] : match.players[0];
+          
+          match.winner = finalWinner.userId;
+          match.endTime = Date.now();
+          
+          // Update points
+          await updatePlayerPoints(finalWinner.userId, 100, true);
+          await updatePlayerPoints(finalLoser.userId, -100, false);
+          
+          // Notify both players
+          io.to(matchId).emit('gameEnd', {
+            winner: finalWinner.username,
+            finalScore: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
+            correctAnswer: match.correctAnswer,
+            points: {
+              [finalWinner.userId]: 100,
+              [finalLoser.userId]: -100
+            }
+          });
+          
+          // Clean up
+          setTimeout(() => {
+            activeMatches.delete(matchId);
+            globleRoundResults.delete(matchId);
+          }, 5000);
+        } else {
+          // Continue to next round
+          roundResults.currentRound++;
+          
+          // Generate new secret country for next round
+          const nextRoundQuestion = await generateQuestion('Globle');
+          match.correctAnswer = nextRoundQuestion;
+          roundResults.secretCountry = nextRoundQuestion.country;
+          
+          // Notify players about round result
+          io.to(matchId).emit('roundEnd', {
+            roundWinner: socket.username,
+            roundNumber: roundResults.currentRound - 1,
+            score: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
+            nextRound: roundResults.currentRound
+          });
+          
+          // Start next round after 3 seconds
+          setTimeout(() => {
+            io.to(matchId).emit('gameStart', {
+              matchId,
+              gameType: 'Globle',
+              question: nextRoundQuestion.question,
+              startTime: Date.now(),
+              secretCountry: nextRoundQuestion.country,
+              roundNumber: roundResults.currentRound
+            });
+          }, 3000);
+        }
+      } else {
+        // Incorrect guess - continue playing
+        socket.emit('guessResult', {
+          isCorrect: false,
+          distance: distance,
+          message: 'Keep guessing!'
+        });
+      }
     } else {
-      // Player loses
-      match.winner = match.players.find(p => p.userId !== socket.userId).userId;
-      match.loserTime = timeTaken;
-      match.endTime = Date.now();
+      // Handle other games with original logic
+      const isCorrect = checkAnswer(match.gameType, answer);
       
-      // Update points
-      await updatePlayerPoints(socket.userId, -100, false);
-      await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, 100, true);
-      
-      // Notify both players
-      io.to(matchId).emit('gameEnd', {
-        winner: match.players.find(p => p.userId !== socket.userId).username,
-        loserTime: timeTaken,
-        correctAnswer: match.correctAnswer,
-        points: {
-          [socket.userId]: -100,
-          [match.players.find(p => p.userId !== socket.userId).userId]: 100
-        }
-      });
-      
-      // Clean up match after delay
-      setTimeout(() => {
-        activeMatches.delete(matchId);
-      }, 5000);
+      if (isCorrect) {
+        // Player wins
+        match.winner = socket.userId;
+        match.winnerTime = timeTaken;
+        match.endTime = Date.now();
+        
+        // Update points
+        await updatePlayerPoints(socket.userId, 100, true);
+        await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, -100, false);
+        
+        // Notify both players
+        io.to(matchId).emit('gameEnd', {
+          winner: socket.username,
+          winnerTime: timeTaken,
+          correctAnswer: match.correctAnswer,
+          points: {
+            [socket.userId]: 100,
+            [match.players.find(p => p.userId !== socket.userId).userId]: -100
+          }
+        });
+        
+        // Clean up match after delay
+        setTimeout(() => {
+          activeMatches.delete(matchId);
+        }, 5000);
+      } else {
+        // Player loses
+        match.winner = match.players.find(p => p.userId !== socket.userId).userId;
+        match.loserTime = timeTaken;
+        match.endTime = Date.now();
+        
+        // Update points
+        await updatePlayerPoints(socket.userId, -100, false);
+        await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, 100, true);
+        
+        // Notify both players
+        io.to(matchId).emit('gameEnd', {
+          winner: match.players.find(p => p.userId !== socket.userId).username,
+          loserTime: timeTaken,
+          correctAnswer: match.correctAnswer,
+          points: {
+            [socket.userId]: -100,
+            [match.players.find(p => p.userId !== socket.userId).userId]: 100
+          }
+        });
+        
+        // Clean up match after delay
+        setTimeout(() => {
+          activeMatches.delete(matchId);
+        }, 5000);
+      }
     }
   });
 
@@ -300,17 +718,34 @@ async function tryMatchPlayers(gameType) {
     
     const matchId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // Generate question asynchronously
+    const questionData = await generateQuestion(gameType);
+    
     // Create match
     const match = {
       id: matchId,
       gameType,
       players: [player1, player2],
       startTime: Date.now(),
-      correctAnswer: generateQuestion(gameType),
-      winner: null
+      correctAnswer: questionData,
+      winner: null,
+      currentRound: 1,
+      player1Wins: 0,
+      player2Wins: 0
     };
     
     activeMatches.set(matchId, match);
+    
+    // Initialize round tracking for Globle games
+    if (gameType === 'Globle') {
+      globleRoundResults.set(matchId, {
+        player1Wins: 0,
+        player2Wins: 0,
+        currentRound: 1,
+        secretCountry: questionData.country // Store the secret country
+      });
+    }
+    
     console.log(`Created match ${matchId} between ${player1.username} and ${player2.username}`);
     console.log('Match data:', match);
     
@@ -332,8 +767,9 @@ async function tryMatchPlayers(gameType) {
           { username: player1.username },
           { username: player2.username }
         ],
-        question: match.correctAnswer.question,
-        startTime: Date.now() + 3000 // 3 second countdown
+        question: questionData.question,
+        startTime: Date.now() + 3000, // 3 second countdown
+        secretCountry: gameType === 'Globle' ? questionData.country : null
       };
       
       console.log('Emitting matchFound event to room:', matchId);
@@ -346,8 +782,9 @@ async function tryMatchPlayers(gameType) {
         io.to(matchId).emit('gameStart', {
           matchId,
           gameType,
-          question: match.correctAnswer.question,
-          startTime: Date.now()
+          question: questionData.question,
+          startTime: Date.now(),
+          secretCountry: gameType === 'Globle' ? questionData.country : null
         });
       }, 3000);
     } else {
@@ -360,13 +797,20 @@ async function tryMatchPlayers(gameType) {
 }
 
 function generateQuestion(gameType) {
-  // Simplified question generation - you can expand this
+  // For Globle games, use the proper country selection logic
+  if (gameType === 'Globle') {
+    return selectRandomCountry().then(selectedCountry => {
+      return {
+        question: 'What country is this?',
+        answer: selectedCountry.properties.name,
+        type: 'country',
+        country: selectedCountry
+      };
+    });
+  }
+  
+  // For other games, use simplified questions for now
   const questions = {
-    'Globle': {
-      question: 'What country is this?',
-      answer: 'United States',
-      type: 'country'
-    },
     'Population': {
       question: 'What is the population of this country?',
       answer: '331 million',
@@ -414,7 +858,7 @@ function generateQuestion(gameType) {
     }
   };
   
-  return questions[gameType] || questions['Globle'];
+  return Promise.resolve(questions[gameType] || questions['Globle']);
 }
 
 function checkAnswer(gameType, answer) {
