@@ -183,7 +183,7 @@ const Header = forwardRef((props, ref) => {
               <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.9rem' }}>
                 {user.username}
               </Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+              <Typography sx={{ color: 'white', fontSize: '0.8rem' }}>
                 {user.email}
               </Typography>
             </Box>
@@ -191,7 +191,7 @@ const Header = forwardRef((props, ref) => {
         </Box>
       ) : (
         <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', mb: 1 }}>
+          <Typography sx={{ color: 'white', fontSize: '0.9rem', mb: 1 }}>
             Welcome to Globle
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -262,7 +262,7 @@ const Header = forwardRef((props, ref) => {
                 '& .MuiListItemText-primary': {
                   fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
                   fontSize: '1.1rem',
-                  color: item.isComingSoon ? '#ff9800' : 'inherit',
+                  color: item.isComingSoon ? '#ff9800 !important' : 'white !important',
                 }
               }}
             />
@@ -284,7 +284,7 @@ const Header = forwardRef((props, ref) => {
               '& .MuiListItemText-primary': {
                 fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
                 fontSize: '1.1rem',
-                color: '#43cea2'
+                color: 'white !important'
               }
             }}
           />
@@ -313,7 +313,8 @@ const Header = forwardRef((props, ref) => {
               sx={{
                 '& .MuiListItemText-primary': {
                   fontWeight: location.pathname === game.path ? 'bold' : 'normal',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  color: 'white !important'
                 }
               }}
             />
@@ -344,7 +345,8 @@ const Header = forwardRef((props, ref) => {
                 primary="Logout" 
                 sx={{
                   '& .MuiListItemText-primary': {
-                    fontSize: '1.1rem'
+                    fontSize: '1.1rem',
+                    color: 'white !important'
                   }
                 }}
               />
@@ -496,6 +498,15 @@ const Header = forwardRef((props, ref) => {
             mt: 1,
             minWidth: 200,
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            '& .MuiMenuItem-root': {
+              color: 'white !important',
+            },
+            '& .MuiListItemText-primary': {
+              color: 'white !important',
+            },
+            '& .MuiTypography-root': {
+              color: 'white !important',
+            }
           }
         }}
       >
@@ -506,7 +517,7 @@ const Header = forwardRef((props, ref) => {
             to={game.path}
             onClick={handleGamesMenuClose}
             sx={{
-              color: 'white',
+              color: 'white !important',
               backgroundColor: location.pathname === game.path ? 'rgba(255,255,255,0.1)' : 'transparent',
               '&:hover': {
                 backgroundColor: 'rgba(255,255,255,0.05)',
@@ -516,7 +527,7 @@ const Header = forwardRef((props, ref) => {
             <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
               {game.icon}
             </ListItemIcon>
-            <Typography sx={{ fontWeight: location.pathname === game.path ? 'bold' : 'normal' }}>
+            <Typography sx={{ fontWeight: location.pathname === game.path ? 'bold' : 'normal', color: 'white !important' }}>
               {game.label}
             </Typography>
           </MenuItem>
@@ -535,21 +546,30 @@ const Header = forwardRef((props, ref) => {
             mt: 1,
             minWidth: 200,
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            '& .MuiMenuItem-root': {
+              color: 'white !important',
+            },
+            '& .MuiListItemText-primary': {
+              color: 'white !important',
+            },
+            '& .MuiTypography-root': {
+              color: 'white !important',
+            }
           }
         }}
       >
         <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <Typography sx={{ color: 'white', fontWeight: 'bold', fontSize: '0.9rem' }}>
+          <Typography sx={{ color: 'white !important', fontWeight: 'bold', fontSize: '0.9rem' }}>
             {user?.username}
           </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+          <Typography sx={{ color: 'white !important', fontSize: '0.8rem' }}>
             {user?.email}
           </Typography>
         </Box>
         <MenuItem 
           onClick={handleLogout}
           sx={{
-            color: 'white',
+            color: 'white !important',
             '&:hover': {
               backgroundColor: 'rgba(255,255,255,0.05)',
             }
@@ -558,7 +578,7 @@ const Header = forwardRef((props, ref) => {
           <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
             <LogoutIcon />
           </ListItemIcon>
-          <Typography>Logout</Typography>
+          <Typography sx={{ color: 'white !important' }}>Logout</Typography>
         </MenuItem>
       </Menu>
       
@@ -574,7 +594,16 @@ const Header = forwardRef((props, ref) => {
           '& .MuiDrawer-paper': { 
             boxSizing: 'border-box', 
             width: 250,
-            bgcolor: '#121213'
+            bgcolor: '#121213',
+            '& .MuiListItemText-primary': {
+              color: 'white !important',
+            },
+            '& .MuiTypography-root': {
+              color: 'white !important',
+            },
+            '& .MuiListItem-root': {
+              color: 'white !important',
+            }
           },
         }}
       >

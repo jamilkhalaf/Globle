@@ -237,8 +237,34 @@ const Shaple = () => {
         <Paper elevation={8} sx={{ mt: { xs: 2, md: 6 }, p: { xs: 2, md: 4 }, borderRadius: 4, maxWidth: { xs: 350, sm: 600, md: 500 }, width: '100%', textAlign: 'center', position: 'relative', background: 'rgba(30,34,44,0.98)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)' }}>
           <Typography variant="h3" sx={{ mb: 3, fontWeight: 900, color: 'transparent', background: 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Shaple</Typography>
           <ToggleButtonGroup value={mode} exclusive onChange={handleMode} sx={{ mb: 2 }}>
-            <ToggleButton value="world">World</ToggleButton>
-            <ToggleButton value="us">US States</ToggleButton>
+            <ToggleButton 
+              value="world" 
+              sx={{ 
+                color: mode === 'world' ? 'white' : 'rgba(255,255,255,0.7)',
+                backgroundColor: mode === 'world' ? '#43cea2' : 'transparent',
+                borderColor: mode === 'world' ? '#43cea2' : 'rgba(255,255,255,0.3)',
+                '&:hover': {
+                  backgroundColor: mode === 'world' ? '#3bb08f' : 'rgba(67, 206, 162, 0.1)',
+                },
+                fontWeight: mode === 'world' ? 'bold' : 'normal'
+              }}
+            >
+              World
+            </ToggleButton>
+            <ToggleButton 
+              value="us" 
+              sx={{ 
+                color: mode === 'us' ? 'white' : 'rgba(255,255,255,0.7)',
+                backgroundColor: mode === 'us' ? '#1976d2' : 'transparent',
+                borderColor: mode === 'us' ? '#1976d2' : 'rgba(255,255,255,0.3)',
+                '&:hover': {
+                  backgroundColor: mode === 'us' ? '#1565c0' : 'rgba(25, 118, 210, 0.1)',
+                },
+                fontWeight: mode === 'us' ? 'bold' : 'normal'
+              }}
+            >
+              US States
+            </ToggleButton>
           </ToggleButtonGroup>
           <Box sx={{ my: 3, minHeight: 200 }}>
             {secret && <img src={getImageSrc()} alt="shape" style={{ maxHeight: 200, filter: 'drop-shadow(0 0 8px #43cea2)' }} />}
@@ -256,12 +282,63 @@ const Shaple = () => {
               )}
               disabled={gameOver && !showContinue}
             />
-            <Button variant="contained" onClick={handleGuess} sx={{ background: 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)', color: 'white', fontWeight: 'bold' }} disabled={gameOver && !showContinue}>Guess</Button>
-            <Button variant="outlined" onClick={handleGiveUp} sx={{ color: '#f44336', borderColor: '#f44336', fontWeight: 'bold', ml: 1 }} disabled={gameOver}>Give Up</Button>
+            <Button 
+              variant="contained" 
+              onClick={handleGuess} 
+              sx={{ 
+                background: mode === 'world' 
+                  ? 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)' 
+                  : 'linear-gradient(90deg, #1976d2 30%, #0d47a1 100%)',
+                color: 'white', 
+                fontWeight: 'bold',
+                '&:hover': {
+                  background: mode === 'world' 
+                    ? 'linear-gradient(90deg, #3bb08f 30%, #0f4a7a 100%)' 
+                    : 'linear-gradient(90deg, #1565c0 30%, #0a3d7a 100%)',
+                }
+              }} 
+              disabled={gameOver && !showContinue}
+            >
+              Guess
+            </Button>
+            <Button 
+              variant="outlined" 
+              onClick={handleGiveUp} 
+              sx={{ 
+                color: '#f44336', 
+                borderColor: '#f44336', 
+                fontWeight: 'bold', 
+                ml: 1,
+                '&:hover': {
+                  backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                  borderColor: '#d32f2f'
+                }
+              }} 
+              disabled={gameOver}
+            >
+              Give Up
+            </Button>
           </Stack>
           <Typography variant="h6" sx={{ mb: 2, color: message.startsWith('Correct') ? '#43cea2' : '#f44336', minHeight: 32 }}>{message}</Typography>
           {showContinue && (
-            <Button variant="contained" color="success" onClick={handleContinue} sx={{ mt: 2 }}>Continue</Button>
+            <Button 
+              variant="contained" 
+              color="success" 
+              onClick={handleContinue} 
+              sx={{ 
+                mt: 2,
+                background: mode === 'world' 
+                  ? 'linear-gradient(90deg, #43cea2 30%, #185a9d 100%)' 
+                  : 'linear-gradient(90deg, #1976d2 30%, #0d47a1 100%)',
+                '&:hover': {
+                  background: mode === 'world' 
+                    ? 'linear-gradient(90deg, #3bb08f 30%, #0f4a7a 100%)' 
+                    : 'linear-gradient(90deg, #1565c0 30%, #0a3d7a 100%)',
+                }
+              }}
+            >
+              Continue
+            </Button>
           )}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
             <Typography>Score: {score}</Typography>
