@@ -25,11 +25,18 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
     if (matchData && matchData.question) {
       // Parse the question data
       const questionData = JSON.parse(matchData.question);
+      console.log('FlagGuessGame - Received question data:', questionData);
       setCorrectAnswer(questionData.correctAnswer);
       setOptions(questionData.options);
       setFlagCodes(questionData.flagCodes || []);
+      console.log('FlagGuessGame - Set flag codes:', questionData.flagCodes);
     }
   }, [matchData]);
+
+  // Find the index of the correct answer to match with flag codes
+  const correctAnswerIndex = options.findIndex(option => 
+    option.toLowerCase() === correctAnswer.toLowerCase()
+  );
 
   const handleAnswerSubmit = (answer) => {
     if (isAnswered) return;
@@ -116,7 +123,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
                 bgcolor: 'white', 
                 p: 1,
                 cursor: 'pointer',
-                border: flagCode === correctAnswer.toLowerCase() ? '3px solid #43cea2' : '1px solid #ddd',
+                border: isAnswered && index === correctAnswerIndex ? '3px solid #4caf50' : '1px solid #ddd',
                 '&:hover': {
                   transform: 'scale(1.05)',
                   transition: 'transform 0.2s'
@@ -131,7 +138,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
                     maxHeight: '120px',
                     objectFit: 'contain'
                   }}
+                  onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
                   onError={(e) => {
+                    console.log(`Flag failed to load: ${flagCode}.png`);
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'block';
                   }}

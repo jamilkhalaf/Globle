@@ -339,7 +339,7 @@ const selectRandomCountry = async () => {
   return selectedCountry;
 };
 
-// Simple flag game data - just country codes and names
+// Simple flag game data - just country codes and names (only using flags that exist)
 const flagGameData = {
   'us': 'United States',
   'gb': 'United Kingdom', 
@@ -498,7 +498,7 @@ const flagGameData = {
   'ad': 'Andorra'
 };
 
-// Available flag codes (based on the files we have)
+// Available flag codes (only those that actually exist in the flags directory)
 const availableFlagCodes = Object.keys(flagGameData);
 
 function generateQuestion(gameType) {
@@ -508,8 +508,11 @@ function generateQuestion(gameType) {
     const correctFlagCode = availableFlagCodes[Math.floor(Math.random() * availableFlagCodes.length)];
     const correctCountry = flagGameData[correctFlagCode];
     
+    console.log('Generating FlagGuess question - correct flag code:', correctFlagCode, 'country:', correctCountry);
+    
     // Generate 3 wrong options
     const wrongOptions = [];
+    const wrongFlagCodes = [];
     const usedCodes = [correctFlagCode];
     
     while (wrongOptions.length < 3) {
@@ -517,23 +520,29 @@ function generateQuestion(gameType) {
       if (!usedCodes.includes(randomCode)) {
         usedCodes.push(randomCode);
         wrongOptions.push(flagGameData[randomCode]);
+        wrongFlagCodes.push(randomCode);
       }
     }
     
     // Create options array with correct answer and wrong options
     const allOptions = [correctCountry, ...wrongOptions];
+    const allFlagCodes = [correctFlagCode, ...wrongFlagCodes];
     
-    // Shuffle the options
+    // Shuffle the options and flag codes together
     for (let i = allOptions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+      [allFlagCodes[i], allFlagCodes[j]] = [allFlagCodes[j], allFlagCodes[i]];
     }
     
     const questionData = {
       correctAnswer: correctCountry,
       options: allOptions,
-      flagCode: correctFlagCode
+      flagCodes: allFlagCodes,
+      correctFlagCode: correctFlagCode
     };
+    
+    console.log('Generated FlagGuess question data:', questionData);
     
     return Promise.resolve({
       question: JSON.stringify(questionData),

@@ -703,34 +703,6 @@ const Online = () => {
           </Box>
         )}
 
-        {/* Debug Info */}
-        {process.env.NODE_ENV === 'development' && (
-          <Box sx={{ position: 'fixed', top: 10, right: 10, bgcolor: 'rgba(0,0,0,0.8)', color: 'white', p: 2, borderRadius: 1, zIndex: 10001, fontSize: '12px' }}>
-            <div>isWaitingForPlayer: {isWaitingForPlayer.toString()}</div>
-            <div>gameState: {gameState}</div>
-            <div>currentMatch: {currentMatch ? 'yes' : 'no'}</div>
-            <div>isConnected: {isConnected.toString()}</div>
-            <Button 
-              size="small" 
-              variant="contained" 
-              onClick={() => {
-                console.log('Test button clicked');
-                setGameState('countdown');
-                setCurrentMatch({
-                  matchId: 'test-match',
-                  gameType: 'Globle',
-                  players: [{ username: 'Player1' }, { username: 'Player2' }],
-                  question: 'Test question'
-                });
-                setIsWaitingForPlayer(false);
-              }}
-              sx={{ mt: 1, bgcolor: '#43cea2' }}
-            >
-              Test Game
-            </Button>
-          </Box>
-        )}
-
         {/* Waiting Page */}
         {isWaitingForPlayer && gameState === 'waiting' && !currentMatch && (
           <>
