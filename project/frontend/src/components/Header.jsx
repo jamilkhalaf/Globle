@@ -391,29 +391,104 @@ const Header = forwardRef((props, ref) => {
               <MenuIcon />
             </IconButton>
           ) : (
-            <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, alignItems: 'center' }}>
-              {mainMenuItems.map((item) => (
-                <Button 
-                  key={item.label}
-                  color="inherit" 
-                  component={item.isComingSoon ? 'button' : RouterLink} 
-                  to={item.isComingSoon ? undefined : item.path}
-                  onClick={item.isComingSoon ? item.action : undefined}
-                  sx={{ 
-                    color: item.isComingSoon ? '#ff9800' : 'white',
-                    fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
-                    borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
-                    fontSize: { xs: '0.8rem', md: '1rem' },
-                    px: { xs: 1, md: 2 },
-                    '&:hover': {
-                      color: item.isComingSoon ? '#f57c00' : 'white',
-                      backgroundColor: 'rgba(255,255,255,0.1)',
-                    }
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: { xs: 2, md: 3, lg: 4 }, 
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
+            }}>
+              {/* Main Navigation Items */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: { xs: 1.5, md: 2, lg: 3 }, 
+                alignItems: 'center',
+                mr: { xs: 1, md: 2 }
+              }}>
+                {mainMenuItems.slice(0, 4).map((item) => (
+                  <Button 
+                    key={item.label}
+                    color="inherit" 
+                    component={item.isComingSoon ? 'button' : RouterLink} 
+                    to={item.isComingSoon ? undefined : item.path}
+                    onClick={item.isComingSoon ? item.action : undefined}
+                    sx={{ 
+                      color: item.isComingSoon ? '#ff9800' : 'white',
+                      fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
+                      borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
+                      fontSize: { xs: '0.85rem', md: '0.95rem', lg: '1rem' },
+                      px: { xs: 1.5, md: 2, lg: 2.5 },
+                      py: { xs: 0.75, md: 1 },
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      letterSpacing: 0.5,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        color: item.isComingSoon ? '#f57c00' : 'white',
+                        backgroundColor: 'rgba(255,255,255,0.08)',
+                        transform: 'translateY(-1px)',
+                      }
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Box>
+
+              {/* Separator */}
+              <Box sx={{ 
+                width: '1px', 
+                height: '24px', 
+                bgcolor: 'rgba(255,255,255,0.2)',
+                mx: { xs: 1, md: 2 }
+              }} />
+
+              {/* Online and Coming Soon */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: { xs: 1.5, md: 2 }, 
+                alignItems: 'center'
+              }}>
+                {mainMenuItems.slice(4).map((item) => (
+                  <Button 
+                    key={item.label}
+                    color="inherit" 
+                    component={item.isComingSoon ? 'button' : RouterLink} 
+                    to={item.isComingSoon ? undefined : item.path}
+                    onClick={item.isComingSoon ? item.action : undefined}
+                    startIcon={item.icon}
+                    sx={{ 
+                      color: item.isComingSoon ? '#ff9800' : 'white',
+                      fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
+                      borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
+                      fontSize: { xs: '0.85rem', md: '0.95rem', lg: '1rem' },
+                      px: { xs: 1.5, md: 2, lg: 2.5 },
+                      py: { xs: 0.75, md: 1 },
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      letterSpacing: 0.5,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        color: item.isComingSoon ? '#f57c00' : 'white',
+                        backgroundColor: 'rgba(255,255,255,0.08)',
+                        transform: 'translateY(-1px)',
+                      }
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Box>
+
+              {/* Separator */}
+              <Box sx={{ 
+                width: '1px', 
+                height: '24px', 
+                bgcolor: 'rgba(255,255,255,0.2)',
+                mx: { xs: 1, md: 2 }
+              }} />
+
+              {/* Games Menu */}
               <Button 
                 color="inherit"
                 onClick={handleGamesMenuOpen}
@@ -423,25 +498,55 @@ const Header = forwardRef((props, ref) => {
                   color: games.some(game => location.pathname === game.path) ? '#43cea2' : 'white',
                   fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
                   borderBottom: games.some(game => location.pathname === game.path) ? '2px solid #43cea2' : 'none',
-                  fontSize: { xs: '0.8rem', md: '1rem' },
-                  px: { xs: 1, md: 2 }
+                  fontSize: { xs: '0.85rem', md: '0.95rem', lg: '1rem' },
+                  px: { xs: 1.5, md: 2, lg: 2.5 },
+                  py: { xs: 0.75, md: 1 },
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  letterSpacing: 0.5,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    color: '#43cea2',
+                    backgroundColor: 'rgba(67, 206, 162, 0.08)',
+                    transform: 'translateY(-1px)',
+                  }
                 }}
               >
                 Games
               </Button>
 
+              {/* Separator */}
+              <Box sx={{ 
+                width: '1px', 
+                height: '24px', 
+                bgcolor: 'rgba(255,255,255,0.2)',
+                mx: { xs: 1, md: 2 }
+              }} />
+
               {/* Authentication buttons */}
               {user ? (
                 <IconButton
                   onClick={handleUserMenuOpen}
-                  sx={{ color: 'white', ml: 1 }}
+                  sx={{ 
+                    color: 'white', 
+                    ml: 1,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    }
+                  }}
                 >
                   <Avatar sx={{ bgcolor: '#43cea2', width: 32, height: 32 }}>
                     <PersonIcon />
                   </Avatar>
                 </IconButton>
               ) : (
-                <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 1.5, 
+                  ml: 2,
+                  alignItems: 'center'
+                }}>
                   <Button
                     component={RouterLink}
                     to="/login"
@@ -450,13 +555,19 @@ const Header = forwardRef((props, ref) => {
                     sx={{
                       color: 'white',
                       borderColor: 'rgba(255,255,255,0.3)',
+                      borderWidth: 1.5,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      letterSpacing: 0.5,
+                      fontSize: { xs: '0.8rem', md: '0.85rem' },
+                      py: { xs: 0.5, md: 0.75 },
+                      px: { xs: 1.5, md: 2 },
+                      transition: 'all 0.2s ease',
                       '&:hover': {
                         borderColor: 'white',
-                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: 'rgba(255,255,255,0.08)',
+                        transform: 'translateY(-1px)',
                       },
-                      fontSize: '0.8rem',
-                      py: 0.5,
-                      px: 1.5,
                     }}
                   >
                     Login
@@ -469,12 +580,18 @@ const Header = forwardRef((props, ref) => {
                     sx={{
                       backgroundColor: '#43cea2',
                       color: 'white',
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      letterSpacing: 0.5,
+                      fontSize: { xs: '0.8rem', md: '0.85rem' },
+                      py: { xs: 0.5, md: 0.75 },
+                      px: { xs: 1.5, md: 2 },
+                      transition: 'all 0.2s ease',
                       '&:hover': {
                         backgroundColor: '#3bb08f',
+                        transform: 'translateY(-1px)',
+                        boxShadow: '0 4px 12px rgba(67, 206, 162, 0.3)',
                       },
-                      fontSize: '0.8rem',
-                      py: 0.5,
-                      px: 1.5,
                     }}
                   >
                     Sign Up

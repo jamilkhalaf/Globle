@@ -656,7 +656,7 @@ const Online = () => {
         bgcolor: 'rgba(30,30,30,0.95)', 
         color: 'white', 
         p: 4, 
-        maxWidth: 500, 
+        maxWidth: 600, 
         textAlign: 'center',
         borderRadius: 3,
         border: '1px solid rgba(255,255,255,0.1)',
@@ -664,62 +664,110 @@ const Online = () => {
         boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
       }}>
         <CardContent>
-          {/* Animated Loading */}
-          <Box sx={{ mb: 4, position: 'relative' }}>
-            <CircularProgress 
-              size={100} 
-              sx={{ 
-                color: '#43cea2', 
-                mb: 2,
-                '& .MuiCircularProgress-circle': {
-                  strokeLinecap: 'round',
-                }
-              }} 
-            />
-            
-            {/* Pulsing Ring */}
+          {/* Modern Search Animation */}
+          <Box sx={{ mb: 4, position: 'relative', display: 'flex', justifyContent: 'center' }}>
+            {/* Main Search Icon */}
             <Box sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 120,
-              height: 120,
+              position: 'relative',
+              width: { xs: 80, sm: 100, md: 120 },
+              height: { xs: 80, sm: 100, md: 120 },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               borderRadius: '50%',
-              border: '2px solid rgba(67, 206, 162, 0.3)',
-              animation: 'pulse 2s infinite',
-              '@keyframes pulse': {
-                '0%': {
-                  transform: 'translate(-50%, -50%) scale(1)',
-                  opacity: 1
-                },
-                '50%': {
-                  transform: 'translate(-50%, -50%) scale(1.1)',
-                  opacity: 0.5
-                },
-                '100%': {
-                  transform: 'translate(-50%, -50%) scale(1)',
-                  opacity: 1
-                }
+              background: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)',
+              boxShadow: '0 8px 32px rgba(67, 206, 162, 0.4)',
+              animation: 'float 3s ease-in-out infinite',
+              '@keyframes float': {
+                '0%, 100%': { transform: 'translateY(0px)' },
+                '50%': { transform: 'translateY(-10px)' }
               }
-            }} />
+            }}>
+              <WifiIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 }, color: 'white' }} />
+            </Box>
+
+            {/* Orbiting Dots */}
+            {[0, 1, 2].map((index) => (
+              <Box
+                key={index}
+                sx={{
+                  position: 'absolute',
+                  width: { xs: 8, sm: 10, md: 12 },
+                  height: { xs: 8, sm: 10, md: 12 },
+                  borderRadius: '50%',
+                  bgcolor: '#43cea2',
+                  animation: `orbit ${2 + index * 0.5}s linear infinite`,
+                  animationDelay: `${index * 0.3}s`,
+                  '@keyframes orbit': {
+                    '0%': {
+                      transform: `rotate(${index * 120}deg) translateX(${window.innerWidth < 600 ? '50px' : '80px'}) rotate(-${index * 120}deg)`,
+                      opacity: 0.3
+                    },
+                    '50%': {
+                      opacity: 1
+                    },
+                    '100%': {
+                      transform: `rotate(${index * 120 + 360}deg) translateX(${window.innerWidth < 600 ? '50px' : '80px'}) rotate(-${index * 120 + 360}deg)`,
+                      opacity: 0.3
+                    }
+                  }
+                }}
+              />
+            ))}
+
+            {/* Pulsing Rings */}
+            {[1, 2, 3].map((ring) => (
+              <Box
+                key={ring}
+                sx={{
+                  position: 'absolute',
+                  width: { xs: 80 + ring * 25, sm: 100 + ring * 30, md: 120 + ring * 40 },
+                  height: { xs: 80 + ring * 25, sm: 100 + ring * 30, md: 120 + ring * 40 },
+                  borderRadius: '50%',
+                  border: `2px solid rgba(67, 206, 162, ${0.3 - ring * 0.1})`,
+                  animation: `pulse ${2 + ring * 0.5}s infinite`,
+                  animationDelay: `${ring * 0.2}s`,
+                  '@keyframes pulse': {
+                    '0%': {
+                      transform: 'scale(1)',
+                      opacity: 0.8
+                    },
+                    '100%': {
+                      transform: 'scale(1.2)',
+                      opacity: 0
+                    }
+                  }
+                }}
+              />
+            ))}
           </Box>
 
           {/* Status Text */}
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h3" sx={{ 
+            <Typography variant="h2" sx={{ 
               mb: 2, 
               fontWeight: 'bold',
               textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-              color: '#43cea2'
+              background: 'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              animation: 'glow 2s ease-in-out infinite alternate',
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+              '@keyframes glow': {
+                '0%': { filter: 'brightness(1)' },
+                '100%': { filter: 'brightness(1.2)' }
+              }
             }}>
-              🔍 Searching...
+              🔍 Searching for Opponent
             </Typography>
             
-            <Typography variant="h6" sx={{ 
+            <Typography variant="h5" sx={{ 
               color: '#43cea2', 
               mb: 2,
-              fontWeight: '500'
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              letterSpacing: 2,
+              fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' }
             }}>
               Flag Guessing Game
             </Typography>
@@ -727,38 +775,93 @@ const Online = () => {
             <Typography variant="body1" sx={{ 
               color: 'rgba(255,255,255,0.8)', 
               mb: 3,
-              fontStyle: 'italic'
+              fontStyle: 'italic',
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
             }}>
-              Looking for an opponent to challenge...
+              Looking for a worthy challenger...
             </Typography>
           </Box>
 
-          {/* Timer Display */}
+          {/* Enhanced Timer Display */}
           <Box sx={{ 
             mb: 4, 
-            p: 3,
-            bgcolor: 'rgba(67, 206, 162, 0.1)',
-            borderRadius: 2,
-            border: '1px solid rgba(67, 206, 162, 0.3)'
+            p: { xs: 2, sm: 2.5, md: 3 },
+            background: 'linear-gradient(135deg, rgba(67, 206, 162, 0.1) 0%, rgba(24, 90, 157, 0.1) 100%)',
+            borderRadius: 3,
+            border: '1px solid rgba(67, 206, 162, 0.3)',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
-            <Typography variant="h2" sx={{ 
+            {/* Animated Background */}
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(90deg, transparent 0%, rgba(67, 206, 162, 0.1) 50%, transparent 100%)',
+              animation: 'shimmer 2s infinite',
+              '@keyframes shimmer': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' }
+              }
+            }} />
+            
+            <Typography variant="h1" sx={{ 
               color: '#43cea2', 
               fontWeight: 'bold',
               fontFamily: 'monospace',
-              textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem' }
             }}>
               {Math.floor(waitingTime / 60)}:{(waitingTime % 60).toString().padStart(2, '0')}
             </Typography>
             <Typography variant="body2" sx={{ 
-              color: 'rgba(255,255,255,0.6)',
-              fontStyle: 'italic'
+              color: 'rgba(255,255,255,0.7)',
+              fontStyle: 'italic',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
             }}>
               Time searching
             </Typography>
           </Box>
 
+          {/* Progress Bar */}
+          <Box sx={{ mb: 4 }}>
+            <Box sx={{
+              width: '100%',
+              height: { xs: 6, sm: 7, md: 8 },
+              bgcolor: 'rgba(255,255,255,0.1)',
+              borderRadius: 4,
+              overflow: 'hidden',
+              position: 'relative'
+            }}>
+              <Box sx={{
+                width: `${Math.min((waitingTime / 60) * 100, 100)}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, #43cea2 0%, #185a9d 100%)',
+                borderRadius: 4,
+                transition: 'width 1s ease-in-out',
+                animation: 'progressGlow 2s ease-in-out infinite alternate',
+                '@keyframes progressGlow': {
+                  '0%': { boxShadow: '0 0 10px rgba(67, 206, 162, 0.5)' },
+                  '100%': { boxShadow: '0 0 20px rgba(67, 206, 162, 0.8)' }
+                }
+              }} />
+            </Box>
+            <Typography variant="caption" sx={{ 
+              color: 'rgba(255,255,255,0.6)',
+              display: 'block',
+              mt: 1,
+              fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' }
+            }}>
+              Search progress
+            </Typography>
+          </Box>
+
           {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button
               variant="outlined"
               onClick={handleLeaveGame}
@@ -767,13 +870,18 @@ const Online = () => {
                 color: 'white', 
                 borderColor: 'rgba(255,255,255,0.3)',
                 borderWidth: 2,
-                px: 3,
-                py: 1.5,
-                fontSize: '1rem',
+                px: { xs: 2, sm: 3, md: 4 },
+                py: { xs: 1, sm: 1.2, md: 1.5 },
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 'bold',
                 '&:hover': { 
                   borderColor: 'white',
                   borderWidth: 2,
-                  bgcolor: 'rgba(255,255,255,0.1)'
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  transform: 'translateY(-2px)',
+                  transition: 'all 0.2s ease'
                 }
               }}
             >
@@ -784,24 +892,38 @@ const Online = () => {
               size="large"
               disabled
               sx={{ 
-                bgcolor: 'rgba(67, 206, 162, 0.3)',
-                px: 3,
-                py: 1.5,
-                fontSize: '1rem',
-                cursor: 'not-allowed'
+                background: 'linear-gradient(135deg, rgba(67, 206, 162, 0.3) 0%, rgba(24, 90, 157, 0.3) 100%)',
+                px: { xs: 2, sm: 3, md: 4 },
+                py: { xs: 1, sm: 1.2, md: 1.5 },
+                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 'bold',
+                cursor: 'not-allowed',
+                border: '1px solid rgba(67, 206, 162, 0.5)'
               }}
             >
               🔄 Connecting...
             </Button>
           </Box>
 
-          {/* Tips */}
-          <Box sx={{ mt: 4, p: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
+          {/* Enhanced Tips */}
+          <Box sx={{ 
+            mt: 4, 
+            p: { xs: 2, sm: 2.5, md: 3 }, 
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', 
+            borderRadius: 3,
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
             <Typography variant="body2" sx={{ 
-              color: 'rgba(255,255,255,0.7)',
-              fontStyle: 'italic'
+              color: 'rgba(255,255,255,0.8)',
+              fontStyle: 'italic',
+              lineHeight: 1.6,
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
             }}>
-              💡 Tip: Make sure you're ready to play! The game starts immediately when an opponent is found.
+              💡 <strong>Tip:</strong> Make sure you're ready to play! The game starts immediately when an opponent is found.
+              <br />
+              🎯 <strong>Game:</strong> First player to correctly identify the flag wins 100 points!
             </Typography>
           </Box>
         </CardContent>
