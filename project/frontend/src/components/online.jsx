@@ -288,6 +288,24 @@ const Online = () => {
         }
       });
 
+      socket.on('roundResult', (data) => {
+        console.log('🎮 Round result received:', data);
+        // Handle individual round result for FlagGuess games
+        setGameState('roundEnd');
+        const roundResult = {
+          roundWinner: data.roundWinner,
+          roundNumber: data.roundNumber,
+          score: data.score,
+          correctAnswer: data.correctAnswer,
+          userAnswer: data.userAnswer,
+          userIsCorrect: data.userIsCorrect,
+          userWonRound: data.userWonRound,
+          playerAnswers: data.playerAnswers
+        };
+        console.log('🎮 Setting matchResult to:', roundResult);
+        setMatchResult(roundResult);
+      });
+
       socket.on('guessResult', (data) => {
         console.log('🎮 Guess result:', data);
         // Handle incorrect guess feedback

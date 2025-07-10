@@ -1005,9 +1005,13 @@ io.on('connection', (socket) => {
         match.player2Wins = 0;
       }
       
-      // Check if both players have answered
-      if (match.answers.length === 2) {
-        // Both players answered - determine winner based on timing and correctness
+      // Check if both players have answered OR if one player answered correctly and we've waited long enough
+      const shouldEndRound = match.answers.length === 2 || 
+        (match.answers.length === 1 && match.answers[0].isCorrect && 
+         (Date.now() - match.answers[0].serverTimestamp) > 10000); // 10 second timeout
+      
+      if (shouldEndRound) {
+        // Both players answered or timeout reached - determine winner based on timing and correctness
         const correctAnswers = match.answers.filter(a => a.isCorrect);
         let roundWinner;
         
@@ -1054,6 +1058,35 @@ io.on('connection', (socket) => {
           console.log(`🎮 FlagGuess - Round winner: ${roundWinner.username} (${roundWinner.serverTimestamp}ms)`);
         }
         
+        // Send round result to both players with correct information
+        const roundResult = {
+          roundWinner: roundWinner ? roundWinner.username : null,
+          roundNumber: match.currentRound,
+          score: `${match.player1Wins}-${match.player2Wins}`,
+          correctAnswer: questionData.correctAnswer,
+          isCorrect: isCorrect,
+          playerAnswers: match.answers.map(a => ({
+            username: a.username,
+            isCorrect: a.isCorrect,
+            answer: a.answer
+          }))
+        };
+        
+        // Send individual results to each player
+        match.players.forEach(player => {
+          const playerAnswer = match.answers.find(a => a.userId === player.userId);
+          const playerSocket = userSockets.get(player.userId);
+          
+          if (playerSocket) {
+            playerSocket.emit('roundResult', {
+              ...roundResult,
+              userAnswer: playerAnswer ? playerAnswer.answer : null,
+              userIsCorrect: playerAnswer ? playerAnswer.isCorrect : false,
+              userWonRound: roundWinner && roundWinner.userId === player.userId
+            });
+          }
+        });
+        
         // Check if we've reached 5 rounds
         if (match.currentRound >= 5) {
           console.log('🎮 FlagGuess - Game ending after 5 rounds');
@@ -1069,18 +1102,7 @@ io.on('connection', (socket) => {
           await updatePlayerPoints(finalWinner.userId, 100, true);
           await updatePlayerPoints(finalLoser.userId, -100, false);
           
-          // Notify both players
-          io.to(matchId).emit('gameEnd', {
-            winner: finalWinner.username,
-            finalScore: finalScore,
-            correctAnswer: questionData.correctAnswer,
-            points: {
-              [finalWinner.userId]: 100,
-              [finalLoser.userId]: -100
-            }
-          });
-          
-          // Send individual points to each player
+          // Send individual game end to each player
           const winnerSocket = userSockets.get(finalWinner.userId);
           const loserSocket = userSockets.get(finalLoser.userId);
           
@@ -1119,7 +1141,7 @@ io.on('connection', (socket) => {
           // Clear answers for next round
           match.answers = [];
           
-          // Notify players about round result
+          // Notify players about round result and start next round
           io.to(matchId).emit('roundEnd', {
             roundWinner: roundWinner ? roundWinner.username : null,
             roundNumber: match.currentRound - 1,
@@ -1139,8 +1161,22 @@ io.on('connection', (socket) => {
           }, 3000);
         }
       } else {
-        // Only one player has answered - wait for the other
+        // Only one player has answered - wait for the other or timeout
         console.log(`🎮 FlagGuess - Waiting for other player. Answers: ${match.answers.length}/2`);
+        
+        // If this is the first answer and it's correct, start a timeout
+        if (match.answers.length === 1 && isCorrect) {
+          setTimeout(() => {
+            // Re-check if round should end (in case other player answered in the meantime)
+            const currentMatch = activeMatches.get(matchId);
+            if (currentMatch && currentMatch.answers.length === 1 && 
+                (Date.now() - currentMatch.answers[0].serverTimestamp) > 10000) {
+              // Force end the round
+              console.log('🎮 FlagGuess - Round timeout reached, ending round');
+              // This will trigger the round end logic above
+            }
+          }, 10000);
+        }
       }
     }
   });

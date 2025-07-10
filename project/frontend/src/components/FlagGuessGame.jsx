@@ -252,18 +252,23 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
       distance: 0 // Add distance field for compatibility with backend
     });
     
-    // Update UI state after server submission
+    // Update UI state after server submission - but don't show immediate feedback
     setIsAnswered(true);
     setSelectedAnswer(flagCode);
-    setMessage(isCorrect ? 'Correct!' : `Wrong! The correct flag was for ${correctAnswer}`);
+    // Don't set message here - wait for server response
+    setMessage('Answer submitted! Waiting for other player...');
   }, [isAnswered, matchData, onAnswerSubmit, correctAnswer]);
 
   const renderRoundResult = () => {
     if (!roundResult) return null;
     
-    const isCorrect = roundResult.isCorrect;
+    // Use the new round result data structure
+    const userIsCorrect = roundResult.userIsCorrect;
+    const userWonRound = roundResult.userWonRound;
+    const userAnswer = roundResult.userAnswer;
     const roundWinner = roundResult.roundWinner;
     const score = roundResult.score;
+    const correctAnswer = roundResult.correctAnswer;
     
     return (
       <Box sx={{ 
@@ -278,12 +283,12 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         <Box sx={{ mb: 4 }}>
           <Typography variant="h2" sx={{ 
             mb: 3, 
-            color: isCorrect ? '#43cea2' : '#f44336',
+            color: userIsCorrect ? '#43cea2' : '#f44336',
             fontWeight: 'bold',
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
             fontSize: { xs: '2.5rem', sm: '3rem' }
           }}>
-            {isCorrect ? '🎉 Correct!' : '❌ Wrong!'}
+            {userIsCorrect ? '🎉 Correct!' : '❌ Wrong!'}
           </Typography>
           
           <Typography variant="h4" sx={{ 
@@ -310,7 +315,15 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             color: 'rgba(255,255,255,0.9)',
             fontWeight: '500'
           }}>
-            Correct Answer: {roundResult.correctAnswer}
+            Your Answer: {userAnswer || 'No answer'}
+          </Typography>
+          
+          <Typography variant="h6" sx={{ 
+            mb: 2, 
+            color: 'rgba(255,255,255,0.9)',
+            fontWeight: '500'
+          }}>
+            Correct Answer: {correctAnswer}
           </Typography>
 
           <Box sx={{ mb: 2 }}>
@@ -326,7 +339,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
               color: 'rgba(255,255,255,0.7)',
               fontStyle: 'italic'
             }}>
-              {roundWinner ? `${roundWinner} won this round!` : 'No one got it right this round.'}
+              {userWonRound ? '🎉 You won this round!' : 
+               roundWinner ? `${roundWinner} won this round!` : 'No one got it right this round.'}
             </Typography>
           </Box>
         </Box>
