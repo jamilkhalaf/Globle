@@ -1380,7 +1380,7 @@ const Badges = () => {
           description: 'Win your first Satle game',
           icon: <SatelliteIcon sx={{ fontSize: 24, color: '#9c27b0' }} />,
           color: 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)',
-          unlocked: userStats?.games?.satle?.gamesPlayed >= 1,
+          unlocked: getBadgeData('satle_first_win')?.unlocked || userStats?.games?.satle?.gamesPlayed >= 1,
           progress: userStats?.games?.satle?.gamesPlayed || 0,
           maxProgress: 1
         },
@@ -1390,7 +1390,7 @@ const Badges = () => {
           description: 'Play 10 Satle games',
           icon: <SatelliteIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
           color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-          unlocked: userStats?.games?.satle?.gamesPlayed >= 10,
+          unlocked: getBadgeData('satle_10_games')?.unlocked || userStats?.games?.satle?.gamesPlayed >= 10,
           progress: Math.min(userStats?.games?.satle?.gamesPlayed || 0, 10),
           maxProgress: 10
         },
@@ -1400,7 +1400,7 @@ const Badges = () => {
           description: 'Play 50 Satle games',
           icon: <SatelliteIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
           color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-          unlocked: userStats?.games?.satle?.gamesPlayed >= 50,
+          unlocked: getBadgeData('satle_50_games')?.unlocked || userStats?.games?.satle?.gamesPlayed >= 50,
           progress: Math.min(userStats?.games?.satle?.gamesPlayed || 0, 50),
           maxProgress: 50
         },
@@ -1410,8 +1410,8 @@ const Badges = () => {
           description: 'Guess correctly on first attempt',
           icon: <EmojiEventsIcon sx={{ fontSize: 24, color: '#FFD700' }} />,
           color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-          unlocked: false, // This will be determined by the backend badge system
-          progress: 0,
+          unlocked: getBadgeData('satle_perfect_guess')?.unlocked || false,
+          progress: getBadgeData('satle_perfect_guess')?.unlocked ? 1 : 0,
           maxProgress: 1
         },
         {
@@ -1420,8 +1420,8 @@ const Badges = () => {
           description: 'Guess correctly within 2 attempts',
           icon: <StarIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
           color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
-          unlocked: false, // This will be determined by the backend badge system
-          progress: 0,
+          unlocked: getBadgeData('satle_quick_guess')?.unlocked || false,
+          progress: getBadgeData('satle_quick_guess')?.unlocked ? 2 : 0,
           maxProgress: 2
         }
       ]
