@@ -17,9 +17,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [isAnswered, setIsAnswered] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState('');
-  const [options, setOptions] = useState([]);
+  const [flagCodes, setFlagCodes] = useState([]);
   const [message, setMessage] = useState('');
-  const [flagCode, setFlagCode] = useState('');
+  const [question, setQuestion] = useState('');
 
   useEffect(() => {
     if (matchData && matchData.question) {
@@ -27,24 +27,26 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
       const questionData = JSON.parse(matchData.question);
       console.log('FlagGuessGame - Received question data:', questionData);
       setCorrectAnswer(questionData.correctAnswer);
-      setOptions(questionData.options);
-      setFlagCode(questionData.flagCode || '');
-      console.log('FlagGuessGame - Set flag code:', questionData.flagCode);
+      setFlagCodes(questionData.flagCodes || []);
+      setQuestion(questionData.question || 'Which flag belongs to this country?');
+      console.log('FlagGuessGame - Set flag codes:', questionData.flagCodes);
     }
   }, [matchData]);
 
-  const handleAnswerSubmit = (answer) => {
+  const handleAnswerSubmit = (flagCode) => {
     if (isAnswered) return;
     
     setIsAnswered(true);
-    setSelectedAnswer(answer);
+    setSelectedAnswer(flagCode);
     
-    const isCorrect = answer.toLowerCase() === correctAnswer.toLowerCase();
-    setMessage(isCorrect ? 'Correct!' : `Wrong! The answer was ${correctAnswer}`);
+    // Check if the selected flag code matches the correct flag code
+    const questionData = JSON.parse(matchData.question);
+    const isCorrect = flagCode === questionData.correctFlagCode;
+    setMessage(isCorrect ? 'Correct!' : `Wrong! The correct flag was for ${correctAnswer}`);
     
     // Submit answer to server
     onAnswerSubmit({
-      answer: answer,
+      answer: flagCode,
       timeTaken: Date.now() - (matchData?.startTime || Date.now()),
       isCorrect: isCorrect
     });
@@ -63,7 +65,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
           </Typography>
           
           <Typography variant="body1" sx={{ mb: 3 }}>
-            Correct Answer: {matchResult.correctAnswer?.answer}
+            Correct Answer: {matchResult.correctAnswer}
           </Typography>
 
           <Box sx={{ mb: 3 }}>
@@ -100,91 +102,65 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
   const renderGameInterface = () => (
     <Box sx={{ textAlign: 'center' }}>
       <Typography variant="h4" sx={{ color: 'white', mb: 3 }}>
-        Which country has this flag?
+        {question}
       </Typography>
       
       {message && (
-        <Alert severity={selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? 'success' : 'error'} sx={{ mb: 2 }}>
+        <Alert severity={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'} sx={{ mb: 2 }}>
           {message}
         </Alert>
       )}
 
-      {/* Single Flag Display */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-        <Card sx={{ 
-          bgcolor: 'white', 
-          p: 2,
-          maxWidth: 300,
-          border: isAnswered ? '3px solid #4caf50' : '1px solid #ddd'
-        }}>
-          <img 
-            src={`/flags/${flagCode}.png`}
-            alt="Flag to guess"
-            style={{ 
-              width: '100%', 
-              height: 'auto',
-              maxHeight: '200px',
-              objectFit: 'contain'
-            }}
-            onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
-            onError={(e) => {
-              console.log(`Flag failed to load: ${flagCode}.png`);
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'block';
-            }}
-          />
-          <Box sx={{ display: 'none', textAlign: 'center', py: 1 }}>
-            <FlagIcon sx={{ fontSize: 30, color: '#ccc' }} />
-            <Typography variant="caption" color="textSecondary">
-              Flag not available
-            </Typography>
-          </Box>
-        </Card>
-      </Box>
-
-      {/* Answer Options */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {options.map((option, index) => (
-          <Grid item xs={12} sm={6} key={index}>
-            <Button
-              variant={selectedAnswer === option ? 'contained' : 'outlined'}
-              fullWidth
-              size="large"
-              onClick={() => handleAnswerSubmit(option)}
-              disabled={isAnswered}
-              sx={{
-                py: 2,
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                bgcolor: selectedAnswer === option ? 
-                  (option.toLowerCase() === correctAnswer.toLowerCase() ? '#4caf50' : '#f44336') : 
-                  'transparent',
-                color: selectedAnswer === option ? 'white' : 'white',
-                borderColor: 'rgba(255,255,255,0.3)',
+      {/* Flag Options Grid */}
+      <Box sx={{ mb: 4 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {flagCodes.map((flagCode, index) => (
+            <Grid item xs={6} sm={3} key={index}>
+              <Card sx={{ 
+                bgcolor: 'white', 
+                p: 1,
+                cursor: 'pointer',
+                border: isAnswered && flagCode === JSON.parse(matchData.question).correctFlagCode ? '3px solid #4caf50' : '1px solid #ddd',
                 '&:hover': {
-                  bgcolor: selectedAnswer === option ? 
-                    (option.toLowerCase() === correctAnswer.toLowerCase() ? '#45a049' : '#d32f2f') : 
-                    'rgba(255,255,255,0.1)',
-                  borderColor: 'white'
-                },
-                '&:disabled': {
-                  opacity: 0.7
+                  transform: 'scale(1.05)',
+                  transition: 'transform 0.2s'
                 }
-              }}
-            >
-              {option}
-            </Button>
-          </Grid>
-        ))}
-      </Grid>
+              }}>
+                <img 
+                  src={`/flags/${flagCode}.png`}
+                  alt={`Flag ${index + 1}`}
+                  style={{ 
+                    width: '100%', 
+                    height: 'auto',
+                    maxHeight: '120px',
+                    objectFit: 'contain'
+                  }}
+                  onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
+                  onError={(e) => {
+                    console.log(`Flag failed to load: ${flagCode}.png`);
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <Box sx={{ display: 'none', textAlign: 'center', py: 1 }}>
+                  <FlagIcon sx={{ fontSize: 30, color: '#ccc' }} />
+                  <Typography variant="caption" color="textSecondary">
+                    Flag not available
+                  </Typography>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
 
       {/* Game Status */}
       {isAnswered && (
         <Box sx={{ mt: 3 }}>
           <Chip
             icon={<EmojiEventsIcon />}
-            label={selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? 'You got it right!' : 'Better luck next time!'}
-            color={selectedAnswer.toLowerCase() === correctAnswer.toLowerCase() ? 'success' : 'error'}
+            label={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'You got it right!' : 'Better luck next time!'}
+            color={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'}
             sx={{ fontSize: '1.1rem', py: 1 }}
           />
         </Box>

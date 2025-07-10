@@ -510,32 +510,32 @@ function generateQuestion(gameType) {
     
     console.log('Generating FlagGuess question - correct flag code:', correctFlagCode, 'country:', correctCountry);
     
-    // Generate 3 wrong options
-    const wrongOptions = [];
-    const usedCountries = [correctCountry];
+    // Generate 3 wrong flag options
+    const wrongFlagCodes = [];
+    const usedCodes = [correctFlagCode];
     
-    while (wrongOptions.length < 3) {
+    while (wrongFlagCodes.length < 3) {
       const randomCode = availableFlagCodes[Math.floor(Math.random() * availableFlagCodes.length)];
-      const randomCountry = flagGameData[randomCode];
-      if (!usedCountries.includes(randomCountry)) {
-        usedCountries.push(randomCountry);
-        wrongOptions.push(randomCountry);
+      if (!usedCodes.includes(randomCode)) {
+        usedCodes.push(randomCode);
+        wrongFlagCodes.push(randomCode);
       }
     }
     
-    // Create options array with correct answer and wrong options
-    const allOptions = [correctCountry, ...wrongOptions];
+    // Create flag options array with correct flag and wrong flags
+    const allFlagCodes = [correctFlagCode, ...wrongFlagCodes];
     
-    // Shuffle the options
-    for (let i = allOptions.length - 1; i > 0; i--) {
+    // Shuffle the flag options
+    for (let i = allFlagCodes.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+      [allFlagCodes[i], allFlagCodes[j]] = [allFlagCodes[j], allFlagCodes[i]];
     }
     
     const questionData = {
       correctAnswer: correctCountry,
-      options: allOptions,
-      flagCode: correctFlagCode
+      correctFlagCode: correctFlagCode,
+      flagCodes: allFlagCodes,
+      question: `Which flag belongs to ${correctCountry}?`
     };
     
     console.log('Generated FlagGuess question data:', questionData);
@@ -906,13 +906,16 @@ io.on('connection', (socket) => {
       }
     } else if (match.gameType === 'FlagGuess') {
       // Handle FlagGuess games - first to answer correctly wins
+      const questionData = JSON.parse(match.correctAnswer.question);
+      const isCorrect = answer === questionData.correctFlagCode;
+      
       if (isCorrect) {
         // Player wins
         match.winner = socket.userId;
         match.winnerTime = timeTaken;
         match.endTime = Date.now();
         
-        // Update points
+        // Update points - winner gets +100, loser gets -100
         await updatePlayerPoints(socket.userId, 100, true);
         await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, -100, false);
         
@@ -920,7 +923,7 @@ io.on('connection', (socket) => {
         io.to(matchId).emit('gameEnd', {
           winner: socket.username,
           winnerTime: timeTaken,
-          correctAnswer: match.correctAnswer,
+          correctAnswer: questionData.correctAnswer,
           points: {
             [socket.userId]: 100,
             [match.players.find(p => p.userId !== socket.userId).userId]: -100
@@ -932,23 +935,24 @@ io.on('connection', (socket) => {
           activeMatches.delete(matchId);
         }, 5000);
       } else {
-        // Player loses
-        match.winner = match.players.find(p => p.userId !== socket.userId).userId;
+        // Player loses - the other player wins
+        const otherPlayer = match.players.find(p => p.userId !== socket.userId);
+        match.winner = otherPlayer.userId;
         match.loserTime = timeTaken;
         match.endTime = Date.now();
         
-        // Update points
+        // Update points - loser gets -100, winner gets +100
         await updatePlayerPoints(socket.userId, -100, false);
-        await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, 100, true);
+        await updatePlayerPoints(otherPlayer.userId, 100, true);
         
         // Notify both players
         io.to(matchId).emit('gameEnd', {
-          winner: match.players.find(p => p.userId !== socket.userId).username,
+          winner: otherPlayer.username,
           loserTime: timeTaken,
-          correctAnswer: match.correctAnswer,
+          correctAnswer: questionData.correctAnswer,
           points: {
             [socket.userId]: -100,
-            [match.players.find(p => p.userId !== socket.userId).userId]: 100
+            [otherPlayer.userId]: 100
           }
         });
         
