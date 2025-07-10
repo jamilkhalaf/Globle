@@ -155,13 +155,20 @@ const Online = () => {
 
     // Import socket.io-client dynamically
     const socketInstance = io('https://api.jamilweb.click', {
-      auth: { token }
+      auth: { token },
+      transports: ['websocket', 'polling']
     });
 
     socketInstance.on('connect', () => {
-      console.log('Socket connected successfully');
+      console.log('Socket connected successfully with ID:', socketInstance.id);
       setIsConnected(true);
       setError('');
+      
+      // If we're waiting to join a queue, do it now
+      if (isWaitingForPlayer && selectedGameType) {
+        console.log('Socket connected, joining queue immediately for:', selectedGameType);
+        socketInstance.emit('joinQueue', { gameType: selectedGameType });
+      }
     });
 
     socketInstance.on('disconnect', () => {
@@ -176,15 +183,16 @@ const Online = () => {
     });
 
     socketInstance.on('queueJoined', (data) => {
-      console.log('Joined queue:', data);
+      console.log('✅ Joined queue successfully:', data);
     });
 
     socketInstance.on('queueError', (data) => {
+      console.log('❌ Queue error:', data);
       setError(data.message);
     });
 
     socketInstance.on('matchFound', (data) => {
-      console.log('Match found:', data);
+      console.log('🎮 Match found:', data);
       setCurrentMatch(data);
       setGameState('countdown');
       setGameQuestion(data.question);
@@ -193,14 +201,14 @@ const Online = () => {
     });
 
     socketInstance.on('gameStart', (data) => {
-      console.log('Game start:', data);
+      console.log('🚀 Game start:', data);
       setGameState('playing');
       setGameTimer(60); // 60 second game
       setGameQuestion(data.question);
     });
 
     socketInstance.on('gameEnd', (data) => {
-      console.log('Game end:', data);
+      console.log('🏁 Game end:', data);
       setGameState('ended');
       setMatchResult(data);
       setGameTimer(0);
@@ -265,33 +273,6 @@ const Online = () => {
     if (!socket || !isConnected) {
       console.log('Connecting socket...');
       connectSocket();
-      
-      let retryCount = 0;
-      const maxRetries = 10;
-      
-      // Wait for socket to connect before joining queue
-      const checkConnection = () => {
-        retryCount++;
-        console.log(`Checking socket connection... (attempt ${retryCount}/${maxRetries})`, { 
-          socket: !!socket, 
-          isConnected, 
-          socketConnected: socket?.connected 
-        });
-        
-        if (socket && (socket.connected || isConnected)) {
-          console.log('Socket connected, joining queue for:', selectedGameType);
-          socket.emit('joinQueue', { gameType: selectedGameType });
-        } else if (retryCount >= maxRetries) {
-          console.error('Failed to connect socket after maximum retries');
-          setError('Failed to connect to game server. Please try again.');
-          setIsWaitingForPlayer(false);
-        } else {
-          console.log('Socket not ready, retrying in 1 second...');
-          setTimeout(checkConnection, 1000);
-        }
-      };
-      
-      setTimeout(checkConnection, 1000);
     } else {
       // Socket already connected, join queue immediately
       console.log('Joining queue for:', selectedGameType);
@@ -756,20 +737,21 @@ const Online = () => {
 
   const testSocketConnection = () => {
     const token = localStorage.getItem('token');
-    console.log('Testing socket connection...');
+    console.log('🧪 Testing socket connection...');
     console.log('Token exists:', !!token);
     
     if (!token) {
-      console.log('No token found');
+      console.log('❌ No token found');
       return;
     }
     
     const testSocket = io('https://api.jamilweb.click', {
-      auth: { token }
+      auth: { token },
+      transports: ['websocket', 'polling']
     });
     
     testSocket.on('connect', () => {
-      console.log('✅ Test socket connected successfully');
+      console.log('✅ Test socket connected successfully with ID:', testSocket.id);
     });
     
     testSocket.on('connect_error', (error) => {
@@ -779,6 +761,14 @@ const Online = () => {
     testSocket.on('disconnect', () => {
       console.log('❌ Test socket disconnected');
     });
+    
+    // Test queue joining
+    setTimeout(() => {
+      if (testSocket.connected) {
+        console.log('🧪 Testing queue join...');
+        testSocket.emit('joinQueue', { gameType: 'Globle' });
+      }
+    }, 2000);
   };
 
   return (
