@@ -512,34 +512,30 @@ function generateQuestion(gameType) {
     
     // Generate 3 wrong options
     const wrongOptions = [];
-    const wrongFlagCodes = [];
-    const usedCodes = [correctFlagCode];
+    const usedCountries = [correctCountry];
     
     while (wrongOptions.length < 3) {
       const randomCode = availableFlagCodes[Math.floor(Math.random() * availableFlagCodes.length)];
-      if (!usedCodes.includes(randomCode)) {
-        usedCodes.push(randomCode);
-        wrongOptions.push(flagGameData[randomCode]);
-        wrongFlagCodes.push(randomCode);
+      const randomCountry = flagGameData[randomCode];
+      if (!usedCountries.includes(randomCountry)) {
+        usedCountries.push(randomCountry);
+        wrongOptions.push(randomCountry);
       }
     }
     
     // Create options array with correct answer and wrong options
     const allOptions = [correctCountry, ...wrongOptions];
-    const allFlagCodes = [correctFlagCode, ...wrongFlagCodes];
     
-    // Shuffle the options and flag codes together
+    // Shuffle the options
     for (let i = allOptions.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
-      [allFlagCodes[i], allFlagCodes[j]] = [allFlagCodes[j], allFlagCodes[i]];
     }
     
     const questionData = {
       correctAnswer: correctCountry,
       options: allOptions,
-      flagCodes: allFlagCodes,
-      correctFlagCode: correctFlagCode
+      flagCode: correctFlagCode
     };
     
     console.log('Generated FlagGuess question data:', questionData);

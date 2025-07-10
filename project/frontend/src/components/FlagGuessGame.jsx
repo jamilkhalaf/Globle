@@ -19,7 +19,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [options, setOptions] = useState([]);
   const [message, setMessage] = useState('');
-  const [flagCodes, setFlagCodes] = useState([]);
+  const [flagCode, setFlagCode] = useState('');
 
   useEffect(() => {
     if (matchData && matchData.question) {
@@ -28,15 +28,10 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
       console.log('FlagGuessGame - Received question data:', questionData);
       setCorrectAnswer(questionData.correctAnswer);
       setOptions(questionData.options);
-      setFlagCodes(questionData.flagCodes || []);
-      console.log('FlagGuessGame - Set flag codes:', questionData.flagCodes);
+      setFlagCode(questionData.flagCode || '');
+      console.log('FlagGuessGame - Set flag code:', questionData.flagCode);
     }
   }, [matchData]);
-
-  // Find the index of the correct answer to match with flag codes
-  const correctAnswerIndex = options.findIndex(option => 
-    option.toLowerCase() === correctAnswer.toLowerCase()
-  );
 
   const handleAnswerSubmit = (answer) => {
     if (isAnswered) return;
@@ -114,47 +109,37 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
         </Alert>
       )}
 
-      {/* Flag Display */}
-      <Box sx={{ mb: 4 }}>
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          {flagCodes.map((flagCode, index) => (
-            <Grid item xs={6} sm={3} key={index}>
-              <Card sx={{ 
-                bgcolor: 'white', 
-                p: 1,
-                cursor: 'pointer',
-                border: isAnswered && index === correctAnswerIndex ? '3px solid #4caf50' : '1px solid #ddd',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                  transition: 'transform 0.2s'
-                }
-              }}>
-                <img 
-                  src={`/flags/${flagCode}.png`}
-                  alt={`Flag ${index + 1}`}
-                  style={{ 
-                    width: '100%', 
-                    height: 'auto',
-                    maxHeight: '120px',
-                    objectFit: 'contain'
-                  }}
-                  onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
-                  onError={(e) => {
-                    console.log(`Flag failed to load: ${flagCode}.png`);
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'block';
-                  }}
-                />
-                <Box sx={{ display: 'none', textAlign: 'center', py: 1 }}>
-                  <FlagIcon sx={{ fontSize: 30, color: '#ccc' }} />
-                  <Typography variant="caption" color="textSecondary">
-                    Flag not available
-                  </Typography>
-                </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+      {/* Single Flag Display */}
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+        <Card sx={{ 
+          bgcolor: 'white', 
+          p: 2,
+          maxWidth: 300,
+          border: isAnswered ? '3px solid #4caf50' : '1px solid #ddd'
+        }}>
+          <img 
+            src={`/flags/${flagCode}.png`}
+            alt="Flag to guess"
+            style={{ 
+              width: '100%', 
+              height: 'auto',
+              maxHeight: '200px',
+              objectFit: 'contain'
+            }}
+            onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
+            onError={(e) => {
+              console.log(`Flag failed to load: ${flagCode}.png`);
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'block';
+            }}
+          />
+          <Box sx={{ display: 'none', textAlign: 'center', py: 1 }}>
+            <FlagIcon sx={{ fontSize: 30, color: '#ccc' }} />
+            <Typography variant="caption" color="textSecondary">
+              Flag not available
+            </Typography>
+          </Box>
+        </Card>
       </Box>
 
       {/* Answer Options */}
