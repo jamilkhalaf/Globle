@@ -70,24 +70,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Debug endpoint to check queue status
-app.get('/api/debug/queues', (req, res) => {
-  const queueStatus = {};
-  Object.keys(gameQueues).forEach(gameType => {
-    queueStatus[gameType] = {
-      players: gameQueues[gameType].length,
-      usernames: gameQueues[gameType].map(p => p.username)
-    };
-  });
-  
-  res.json({
-    queues: queueStatus,
-    connectedUsers: userSockets.size,
-    activeMatches: activeMatches.size,
-    timestamp: new Date().toISOString()
-  });
-});
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -116,151 +98,38 @@ const gameQueues = {
 const activeMatches = new Map();
 const userSockets = new Map();
 
-// Game-specific data and logic
-const gameData = {
-  'Globle': {
-    countries: [
-      { name: 'United States', coordinates: [39.8283, -98.5795] },
-      { name: 'Canada', coordinates: [56.1304, -106.3468] },
-      { name: 'Mexico', coordinates: [23.6345, -102.5528] },
-      { name: 'Brazil', coordinates: [-14.2350, -51.9253] },
-      { name: 'Argentina', coordinates: [-38.4161, -63.6167] },
-      { name: 'United Kingdom', coordinates: [55.3781, -3.4360] },
-      { name: 'France', coordinates: [46.2276, 2.2137] },
-      { name: 'Germany', coordinates: [51.1657, 10.4515] },
-      { name: 'Italy', coordinates: [41.8719, 12.5674] },
-      { name: 'Spain', coordinates: [40.4637, -3.7492] },
-      { name: 'China', coordinates: [35.8617, 104.1954] },
-      { name: 'Japan', coordinates: [36.2048, 138.2529] },
-      { name: 'India', coordinates: [20.5937, 78.9629] },
-      { name: 'Australia', coordinates: [-25.2744, 133.7751] },
-      { name: 'South Africa', coordinates: [-30.5595, 22.9375] }
-    ]
-  },
-  'Population': {
-    countries: [
-      { name: 'United States', population: 331002651 },
-      { name: 'Canada', population: 37742154 },
-      { name: 'Mexico', population: 128932753 },
-      { name: 'Brazil', population: 212559417 },
-      { name: 'Argentina', population: 45195774 },
-      { name: 'United Kingdom', population: 67886011 },
-      { name: 'France', population: 65273511 },
-      { name: 'Germany', population: 83783942 },
-      { name: 'Italy', population: 60461826 },
-      { name: 'Spain', population: 46754778 },
-      { name: 'China', population: 1439323776 },
-      { name: 'Japan', population: 126476461 },
-      { name: 'India', population: 1380004385 },
-      { name: 'Australia', population: 25499884 },
-      { name: 'South Africa', population: 59308690 }
-    ]
-  },
-  'US': {
-    states: [
-      { name: 'California', coordinates: [36.7783, -119.4179] },
-      { name: 'Texas', coordinates: [31.9686, -99.9018] },
-      { name: 'Florida', coordinates: [27.6648, -81.5158] },
-      { name: 'New York', coordinates: [42.1657, -74.9481] },
-      { name: 'Pennsylvania', coordinates: [40.5908, -77.2098] },
-      { name: 'Illinois', coordinates: [40.6331, -89.3985] },
-      { name: 'Ohio', coordinates: [40.4173, -82.9071] },
-      { name: 'Georgia', coordinates: [32.1656, -82.9001] },
-      { name: 'North Carolina', coordinates: [35.7596, -79.0193] },
-      { name: 'Michigan', coordinates: [44.3148, -85.6024] },
-      { name: 'New Jersey', coordinates: [40.0583, -74.4057] },
-      { name: 'Virginia', coordinates: [37.7693, -78.1699] },
-      { name: 'Washington', coordinates: [47.4009, -121.4905] },
-      { name: 'Arizona', coordinates: [33.7298, -111.4312] },
-      { name: 'Massachusetts', coordinates: [42.2307, -71.5306] }
-    ]
-  },
-  'Findle': {
-    letters: ['U', 'A', 'C', 'B', 'F', 'G', 'I', 'J', 'M', 'N', 'P', 'S', 'T'],
-    countries: {
-      'U': ['United States', 'United Kingdom', 'Ukraine', 'Uruguay', 'Uzbekistan'],
-      'A': ['Australia', 'Austria', 'Argentina', 'Algeria', 'Afghanistan'],
-      'C': ['Canada', 'China', 'Colombia', 'Cuba', 'Chile'],
-      'B': ['Brazil', 'Belgium', 'Bulgaria', 'Bangladesh', 'Belarus'],
-      'F': ['France', 'Finland', 'Fiji', 'Fiji'],
-      'G': ['Germany', 'Greece', 'Ghana', 'Guatemala'],
-      'I': ['Italy', 'India', 'Indonesia', 'Iran', 'Iraq'],
-      'J': ['Japan', 'Jamaica', 'Jordan'],
-      'M': ['Mexico', 'Morocco', 'Malaysia', 'Mali'],
-      'N': ['Netherlands', 'Norway', 'New Zealand', 'Nigeria'],
-      'P': ['Poland', 'Portugal', 'Pakistan', 'Peru'],
-      'S': ['Spain', 'Sweden', 'Switzerland', 'South Africa'],
-      'T': ['Thailand', 'Turkey', 'Tunisia', 'Tanzania']
-    }
-  },
-  'Flagle': {
-    flags: [
-      { country: 'United States', flag: '🇺🇸' },
-      { country: 'Canada', flag: '🇨🇦' },
-      { country: 'United Kingdom', flag: '🇬🇧' },
-      { country: 'France', flag: '🇫🇷' },
-      { country: 'Germany', flag: '🇩🇪' },
-      { country: 'Italy', flag: '🇮🇹' },
-      { country: 'Spain', flag: '🇪🇸' },
-      { country: 'China', flag: '🇨🇳' },
-      { country: 'Japan', flag: '🇯🇵' },
-      { country: 'India', flag: '🇮🇳' },
-      { country: 'Australia', flag: '🇦🇺' },
-      { country: 'Brazil', flag: '🇧🇷' },
-      { country: 'Mexico', flag: '🇲🇽' },
-      { country: 'Argentina', flag: '🇦🇷' },
-      { country: 'South Africa', flag: '🇿🇦' }
-    ]
-  }
-};
-
 // Socket.IO middleware for authentication
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth.token;
-    console.log('Socket authentication attempt:', { hasToken: !!token });
-    
     if (!token) {
-      console.log('No token provided');
       return next(new Error('Authentication error'));
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Token decoded successfully for user:', decoded.userId);
-    
     const user = await User.findById(decoded.userId);
     
     if (!user) {
-      console.log('User not found:', decoded.userId);
       return next(new Error('User not found'));
     }
 
     socket.userId = user._id.toString();
     socket.username = user.username;
-    console.log('Socket authenticated for user:', user.username);
     next();
   } catch (error) {
-    console.error('Socket authentication error:', error.message);
     next(new Error('Authentication error'));
   }
 });
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log(`🔌 User connected: ${socket.username} (${socket.userId})`);
+  console.log(`User connected: ${socket.username} (${socket.userId})`);
   
   userSockets.set(socket.userId, socket);
-  console.log(`📊 Total connected users: ${userSockets.size}`);
-  console.log(`👥 Connected users:`, Array.from(userSockets.keys()).map(id => {
-    const userSocket = userSockets.get(id);
-    return userSocket ? userSocket.username : 'unknown';
-  }));
 
   // Join game queue
   socket.on('joinQueue', async (data) => {
     const { gameType } = data;
-    console.log(`🎯 User ${socket.username} joining queue for ${gameType}`);
-    console.log(`📊 Current queue state for ${gameType}:`, gameQueues[gameType].length, 'players');
     
     if (!gameQueues[gameType]) {
       gameQueues[gameType] = [];
@@ -269,7 +138,6 @@ io.on('connection', (socket) => {
     // Check if user is already in queue
     const alreadyInQueue = gameQueues[gameType].find(player => player.userId === socket.userId);
     if (alreadyInQueue) {
-      console.log(`⚠️ User ${socket.username} already in queue for ${gameType}`);
       socket.emit('queueError', { message: 'Already in queue for this game' });
       return;
     }
@@ -285,10 +153,6 @@ io.on('connection', (socket) => {
     gameQueues[gameType].push(player);
     socket.join(`queue_${gameType}`);
     socket.emit('queueJoined', { gameType, position: gameQueues[gameType].length });
-    
-    console.log(`✅ User ${socket.username} added to queue for ${gameType}`);
-    console.log(`📊 Queue for ${gameType}: ${gameQueues[gameType].length} players`);
-    console.log(`👥 All players in queue:`, gameQueues[gameType].map(p => p.username));
 
     // Try to match players
     await tryMatchPlayers(gameType);
@@ -315,8 +179,8 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Check if answer is correct based on game type
-    const isCorrect = checkAnswer(match.gameType, answer, match.correctAnswer);
+    // Check if answer is correct (simplified for now)
+    const isCorrect = checkAnswer(match.gameType, answer);
     
     if (isCorrect) {
       // Player wins
@@ -379,7 +243,7 @@ io.on('connection', (socket) => {
 
   // Disconnect handling
   socket.on('disconnect', () => {
-    console.log(`🔌 User disconnected: ${socket.username}`);
+    console.log(`User disconnected: ${socket.username}`);
     
     // Remove from all queues
     Object.keys(gameQueues).forEach(gameType => {
@@ -389,14 +253,12 @@ io.on('connection', (socket) => {
     // Remove from active matches
     for (const [matchId, match] of activeMatches.entries()) {
       if (match.players.some(p => p.userId === socket.userId)) {
-        console.log(`🏁 Removing match ${matchId} due to player disconnect`);
         activeMatches.delete(matchId);
         io.to(matchId).emit('opponentDisconnected');
       }
     }
     
     userSockets.delete(socket.userId);
-    console.log(`📊 Total connected users after disconnect: ${userSockets.size}`);
   });
 });
 
@@ -411,20 +273,12 @@ function leaveQueue(socket, gameType) {
 
 async function tryMatchPlayers(gameType) {
   const queue = gameQueues[gameType];
-  console.log(`🔍 Trying to match players for ${gameType}. Queue length: ${queue.length}`);
-  console.log(`👥 Players in queue:`, queue.map(p => p.username));
   
   if (queue.length >= 2) {
     const player1 = queue.shift();
     const player2 = queue.shift();
     
-    console.log(`🎮 Creating match: ${player1.username} vs ${player2.username}`);
-    
     const matchId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Generate game-specific question
-    const gameQuestion = generateQuestion(gameType);
-    console.log(`📝 Generated question for ${gameType}:`, gameQuestion);
     
     // Create match
     const match = {
@@ -432,198 +286,120 @@ async function tryMatchPlayers(gameType) {
       gameType,
       players: [player1, player2],
       startTime: Date.now(),
-      correctAnswer: gameQuestion,
+      correctAnswer: generateQuestion(gameType),
       winner: null
     };
     
     activeMatches.set(matchId, match);
-    console.log(`✅ Match created with ID: ${matchId}`);
     
     // Join match room
     const socket1 = userSockets.get(player1.userId);
     const socket2 = userSockets.get(player2.userId);
     
-    console.log(`🔌 Socket lookup:`, {
-      player1: player1.username,
-      socket1Exists: !!socket1,
-      player2: player2.username,
-      socket2Exists: !!socket2
-    });
-    
     if (socket1 && socket2) {
       socket1.join(matchId);
       socket2.join(matchId);
       
-      console.log(`✅ Both players joined match room: ${matchId}`);
-      
       // Notify players
-      const matchData = {
+      io.to(matchId).emit('matchFound', {
         matchId,
         gameType,
         players: [
           { username: player1.username },
           { username: player2.username }
         ],
-        question: gameQuestion.question,
-        target: gameQuestion.target,
+        question: match.correctAnswer.question,
         startTime: Date.now() + 3000 // 3 second countdown
-      };
-      
-      console.log('📤 Emitting matchFound with data:', matchData);
-      io.to(matchId).emit('matchFound', matchData);
+      });
       
       // Start game after countdown
       setTimeout(() => {
-        const gameStartData = {
+        io.to(matchId).emit('gameStart', {
           matchId,
           gameType,
-          question: gameQuestion.question,
-          target: gameQuestion.target,
+          question: match.correctAnswer.question,
           startTime: Date.now()
-        };
-        
-        console.log('🚀 Emitting gameStart with data:', gameStartData);
-        io.to(matchId).emit('gameStart', gameStartData);
+        });
       }, 3000);
-    } else {
-      console.log('❌ Error: One or both sockets not found');
-      if (!socket1) console.log(`❌ Socket not found for player1: ${player1.userId} (${player1.username})`);
-      if (!socket2) console.log(`❌ Socket not found for player2: ${player2.userId} (${player2.username})`);
-      
-      // Put players back in queue if sockets not found
-      if (socket1) gameQueues[gameType].unshift(player1);
-      if (socket2) gameQueues[gameType].unshift(player2);
     }
-  } else {
-    console.log(`⏳ Not enough players in queue for ${gameType}. Need 2, have ${queue.length}`);
   }
 }
 
 function generateQuestion(gameType) {
-  console.log(`Generating question for game type: ${gameType}`);
+  // Simplified question generation - you can expand this
+  const questions = {
+    'Globle': {
+      question: 'What country is this?',
+      answer: 'United States',
+      type: 'country'
+    },
+    'Population': {
+      question: 'What is the population of this country?',
+      answer: '331 million',
+      type: 'population'
+    },
+    'Findle': {
+      question: 'What country name starts with "U"?',
+      answer: 'United States',
+      type: 'name'
+    },
+    'Flagle': {
+      question: 'What country does this flag belong to?',
+      answer: 'United States',
+      type: 'flag'
+    },
+    'Worldle': {
+      question: 'Where is this country located?',
+      answer: 'North America',
+      type: 'location'
+    },
+    'Capitals': {
+      question: 'What is the capital of this country?',
+      answer: 'Washington D.C.',
+      type: 'capital'
+    },
+    'Hangman': {
+      question: 'Guess the word: _ _ _ _ _ _ _ _',
+      answer: 'COUNTRY',
+      type: 'word'
+    },
+    'Shaple': {
+      question: 'What shape is this country?',
+      answer: 'Rectangle',
+      type: 'shape'
+    },
+    'US': {
+      question: 'What US state is this?',
+      answer: 'California',
+      type: 'state'
+    },
+    'Namle': {
+      question: 'What country name contains "A"?',
+      answer: 'Canada',
+      type: 'name'
+    }
+  };
   
-  switch (gameType) {
-    case 'Globle':
-      const globleCountries = gameData.Globle.countries;
-      const randomGlobleCountry = globleCountries[Math.floor(Math.random() * globleCountries.length)];
-      const globleQuestion = {
-        question: `Find the country: ${randomGlobleCountry.name}`,
-        target: randomGlobleCountry.name,
-        answer: randomGlobleCountry.name,
-        type: 'country',
-        coordinates: randomGlobleCountry.coordinates
-      };
-      console.log('Generated Globle question:', globleQuestion);
-      return globleQuestion;
-    
-    case 'Population':
-      const populationCountries = gameData.Population.countries;
-      const randomPopulationCountry = populationCountries[Math.floor(Math.random() * populationCountries.length)];
-      const populationQuestion = {
-        question: `Guess the population of ${randomPopulationCountry.name}`,
-        target: randomPopulationCountry.name,
-        answer: randomPopulationCountry.population.toString(),
-        type: 'population',
-        actualPopulation: randomPopulationCountry.population
-      };
-      console.log('Generated Population question:', populationQuestion);
-      return populationQuestion;
-    
-    case 'US':
-      const usStates = gameData.US.states;
-      const randomUSState = usStates[Math.floor(Math.random() * usStates.length)];
-      const usQuestion = {
-        question: `Find the US state: ${randomUSState.name}`,
-        target: randomUSState.name,
-        answer: randomUSState.name,
-        type: 'state',
-        coordinates: randomUSState.coordinates
-      };
-      console.log('Generated US question:', usQuestion);
-      return usQuestion;
-    
-    case 'Findle':
-      const findleLetters = gameData.Findle.letters;
-      const randomFindleLetter = findleLetters[Math.floor(Math.random() * findleLetters.length)];
-      const randomFindleCountry = gameData.Findle.countries[randomFindleLetter][Math.floor(Math.random() * gameData.Findle.countries[randomFindleLetter].length)];
-      const findleQuestion = {
-        question: `Find a country starting with "${randomFindleLetter}": ${randomFindleCountry}`,
-        target: randomFindleCountry,
-        answer: randomFindleCountry,
-        type: 'findle',
-        letter: randomFindleLetter
-      };
-      console.log('Generated Findle question:', findleQuestion);
-      return findleQuestion;
-    
-    case 'Flagle':
-      const flags = gameData.Flagle.flags;
-      const randomFlag = flags[Math.floor(Math.random() * flags.length)];
-      const flagleQuestion = {
-        question: `Identify the flag: ${randomFlag.flag}`,
-        target: randomFlag.country,
-        answer: randomFlag.country,
-        type: 'flagle',
-        flag: randomFlag.flag
-      };
-      console.log('Generated Flagle question:', flagleQuestion);
-      return flagleQuestion;
-    
-    default:
-      // Fallback for other games
-      const fallbackQuestion = {
-        question: 'What is the answer?',
-        target: 'Answer',
-        answer: 'Answer',
-        type: 'general'
-      };
-      console.log('Generated fallback question:', fallbackQuestion);
-      return fallbackQuestion;
-  }
+  return questions[gameType] || questions['Globle'];
 }
 
-function checkAnswer(gameType, answer, correctAnswer) {
-  if (!answer || !correctAnswer) return false;
+function checkAnswer(gameType, answer) {
+  // Simplified answer checking - you can make this more sophisticated
+  const correctAnswers = {
+    'Globle': ['united states', 'usa', 'america'],
+    'Population': ['331 million', '331m', '331'],
+    'Findle': ['united states', 'usa'],
+    'Flagle': ['united states', 'usa', 'america'],
+    'Worldle': ['north america', 'america'],
+    'Capitals': ['washington d.c.', 'washington', 'dc'],
+    'Hangman': ['country'],
+    'Shaple': ['rectangle'],
+    'US': ['california', 'ca'],
+    'Namle': ['canada']
+  };
   
-  const userAnswer = answer.toLowerCase().trim();
-  const correctAnswerLower = correctAnswer.answer.toLowerCase().trim();
-  
-  switch (gameType) {
-    case 'Globle':
-      // For Globle, check if the country name matches
-      return userAnswer === correctAnswerLower || 
-             userAnswer.includes(correctAnswerLower) || 
-             correctAnswerLower.includes(userAnswer);
-    
-    case 'Population':
-      // For Population, check if the population guess is within 10% of actual
-      const userPopulation = parseInt(userAnswer.replace(/[^\d]/g, ''));
-      const actualPopulation = correctAnswer.actualPopulation;
-      if (isNaN(userPopulation)) return false;
-      
-      const percentageDiff = Math.abs(userPopulation - actualPopulation) / actualPopulation;
-      return percentageDiff <= 0.1; // Within 10%
-    
-    case 'US':
-      // For US States, check if the state name matches
-      return userAnswer === correctAnswerLower || 
-             userAnswer.includes(correctAnswerLower) || 
-             correctAnswerLower.includes(userAnswer);
-    
-    case 'Findle':
-      // For Findle, check if the country name starts with the correct letter
-      return userAnswer.startsWith(correctAnswer.letter.toLowerCase());
-    
-    case 'Flagle':
-      // For Flagle, check if the country name matches
-      return userAnswer === correctAnswerLower || 
-             userAnswer.includes(correctAnswerLower) || 
-             correctAnswerLower.includes(userAnswer);
-    
-    default:
-      // Default exact match
-      return userAnswer === correctAnswerLower;
-  }
+  const answers = correctAnswers[gameType] || [];
+  return answers.some(correct => answer.toLowerCase().includes(correct));
 }
 
 async function updatePlayerPoints(userId, pointsChange, isWin) {
@@ -642,5 +418,4 @@ const PORT = process.env.PORT || 5051;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`JWT_SECRET exists: ${!!process.env.JWT_SECRET}`);
 }); 
