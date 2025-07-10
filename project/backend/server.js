@@ -142,6 +142,7 @@ io.on('connection', (socket) => {
   // Join game queue
   socket.on('joinQueue', async (data) => {
     console.log('joinQueue event received:', data);
+    console.log('User joining queue:', socket.username, 'for game:', data.gameType);
     const { gameType } = data;
     
     if (!gameQueues[gameType]) {
@@ -166,6 +167,7 @@ io.on('connection', (socket) => {
 
     gameQueues[gameType].push(player);
     console.log(`User ${socket.username} joined ${gameType} queue. Queue length: ${gameQueues[gameType].length}`);
+    console.log('Current queue:', gameQueues[gameType].map(p => p.username));
     socket.join(`queue_${gameType}`);
     socket.emit('queueJoined', { gameType, position: gameQueues[gameType].length });
 
@@ -310,10 +312,13 @@ async function tryMatchPlayers(gameType) {
     
     activeMatches.set(matchId, match);
     console.log(`Created match ${matchId} between ${player1.username} and ${player2.username}`);
+    console.log('Match data:', match);
     
     // Join match room
     const socket1 = userSockets.get(player1.userId);
     const socket2 = userSockets.get(player2.userId);
+    
+    console.log('Socket1 found:', !!socket1, 'Socket2 found:', !!socket2);
     
     if (socket1 && socket2) {
       socket1.join(matchId);
@@ -331,7 +336,8 @@ async function tryMatchPlayers(gameType) {
         startTime: Date.now() + 3000 // 3 second countdown
       };
       
-      console.log('Emitting matchFound event:', matchData);
+      console.log('Emitting matchFound event to room:', matchId);
+      console.log('Match data being sent:', matchData);
       io.to(matchId).emit('matchFound', matchData);
       
       // Start game after countdown
@@ -346,6 +352,7 @@ async function tryMatchPlayers(gameType) {
       }, 3000);
     } else {
       console.log('One or both sockets not found for match');
+      console.log('Available sockets:', Array.from(userSockets.keys()));
     }
   } else {
     console.log(`Not enough players in ${gameType} queue (${queue.length})`);

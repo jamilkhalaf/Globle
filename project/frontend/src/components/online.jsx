@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -86,6 +86,10 @@ const Online = () => {
   const [gameQuestion, setGameQuestion] = useState('');
   const [matchResult, setMatchResult] = useState(null);
 
+  const socketRef = useRef(null);
+  const isWaitingForPlayerRef = useRef(false);
+  const selectedGameTypeRef = useRef('');
+
   useEffect(() => {
     // Monitor online/offline status
     const handleOnline = () => setIsOnline(true);
@@ -102,6 +106,86 @@ const Online = () => {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    isWaitingForPlayerRef.current = isWaitingForPlayer;
+    selectedGameTypeRef.current = selectedGameType;
+  }, [isWaitingForPlayer, selectedGameType]);
+
+  // Attach socket event handlers ONCE per socket instance
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    const onConnect = () => {
+      setIsConnected(true);
+      setError('');
+      // If we were waiting to join a queue, do it now
+      if (isWaitingForPlayerRef.current && selectedGameTypeRef.current) {
+        socket.emit('joinQueue', { gameType: selectedGameTypeRef.current });
+      }
+    };
+    const onDisconnect = () => setIsConnected(false);
+    const onConnectError = (error) => setError('Failed to connect to game server: ' + error.message);
+    const onError = (error) => setError('Socket error: ' + error.message);
+    const onQueueJoined = (data) => { console.log('Joined queue:', data); };
+    const onQueueError = (data) => setError(data.message);
+    const onMatchFound = (data) => {
+      console.log('🎮 Match found event received:', data);
+      console.log('Setting currentMatch to:', data);
+      console.log('Setting gameState to countdown');
+      console.log('Setting isWaitingForPlayer to false');
+      
+      setCurrentMatch(data);
+      setGameState('countdown');
+      setGameQuestion(data.question || data.correctAnswer?.answer || 'Game starting...');
+      setIsWaitingForPlayer(false);
+      setWaitingTime(0);
+      setGameTimer(3);
+      
+      console.log('Match found event handlers completed');
+    };
+    const onGameStart = (data) => {
+      setGameState('playing');
+      setGameTimer(60);
+      setGameQuestion(data.question);
+    };
+    const onGameEnd = (data) => {
+      setGameState('ended');
+      setMatchResult(data);
+      setGameTimer(0);
+    };
+    const onOpponentDisconnected = () => {
+      setError('Opponent disconnected');
+      setGameState('waiting');
+      setCurrentMatch(null);
+    };
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('connect_error', onConnectError);
+    socket.on('error', onError);
+    socket.on('queueJoined', onQueueJoined);
+    socket.on('queueError', onQueueError);
+    socket.on('matchFound', onMatchFound);
+    socket.on('gameStart', onGameStart);
+    socket.on('gameEnd', onGameEnd);
+    socket.on('opponentDisconnected', onOpponentDisconnected);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('connect_error', onConnectError);
+      socket.off('error', onError);
+      socket.off('queueJoined', onQueueJoined);
+      socket.off('queueError', onQueueError);
+      socket.off('matchFound', onMatchFound);
+      socket.off('gameStart', onGameStart);
+      socket.off('gameEnd', onGameEnd);
+      socket.off('opponentDisconnected', onOpponentDisconnected);
+    };
+  }, [socketRef.current]);
 
   // Timer effect for game countdown and playing state
   useEffect(() => {
@@ -161,128 +245,35 @@ const Online = () => {
     }
   };
 
+  // Connect socket function
   const connectSocket = () => {
     const token = localStorage.getItem('token');
-    console.log('Token from localStorage:', token ? 'present' : 'missing');
     if (!token) {
       setError('Please login to play online');
       return;
     }
-
-    // Check if token is valid by making a test API call
     fetch('https://api.jamilweb.click/api/auth/verify', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(response => {
       if (response.ok) {
-        console.log('Token is valid, proceeding with WebSocket connection');
-        proceedWithSocketConnection(token);
+        if (!socketRef.current) {
+          const socketInstance = io('https://api.jamilweb.click', {
+            auth: { token },
+            transports: ['websocket', 'polling'],
+            upgrade: true,
+            rememberUpgrade: true,
+            timeout: 20000
+          });
+          socketRef.current = socketInstance;
+        }
       } else {
-        console.log('Token is invalid, redirecting to login');
         setError('Please login again');
         localStorage.removeItem('token');
       }
     })
-    .catch(error => {
-      console.error('Error verifying token:', error);
-      setError('Failed to verify authentication');
-    });
-  };
-
-  const proceedWithSocketConnection = (token) => {
-    console.log('Connecting to socket with token:', token.substring(0, 20) + '...');
-
-    // Import socket.io-client dynamically
-    const socketInstance = io('https://api.jamilweb.click', {
-      auth: { token },
-      transports: ['websocket', 'polling'],
-      upgrade: true,
-      rememberUpgrade: true,
-      timeout: 20000
-    });
-
-    console.log('Socket instance created, attempting connection...');
-
-    socketInstance.on('connect', () => {
-      console.log('Socket connected successfully');
-      console.log('Socket ID:', socketInstance.id);
-      console.log('Socket connected:', socketInstance.connected);
-      setIsConnected(true);
-      setError('');
-      
-      // If we were waiting to join a queue, do it now
-      if (isWaitingForPlayer && selectedGameType) {
-        console.log('Socket connected, now joining queue for:', selectedGameType);
-        socketInstance.emit('joinQueue', { gameType: selectedGameType });
-      }
-    });
-
-    socketInstance.on('disconnect', () => {
-      console.log('Socket disconnected');
-      console.log('Disconnect reason:', socketInstance.disconnectReason);
-      setIsConnected(false);
-    });
-
-    socketInstance.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-      console.error('Error details:', {
-        message: error.message,
-        description: error.description,
-        context: error.context,
-        type: error.type
-      });
-      setError('Failed to connect to game server: ' + error.message);
-    });
-
-    socketInstance.on('error', (error) => {
-      console.error('Socket error:', error);
-      setError('Socket error: ' + error.message);
-    });
-
-    socketInstance.on('queueJoined', (data) => {
-      console.log('Joined queue:', data);
-    });
-
-    socketInstance.on('queueError', (data) => {
-      console.log('Queue error:', data);
-      setError(data.message);
-    });
-
-    socketInstance.on('matchFound', (data) => {
-      console.log('Match found:', data);
-      setCurrentMatch(data);
-      setGameState('countdown');
-      setGameQuestion(data.question);
-      setIsWaitingForPlayer(false);
-      setWaitingTime(0);
-      setGameTimer(3); // 3 second countdown
-    });
-
-    socketInstance.on('gameStart', (data) => {
-      console.log('Game start:', data);
-      setGameState('playing');
-      setGameTimer(60); // 60 second game
-      setGameQuestion(data.question);
-    });
-
-    socketInstance.on('gameEnd', (data) => {
-      console.log('Game end:', data);
-      setGameState('ended');
-      setMatchResult(data);
-      setGameTimer(0);
-    });
-
-    socketInstance.on('opponentDisconnected', () => {
-      console.log('Opponent disconnected');
-      setError('Opponent disconnected');
-      setGameState('waiting');
-      setCurrentMatch(null);
-    });
-
-    setSocket(socketInstance);
+    .catch(() => setError('Failed to verify authentication'));
   };
 
   const handleTabChange = (event, newValue) => {
@@ -315,24 +306,17 @@ const Online = () => {
   };
 
   const handleConfirmJoinGame = () => {
-    console.log('Confirming join game for:', selectedGameType);
     setJoinGameDialog(false);
     setIsWaitingForPlayer(true);
+    isWaitingForPlayerRef.current = true; // Fix race condition
     setWaitingTime(0);
     setGameState('waiting');
     setCurrentMatch(null);
     setMatchResult(null);
-    
-    // Connect socket if not connected
-    if (!socket) {
-      console.log('No socket, connecting...');
+    if (!socketRef.current) {
       connectSocket();
     } else if (isConnected) {
-      // Join queue immediately if socket is connected
-      console.log('Socket already connected, joining queue for:', selectedGameType);
-      socket.emit('joinQueue', { gameType: selectedGameType });
-    } else {
-      console.log('Socket exists but not connected, waiting for connection...');
+      socketRef.current.emit('joinQueue', { gameType: selectedGameType });
     }
   };
 
@@ -342,16 +326,14 @@ const Online = () => {
     setSelectedGameType('');
     setGameState('waiting');
     setCurrentMatch(null);
-    
-    if (socket) {
-      socket.emit('leaveQueue', { gameType: selectedGameType });
+    if (socketRef.current) {
+      socketRef.current.emit('leaveQueue', { gameType: selectedGameType });
     }
   };
 
   const handleSubmitAnswer = (answerData) => {
-    if (!socket || !currentMatch) return;
-    
-    socket.emit('submitAnswer', {
+    if (!socketRef.current || !currentMatch) return;
+    socketRef.current.emit('submitAnswer', {
       matchId: currentMatch.matchId,
       answer: answerData.answer,
       timeTaken: answerData.timeTaken
@@ -359,16 +341,14 @@ const Online = () => {
   };
 
   const handleNewOpponent = () => {
-    if (!socket || !selectedGameType) return;
-    
+    if (!socketRef.current || !selectedGameType) return;
     setGameState('waiting');
     setCurrentMatch(null);
     setMatchResult(null);
     setGameAnswer('');
     setGameQuestion('');
     setGameTimer(0);
-    
-    socket.emit('requestNewOpponent', { gameType: selectedGameType });
+    socketRef.current.emit('requestNewOpponent', { gameType: selectedGameType });
   };
 
   const handleLeaveGame = () => {
@@ -381,9 +361,8 @@ const Online = () => {
     setIsWaitingForPlayer(false);
     setWaitingTime(0);
     setSelectedGameType('');
-    
-    if (socket) {
-      socket.emit('leaveQueue', { gameType: selectedGameType });
+    if (socketRef.current) {
+      socketRef.current.emit('leaveQueue', { gameType: selectedGameType });
     }
   };
 
@@ -633,21 +612,22 @@ const Online = () => {
             
             <Grid container spacing={2}>
               {['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'].map((gameType) => (
-                <Grid item xs={12} sm={6} md={4} key={gameType}>
+                <Grid item key={gameType} xs={12} sm={6} md={4}>
                   <Card 
                     sx={{ 
                       bgcolor: selectedGameType === gameType ? '#43cea2' : '#2a2a2a', 
                       color: 'white', 
                       height: '100%',
-                      cursor: 'pointer',
+                      cursor: localStorage.getItem('token') ? 'pointer' : 'not-allowed',
                       transition: 'all 0.3s ease',
-                      '&:hover': {
+                      opacity: localStorage.getItem('token') ? 1 : 0.5,
+                      '&:hover': localStorage.getItem('token') ? {
                         bgcolor: selectedGameType === gameType ? '#3bb08f' : '#3a3a3a',
                         transform: 'translateY(-2px)',
                         boxShadow: '0 4px 20px rgba(67, 206, 162, 0.3)'
-                      }
+                      } : {}
                     }}
-                    onClick={() => setSelectedGameType(gameType)}
+                    onClick={() => localStorage.getItem('token') && setSelectedGameType(gameType)}
                   >
                     <CardContent sx={{ textAlign: 'center', py: 3 }}>
                       <Box sx={{ mb: 2 }}>
@@ -676,15 +656,16 @@ const Online = () => {
               sx={{ 
                 bgcolor: selectedGameType === 'random' ? '#43cea2' : '#2a2a2a', 
                 color: 'white', 
-                cursor: 'pointer',
+                cursor: localStorage.getItem('token') ? 'pointer' : 'not-allowed',
                 transition: 'all 0.3s ease',
-                '&:hover': {
+                opacity: localStorage.getItem('token') ? 1 : 0.5,
+                '&:hover': localStorage.getItem('token') ? {
                   bgcolor: selectedGameType === 'random' ? '#3bb08f' : '#3a3a3a',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 4px 20px rgba(67, 206, 162, 0.3)'
-                }
+                } : {}
               }}
-              onClick={() => setSelectedGameType('random')}
+              onClick={() => localStorage.getItem('token') && setSelectedGameType('random')}
             >
               <CardContent sx={{ textAlign: 'center', py: 3 }}>
                 <Box sx={{ mb: 2 }}>
@@ -707,7 +688,7 @@ const Online = () => {
               size="large"
               startIcon={<PlayArrowIcon />}
               onClick={handleJoinGameNow}
-              disabled={!selectedGameType}
+              disabled={!selectedGameType || !localStorage.getItem('token')}
               sx={{ 
                 bgcolor: '#43cea2',
                 fontSize: '1.2rem',
@@ -724,7 +705,8 @@ const Online = () => {
                 }
               }}
             >
-              {selectedGameType ? `Join ${selectedGameType === 'random' ? 'Random Game' : selectedGameType} Queue` : 'Select a Game First'}
+              {!localStorage.getItem('token') ? 'Please Login First' : 
+               selectedGameType ? `Join ${selectedGameType === 'random' ? 'Random Game' : selectedGameType} Queue` : 'Select a Game First'}
             </Button>
           </Box>
         </CardContent>
@@ -822,6 +804,23 @@ const Online = () => {
         {!isConnected && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             Not connected to game server. Please login to play online.
+          </Alert>
+        )}
+
+        {/* Login Required Alert */}
+        {!localStorage.getItem('token') && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              You need to be logged in to play online games.
+            </Typography>
+            <Button 
+              variant="contained" 
+              size="small" 
+              onClick={() => window.location.href = '/login'}
+              sx={{ bgcolor: '#43cea2' }}
+            >
+              Go to Login
+            </Button>
           </Alert>
         )}
 
@@ -969,16 +968,41 @@ const Online = () => {
             <div>gameState: {gameState}</div>
             <div>currentMatch: {currentMatch ? 'yes' : 'no'}</div>
             <div>isConnected: {isConnected.toString()}</div>
+            <Button 
+              size="small" 
+              variant="contained" 
+              onClick={() => {
+                console.log('Test button clicked');
+                setGameState('countdown');
+                setCurrentMatch({
+                  matchId: 'test-match',
+                  gameType: 'Globle',
+                  players: [{ username: 'Player1' }, { username: 'Player2' }],
+                  question: 'Test question'
+                });
+                setIsWaitingForPlayer(false);
+              }}
+              sx={{ mt: 1, bgcolor: '#43cea2' }}
+            >
+              Test Game
+            </Button>
           </Box>
         )}
 
         {/* Waiting Page */}
-        {isWaitingForPlayer && gameState === 'waiting' && renderWaitingPage()}
+        {isWaitingForPlayer && gameState === 'waiting' && !currentMatch && (
+          <>
+            {console.log('⏳ Rendering waiting page:', { isWaitingForPlayer, gameState, currentMatch })}
+            {renderWaitingPage()}
+          </>
+        )}
 
         {/* Game Page - Render specific game component or generic interface */}
         {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && (
           <>
-            {console.log('Rendering game component:', { gameState, currentMatch })}
+            {console.log('🎮 Rendering game component:', { gameState, currentMatch, isWaitingForPlayer })}
+            {console.log('🎮 Game state conditions met, rendering game component')}
+            {console.log('🎮 currentMatch?.gameType:', currentMatch?.gameType)}
             {renderGameComponent()}
           </>
         )}
