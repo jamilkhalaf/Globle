@@ -339,6 +339,292 @@ const selectRandomCountry = async () => {
   return selectedCountry;
 };
 
+// Simple flag game data - just country codes and names
+const flagGameData = {
+  'us': 'United States',
+  'gb': 'United Kingdom', 
+  'fr': 'France',
+  'de': 'Germany',
+  'it': 'Italy',
+  'es': 'Spain',
+  'pt': 'Portugal',
+  'nl': 'Netherlands',
+  'be': 'Belgium',
+  'ch': 'Switzerland',
+  'at': 'Austria',
+  'se': 'Sweden',
+  'no': 'Norway',
+  'dk': 'Denmark',
+  'fi': 'Finland',
+  'pl': 'Poland',
+  'cz': 'Czech Republic',
+  'hu': 'Hungary',
+  'ro': 'Romania',
+  'bg': 'Bulgaria',
+  'gr': 'Greece',
+  'tr': 'Turkey',
+  'ru': 'Russia',
+  'ua': 'Ukraine',
+  'by': 'Belarus',
+  'lt': 'Lithuania',
+  'lv': 'Latvia',
+  'ee': 'Estonia',
+  'hr': 'Croatia',
+  'si': 'Slovenia',
+  'sk': 'Slovakia',
+  'rs': 'Serbia',
+  'ba': 'Bosnia and Herzegovina',
+  'me': 'Montenegro',
+  'mk': 'North Macedonia',
+  'al': 'Albania',
+  'cn': 'China',
+  'jp': 'Japan',
+  'kr': 'South Korea',
+  'in': 'India',
+  'pk': 'Pakistan',
+  'bd': 'Bangladesh',
+  'lk': 'Sri Lanka',
+  'np': 'Nepal',
+  'bt': 'Bhutan',
+  'mm': 'Myanmar',
+  'th': 'Thailand',
+  'vn': 'Vietnam',
+  'la': 'Laos',
+  'kh': 'Cambodia',
+  'my': 'Malaysia',
+  'sg': 'Singapore',
+  'id': 'Indonesia',
+  'ph': 'Philippines',
+  'au': 'Australia',
+  'nz': 'New Zealand',
+  'ca': 'Canada',
+  'mx': 'Mexico',
+  'br': 'Brazil',
+  'ar': 'Argentina',
+  'cl': 'Chile',
+  'pe': 'Peru',
+  'co': 'Colombia',
+  've': 'Venezuela',
+  'ec': 'Ecuador',
+  'bo': 'Bolivia',
+  'py': 'Paraguay',
+  'uy': 'Uruguay',
+  'gy': 'Guyana',
+  'sr': 'Suriname',
+  'za': 'South Africa',
+  'ng': 'Nigeria',
+  'ke': 'Kenya',
+  'ug': 'Uganda',
+  'tz': 'Tanzania',
+  'et': 'Ethiopia',
+  'so': 'Somalia',
+  'sd': 'Sudan',
+  'eg': 'Egypt',
+  'ly': 'Libya',
+  'tn': 'Tunisia',
+  'dz': 'Algeria',
+  'ma': 'Morocco',
+  'sn': 'Senegal',
+  'ci': 'Ivory Coast',
+  'gh': 'Ghana',
+  'cm': 'Cameroon',
+  'cg': 'Congo',
+  'cd': 'Democratic Republic of the Congo',
+  'ao': 'Angola',
+  'zm': 'Zambia',
+  'zw': 'Zimbabwe',
+  'bw': 'Botswana',
+  'na': 'Namibia',
+  'mw': 'Malawi',
+  'mz': 'Mozambique',
+  'mg': 'Madagascar',
+  'mu': 'Mauritius',
+  'sz': 'Eswatini',
+  'ls': 'Lesotho',
+  'rw': 'Rwanda',
+  'bi': 'Burundi',
+  'dj': 'Djibouti',
+  'er': 'Eritrea',
+  'ss': 'South Sudan',
+  'cf': 'Central African Republic',
+  'td': 'Chad',
+  'ne': 'Niger',
+  'ml': 'Mali',
+  'bf': 'Burkina Faso',
+  'gn': 'Guinea',
+  'gw': 'Guinea-Bissau',
+  'sl': 'Sierra Leone',
+  'lr': 'Liberia',
+  'tg': 'Togo',
+  'bj': 'Benin',
+  'ga': 'Gabon',
+  'gq': 'Equatorial Guinea',
+  'st': 'Sao Tome and Principe',
+  'cv': 'Cabo Verde',
+  'gm': 'Gambia',
+  'mr': 'Mauritania',
+  'sa': 'Saudi Arabia',
+  'ye': 'Yemen',
+  'om': 'Oman',
+  'ae': 'United Arab Emirates',
+  'qa': 'Qatar',
+  'kw': 'Kuwait',
+  'bh': 'Bahrain',
+  'jo': 'Jordan',
+  'lb': 'Lebanon',
+  'sy': 'Syria',
+  'iq': 'Iraq',
+  'ir': 'Iran',
+  'af': 'Afghanistan',
+  'uz': 'Uzbekistan',
+  'kz': 'Kazakhstan',
+  'kg': 'Kyrgyzstan',
+  'tj': 'Tajikistan',
+  'tm': 'Turkmenistan',
+  'az': 'Azerbaijan',
+  'ge': 'Georgia',
+  'am': 'Armenia',
+  'il': 'Israel',
+  'ps': 'Palestine',
+  'cy': 'Cyprus',
+  'mt': 'Malta',
+  'is': 'Iceland',
+  'ie': 'Ireland',
+  'lu': 'Luxembourg',
+  'mc': 'Monaco',
+  'li': 'Liechtenstein',
+  'sm': 'San Marino',
+  'va': 'Vatican City',
+  'ad': 'Andorra'
+};
+
+// Available flag codes (based on the files we have)
+const availableFlagCodes = Object.keys(flagGameData);
+
+function generateQuestion(gameType) {
+  // For flag guessing games
+  if (gameType === 'FlagGuess') {
+    // Select a random flag code
+    const correctFlagCode = availableFlagCodes[Math.floor(Math.random() * availableFlagCodes.length)];
+    const correctCountry = flagGameData[correctFlagCode];
+    
+    // Generate 3 wrong options
+    const wrongOptions = [];
+    const usedCodes = [correctFlagCode];
+    
+    while (wrongOptions.length < 3) {
+      const randomCode = availableFlagCodes[Math.floor(Math.random() * availableFlagCodes.length)];
+      if (!usedCodes.includes(randomCode)) {
+        usedCodes.push(randomCode);
+        wrongOptions.push(flagGameData[randomCode]);
+      }
+    }
+    
+    // Create options array with correct answer and wrong options
+    const allOptions = [correctCountry, ...wrongOptions];
+    
+    // Shuffle the options
+    for (let i = allOptions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+    }
+    
+    const questionData = {
+      correctAnswer: correctCountry,
+      options: allOptions,
+      flagCode: correctFlagCode
+    };
+    
+    return Promise.resolve({
+      question: JSON.stringify(questionData),
+      answer: correctCountry,
+      type: 'flag',
+      flagCode: correctFlagCode
+    });
+  }
+  
+  // For other games, use simplified questions for now
+  const questions = {
+    'Population': {
+      question: 'What is the population of this country?',
+      answer: '331 million',
+      type: 'population'
+    },
+    'Findle': {
+      question: 'What country name starts with "U"?',
+      answer: 'United States',
+      type: 'name'
+    },
+    'Flagle': {
+      question: 'What country does this flag belong to?',
+      answer: 'United States',
+      type: 'flag'
+    },
+    'Worldle': {
+      question: 'Where is this country located?',
+      answer: 'North America',
+      type: 'location'
+    },
+    'Capitals': {
+      question: 'What is the capital of this country?',
+      answer: 'Washington D.C.',
+      type: 'capital'
+    },
+    'Hangman': {
+      question: 'Guess the word: _ _ _ _ _ _ _ _',
+      answer: 'COUNTRY',
+      type: 'word'
+    },
+    'Shaple': {
+      question: 'What shape is this country?',
+      answer: 'Rectangle',
+      type: 'shape'
+    },
+    'US': {
+      question: 'What US state is this?',
+      answer: 'California',
+      type: 'state'
+    },
+    'Namle': {
+      question: 'What country name contains "A"?',
+      answer: 'Canada',
+      type: 'name'
+    }
+  };
+  
+  return Promise.resolve(questions[gameType] || questions['Globle']);
+}
+
+function checkAnswer(gameType, answer) {
+  // Simplified answer checking - you can make this more sophisticated
+  const correctAnswers = {
+    'Globle': ['united states', 'usa', 'america'],
+    'Population': ['331 million', '331m', '331'],
+    'Findle': ['united states', 'usa'],
+    'Flagle': ['united states', 'usa', 'america'],
+    'Worldle': ['north america', 'america'],
+    'Capitals': ['washington d.c.', 'washington', 'dc'],
+    'Hangman': ['country'],
+    'Shaple': ['rectangle'],
+    'US': ['california', 'ca'],
+    'Namle': ['canada']
+  };
+  
+  const answers = correctAnswers[gameType] || [];
+  return answers.some(correct => answer.toLowerCase().includes(correct));
+}
+
+async function updatePlayerPoints(userId, pointsChange, isWin) {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      await user.updateOnlinePoints(pointsChange, isWin);
+    }
+  } catch (error) {
+    console.error('Error updating player points:', error);
+  }
+}
+
 const app = express();
 const server = createServer(app);
 
@@ -418,7 +704,8 @@ const gameQueues = {
   'Hangman': [],
   'Shaple': [],
   'US': [],
-  'Namle': []
+  'Namle': [],
+  'FlagGuess': []
 };
 
 const activeMatches = new Map();
@@ -612,6 +899,59 @@ io.on('connection', (socket) => {
           message: 'Keep guessing!'
         });
       }
+    } else if (match.gameType === 'FlagGuess') {
+      // Handle FlagGuess games - first to answer correctly wins
+      if (isCorrect) {
+        // Player wins
+        match.winner = socket.userId;
+        match.winnerTime = timeTaken;
+        match.endTime = Date.now();
+        
+        // Update points
+        await updatePlayerPoints(socket.userId, 100, true);
+        await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, -100, false);
+        
+        // Notify both players
+        io.to(matchId).emit('gameEnd', {
+          winner: socket.username,
+          winnerTime: timeTaken,
+          correctAnswer: match.correctAnswer,
+          points: {
+            [socket.userId]: 100,
+            [match.players.find(p => p.userId !== socket.userId).userId]: -100
+          }
+        });
+        
+        // Clean up match after delay
+        setTimeout(() => {
+          activeMatches.delete(matchId);
+        }, 5000);
+      } else {
+        // Player loses
+        match.winner = match.players.find(p => p.userId !== socket.userId).userId;
+        match.loserTime = timeTaken;
+        match.endTime = Date.now();
+        
+        // Update points
+        await updatePlayerPoints(socket.userId, -100, false);
+        await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, 100, true);
+        
+        // Notify both players
+        io.to(matchId).emit('gameEnd', {
+          winner: match.players.find(p => p.userId !== socket.userId).username,
+          loserTime: timeTaken,
+          correctAnswer: match.correctAnswer,
+          points: {
+            [socket.userId]: -100,
+            [match.players.find(p => p.userId !== socket.userId).userId]: 100
+          }
+        });
+        
+        // Clean up match after delay
+        setTimeout(() => {
+          activeMatches.delete(matchId);
+        }, 5000);
+      }
     } else {
       // Handle other games with original logic
       const isCorrect = checkAnswer(match.gameType, answer);
@@ -793,101 +1133,6 @@ async function tryMatchPlayers(gameType) {
     }
   } else {
     console.log(`Not enough players in ${gameType} queue (${queue.length})`);
-  }
-}
-
-function generateQuestion(gameType) {
-  // For Globle games, use the proper country selection logic
-  if (gameType === 'Globle') {
-    return selectRandomCountry().then(selectedCountry => {
-      return {
-        question: 'What country is this?',
-        answer: selectedCountry.properties.name,
-        type: 'country',
-        country: selectedCountry
-      };
-    });
-  }
-  
-  // For other games, use simplified questions for now
-  const questions = {
-    'Population': {
-      question: 'What is the population of this country?',
-      answer: '331 million',
-      type: 'population'
-    },
-    'Findle': {
-      question: 'What country name starts with "U"?',
-      answer: 'United States',
-      type: 'name'
-    },
-    'Flagle': {
-      question: 'What country does this flag belong to?',
-      answer: 'United States',
-      type: 'flag'
-    },
-    'Worldle': {
-      question: 'Where is this country located?',
-      answer: 'North America',
-      type: 'location'
-    },
-    'Capitals': {
-      question: 'What is the capital of this country?',
-      answer: 'Washington D.C.',
-      type: 'capital'
-    },
-    'Hangman': {
-      question: 'Guess the word: _ _ _ _ _ _ _ _',
-      answer: 'COUNTRY',
-      type: 'word'
-    },
-    'Shaple': {
-      question: 'What shape is this country?',
-      answer: 'Rectangle',
-      type: 'shape'
-    },
-    'US': {
-      question: 'What US state is this?',
-      answer: 'California',
-      type: 'state'
-    },
-    'Namle': {
-      question: 'What country name contains "A"?',
-      answer: 'Canada',
-      type: 'name'
-    }
-  };
-  
-  return Promise.resolve(questions[gameType] || questions['Globle']);
-}
-
-function checkAnswer(gameType, answer) {
-  // Simplified answer checking - you can make this more sophisticated
-  const correctAnswers = {
-    'Globle': ['united states', 'usa', 'america'],
-    'Population': ['331 million', '331m', '331'],
-    'Findle': ['united states', 'usa'],
-    'Flagle': ['united states', 'usa', 'america'],
-    'Worldle': ['north america', 'america'],
-    'Capitals': ['washington d.c.', 'washington', 'dc'],
-    'Hangman': ['country'],
-    'Shaple': ['rectangle'],
-    'US': ['california', 'ca'],
-    'Namle': ['canada']
-  };
-  
-  const answers = correctAnswers[gameType] || [];
-  return answers.some(correct => answer.toLowerCase().includes(correct));
-}
-
-async function updatePlayerPoints(userId, pointsChange, isWin) {
-  try {
-    const user = await User.findById(userId);
-    if (user) {
-      await user.updateOnlinePoints(pointsChange, isWin);
-    }
-  } catch (error) {
-    console.error('Error updating player points:', error);
   }
 }
 

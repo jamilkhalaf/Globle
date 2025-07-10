@@ -49,18 +49,7 @@ import TimerIcon from '@mui/icons-material/Timer';
 import GroupIcon from '@mui/icons-material/Group';
 import Header from './Header';
 import { io } from 'socket.io-client';
-
-// Import online game components
-import GlobleOnline from './GlobleOnline';
-import PopulationOnline from './PopulationOnline';
-import HangmanOnline from './HangmanOnline';
-import CapitalsOnline from './CapitalsOnline';
-import WorldleOnline from './WorldleOnline';
-import USOnline from './USOnline';
-import FindleOnline from './FindleOnline';
-import FlagleOnline from './FlagleOnline';
-import ShapleOnline from './ShapleOnline';
-import NamleOnline from './NamleOnline';
+import FlagGuessGame from './FlagGuessGame';
 
 const Online = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -71,8 +60,6 @@ const Online = () => {
   const [lobbyData, setLobbyData] = useState([]);
   const [selectedLobby, setSelectedLobby] = useState(null);
   const [joinLobbyDialog, setJoinLobbyDialog] = useState(false);
-  const [joinGameDialog, setJoinGameDialog] = useState(false);
-  const [selectedGameType, setSelectedGameType] = useState('');
   const [isWaitingForPlayer, setIsWaitingForPlayer] = useState(false);
   const [waitingTime, setWaitingTime] = useState(0);
   
@@ -268,8 +255,8 @@ const Online = () => {
         console.log('🎮 Round end:', data);
         // Handle round end for Globle games
         if (data.roundWinner) {
-          setCurrentRoundWinner(data.roundWinner);
-          setRoundNumber(data.nextRound);
+          // setCurrentRoundWinner(data.roundWinner); // This line was removed
+          // setRoundNumber(data.nextRound); // This line was removed
           // Update player wins based on the round winner
           // This will be handled by the backend
         }
@@ -280,7 +267,7 @@ const Online = () => {
         // Handle incorrect guess feedback
         if (!data.isCorrect) {
           // Update the message or show feedback
-          setMessage(data.message);
+          // setMessage(data.message); // This line was removed
         }
       });
 
@@ -324,56 +311,6 @@ const Online = () => {
     setSelectedLobby(null);
   };
 
-  const handleJoinGameNow = () => {
-    if (!selectedGameType) return;
-    
-    if (selectedGameType === 'random') {
-      const gameTypes = ['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'];
-      const randomGameType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
-      setSelectedGameType(randomGameType);
-    }
-    
-    setJoinGameDialog(true);
-  };
-
-  const handleConfirmJoinGame = () => {
-    console.log('🎮 Confirming join game for:', selectedGameType);
-    setJoinGameDialog(false);
-    setIsWaitingForPlayer(true);
-    setWaitingTime(0);
-    setGameState('waiting');
-    setCurrentMatch(null);
-    setMatchResult(null);
-    
-    // Ensure socket is connected
-    if (!socketRef.current) {
-      console.log('🔌 No socket, initializing...');
-      initializeSocket().then(() => {
-        if (socketRef.current && isConnected) {
-          console.log('🔌 Joining queue after socket initialization');
-          socketRef.current.emit('joinQueue', { gameType: selectedGameType });
-        }
-      });
-    } else if (isConnected) {
-      console.log('🔌 Socket connected, joining queue');
-      socketRef.current.emit('joinQueue', { gameType: selectedGameType });
-    } else {
-      console.log('🔌 Socket exists but not connected, waiting for connection...');
-    }
-  };
-
-  const handleCancelWaiting = () => {
-    setIsWaitingForPlayer(false);
-    setWaitingTime(0);
-    setSelectedGameType('');
-    setGameState('waiting');
-    setCurrentMatch(null);
-    
-    if (socketRef.current) {
-      socketRef.current.emit('leaveQueue', { gameType: selectedGameType });
-    }
-  };
-
   const handleSubmitAnswer = (answerData) => {
     if (!socketRef.current || !currentMatch) return;
     
@@ -385,7 +322,7 @@ const Online = () => {
   };
 
   const handleNewOpponent = () => {
-    if (!socketRef.current || !selectedGameType) return;
+    if (!socketRef.current) return;
     
     setGameState('waiting');
     setCurrentMatch(null);
@@ -394,7 +331,7 @@ const Online = () => {
     setGameQuestion('');
     setGameTimer(0);
     
-    socketRef.current.emit('requestNewOpponent', { gameType: selectedGameType });
+    socketRef.current.emit('requestNewOpponent', { gameType: 'FlagGuess' });
   };
 
   const handleLeaveGame = () => {
@@ -406,10 +343,9 @@ const Online = () => {
     setGameTimer(0);
     setIsWaitingForPlayer(false);
     setWaitingTime(0);
-    setSelectedGameType('');
     
     if (socketRef.current) {
-      socketRef.current.emit('leaveQueue', { gameType: selectedGameType });
+      socketRef.current.emit('leaveQueue', { gameType: 'FlagGuess' });
     }
   };
 
@@ -428,162 +364,14 @@ const Online = () => {
       matchData: currentMatch,
       onAnswerSubmit: handleSubmitAnswer,
       gameState,
-      gameTimer
+      gameTimer,
+      onLeaveGame: handleLeaveGame,
+      onNewOpponent: handleNewOpponent,
+      matchResult
     };
 
-    switch (currentMatch?.gameType) {
-      case 'Globle':
-        return <GlobleOnline {...gameProps} />;
-      case 'Population':
-        return <PopulationOnline {...gameProps} />;
-      case 'Hangman':
-        return <HangmanOnline {...gameProps} />;
-      case 'Capitals':
-        return <CapitalsOnline {...gameProps} />;
-      case 'Worldle':
-        return <WorldleOnline {...gameProps} />;
-      case 'US':
-        return <USOnline {...gameProps} />;
-      case 'Findle':
-        return <FindleOnline {...gameProps} />;
-      case 'Flagle':
-        return <FlagleOnline {...gameProps} />;
-      case 'Shaple':
-        return <ShapleOnline {...gameProps} />;
-      case 'Namle':
-        return <NamleOnline {...gameProps} />;
-      default:
-        return renderGenericGameInterface();
-    }
+    return <FlagGuessGame {...gameProps} />;
   };
-
-  const renderGenericGameInterface = () => (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bgcolor: 'rgba(0,0,0,0.9)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 10000
-      }}
-    >
-      <Card sx={{ bgcolor: '#1e1e1e', color: 'white', p: 4, maxWidth: 600, width: '100%' }}>
-        <CardContent>
-          {gameState === 'countdown' && (
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
-                Match Found!
-              </Typography>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                {currentMatch?.players?.map(p => p.username).join(' vs ')}
-              </Typography>
-              <Typography variant="h6" sx={{ mb: 3 }}>
-                Game: {currentMatch?.gameType}
-              </Typography>
-              <CircularProgress size={60} sx={{ color: '#43cea2' }} />
-              <Typography variant="body1" sx={{ mt: 2 }}>
-                Starting in 3 seconds...
-              </Typography>
-            </Box>
-          )}
-
-          {gameState === 'playing' && (
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" sx={{ color: '#43cea2' }}>
-                  {currentMatch?.gameType}
-                </Typography>
-                <Typography variant="h4" sx={{ color: gameTimer <= 10 ? '#f44336' : '#43cea2' }}>
-                  {Math.floor(gameTimer / 60)}:{(gameTimer % 60).toString().padStart(2, '0')}
-                </Typography>
-              </Box>
-
-              <Typography variant="h5" sx={{ mb: 3, textAlign: 'center' }}>
-                {gameQuestion}
-              </Typography>
-
-              <TextField
-                fullWidth
-                label="Your Answer"
-                value={gameAnswer}
-                onChange={(e) => setGameAnswer(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmitAnswer({ answer: gameAnswer.trim(), timeTaken: 60 - gameTimer })}
-                sx={{
-                  mb: 3,
-                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                    '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                    '&.Mui-focused fieldset': { borderColor: '#43cea2' }
-                  },
-                  '& .MuiInputBase-input': { color: 'white' }
-                }}
-              />
-
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                <Button
-                  variant="contained"
-                  onClick={() => handleSubmitAnswer({ answer: gameAnswer.trim(), timeTaken: 60 - gameTimer })}
-                  disabled={!gameAnswer.trim()}
-                  sx={{ bgcolor: '#43cea2' }}
-                >
-                  Submit Answer
-                </Button>
-              </Box>
-            </Box>
-          )}
-
-          {gameState === 'ended' && matchResult && (
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
-                Game Over!
-              </Typography>
-              
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                Winner: {matchResult.winner}
-              </Typography>
-              
-              <Typography variant="body1" sx={{ mb: 3 }}>
-                Correct Answer: {matchResult.correctAnswer?.answer}
-              </Typography>
-
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ color: '#43cea2' }}>
-                  Points: {matchResult.points ? Object.values(matchResult.points)[0] : 0}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                <Button
-                  variant="outlined"
-                  onClick={handleLeaveGame}
-                  sx={{ 
-                    color: 'white', 
-                    borderColor: 'rgba(255,255,255,0.3)',
-                    '&:hover': { borderColor: 'white' }
-                  }}
-                >
-                  Leave Game
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleNewOpponent}
-                  sx={{ bgcolor: '#43cea2' }}
-                >
-                  Find New Opponent
-                </Button>
-              </Box>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
-    </Box>
-  );
 
   const renderLeaderboardTab = () => (
     <Box>
@@ -650,91 +438,37 @@ const Online = () => {
             </Typography>
           </Box>
           
-          {/* Game Selection */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" sx={{ mb: 3, color: 'white' }}>
-              Choose Your Game
-            </Typography>
-            
-            <Grid container spacing={2}>
-              {['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'].map((gameType) => (
-                <Grid item key={gameType} xs={12} sm={6}>
-                  <Card 
-                    sx={{ 
-                      bgcolor: selectedGameType === gameType ? '#43cea2' : '#2a2a2a', 
-                      color: 'white', 
-                      height: '100%',
-                      cursor: localStorage.getItem('token') ? 'pointer' : 'not-allowed',
-                      transition: 'all 0.3s ease',
-                      opacity: localStorage.getItem('token') ? 1 : 0.5,
-                      '&:hover': localStorage.getItem('token') ? {
-                        bgcolor: selectedGameType === gameType ? '#3bb08f' : '#3a3a3a',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 4px 20px rgba(67, 206, 162, 0.3)'
-                      } : {}
-                    }}
-                    onClick={() => localStorage.getItem('token') && setSelectedGameType(gameType)}
-                  >
-                    <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                      <Box sx={{ mb: 2 }}>
-                        <PlayArrowIcon sx={{ fontSize: 40, color: selectedGameType === gameType ? 'white' : '#43cea2' }} />
-                      </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                        {gameType}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: selectedGameType === gameType ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.6)' }}>
-                        Find opponents quickly
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          {/* Random Option */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" sx={{ mb: 3, color: 'white' }}>
-              Or Let Fate Decide
-            </Typography>
-            
-            <Card 
-              sx={{ 
-                bgcolor: selectedGameType === 'random' ? '#43cea2' : '#2a2a2a', 
-                color: 'white', 
-                cursor: localStorage.getItem('token') ? 'pointer' : 'not-allowed',
-                transition: 'all 0.3s ease',
-                opacity: localStorage.getItem('token') ? 1 : 0.5,
-                '&:hover': localStorage.getItem('token') ? {
-                  bgcolor: selectedGameType === 'random' ? '#3bb08f' : '#3a3a3a',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 20px rgba(67, 206, 162, 0.3)'
-                } : {}
-              }}
-              onClick={() => localStorage.getItem('token') && setSelectedGameType('random')}
-            >
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Box sx={{ mb: 2 }}>
-                  <PlayArrowIcon sx={{ fontSize: 40, color: selectedGameType === 'random' ? 'white' : '#43cea2' }} />
-                </Box>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  Random Game
-                </Typography>
-                <Typography variant="body2" sx={{ color: selectedGameType === 'random' ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.6)' }}>
-                  Surprise me with any game type
-                </Typography>
-              </CardContent>
-            </Card>
-          </Box>
-
-          {/* Join Button */}
+          {/* Simple Join Button */}
           <Box sx={{ textAlign: 'center' }}>
             <Button
               variant="contained"
               size="large"
               startIcon={<PlayArrowIcon />}
-              onClick={handleJoinGameNow}
-              disabled={!selectedGameType || !localStorage.getItem('token')}
+              onClick={() => {
+                console.log('🎮 Joining queue directly');
+                setIsWaitingForPlayer(true);
+                setWaitingTime(0);
+                setGameState('waiting');
+                setCurrentMatch(null);
+                setMatchResult(null);
+                
+                // Ensure socket is connected
+                if (!socketRef.current) {
+                  console.log('🔌 No socket, initializing...');
+                  initializeSocket().then(() => {
+                    if (socketRef.current && isConnected) {
+                      console.log('🔌 Joining queue after socket initialization');
+                      socketRef.current.emit('joinQueue', { gameType: 'FlagGuess' });
+                    }
+                  });
+                } else if (isConnected) {
+                  console.log('🔌 Socket connected, joining queue');
+                  socketRef.current.emit('joinQueue', { gameType: 'FlagGuess' });
+                } else {
+                  console.log('🔌 Socket exists but not connected, waiting for connection...');
+                }
+              }}
+              disabled={!localStorage.getItem('token')}
               sx={{ 
                 bgcolor: '#43cea2',
                 fontSize: '1.2rem',
@@ -751,8 +485,7 @@ const Online = () => {
                 }
               }}
             >
-              {!localStorage.getItem('token') ? 'Please Login First' : 
-               selectedGameType ? `Join ${selectedGameType === 'random' ? 'Random Game' : selectedGameType} Queue` : 'Select a Game First'}
+              {!localStorage.getItem('token') ? 'Please Login First' : 'Join Queue'}
             </Button>
           </Box>
         </CardContent>
@@ -786,7 +519,7 @@ const Online = () => {
               Waiting for Player...
             </Typography>
             <Typography variant="h6" sx={{ color: '#43cea2', mb: 1 }}>
-              {selectedGameType}
+              {currentMatch?.gameType}
             </Typography>
             <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
               Searching for an opponent in the queue
@@ -805,7 +538,7 @@ const Online = () => {
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
             <Button
               variant="outlined"
-              onClick={handleCancelWaiting}
+              onClick={handleLeaveGame}
               sx={{ 
                 color: 'white', 
                 borderColor: 'rgba(255,255,255,0.3)',
@@ -946,43 +679,6 @@ const Online = () => {
             </Button>
             <Button onClick={handleConfirmJoinLobby} variant="contained" sx={{ bgcolor: '#43cea2' }}>
               Join Lobby
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Quick Match Dialog */}
-        <Dialog
-          open={joinGameDialog}
-          onClose={() => setJoinGameDialog(false)}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{
-            sx: { bgcolor: '#1e1e1e', color: 'white' }
-          }}
-        >
-          <DialogTitle>
-            Confirm Quick Match
-          </DialogTitle>
-          <DialogContent>
-            <Typography variant="body1" sx={{ mb: 3 }}>
-              Ready to join the queue for: <strong>{selectedGameType}</strong>
-            </Typography>
-            <Box sx={{ bgcolor: '#2a2a2a', p: 2, borderRadius: 1, mb: 2 }}>
-              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                You'll be matched with an opponent as soon as one becomes available.
-              </Typography>
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setJoinGameDialog(false)} sx={{ color: 'white' }}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleConfirmJoinGame} 
-              variant="contained" 
-              sx={{ bgcolor: '#43cea2' }}
-            >
-              Join Queue
             </Button>
           </DialogActions>
         </Dialog>
