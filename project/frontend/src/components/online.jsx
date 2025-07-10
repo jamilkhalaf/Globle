@@ -146,6 +146,8 @@ const Online = () => {
 
   const connectSocket = () => {
     const token = localStorage.getItem('token');
+    console.log('Attempting to connect socket with token:', token ? 'Token exists' : 'No token');
+    
     if (!token) {
       setError('Please login to play online');
       return;
@@ -157,11 +159,19 @@ const Online = () => {
     });
 
     socketInstance.on('connect', () => {
+      console.log('Socket connected successfully');
       setIsConnected(true);
       setError('');
     });
 
     socketInstance.on('disconnect', () => {
+      console.log('Socket disconnected');
+      setIsConnected(false);
+    });
+
+    socketInstance.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setError('Failed to connect to game server');
       setIsConnected(false);
     });
 
@@ -236,6 +246,14 @@ const Online = () => {
 
   const handleConfirmJoinGame = () => {
     console.log('Confirming join game for:', selectedGameType);
+    
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Please login to play online');
+      return;
+    }
+    
     setJoinGameDialog(false);
     setIsWaitingForPlayer(true);
     setWaitingTime(0);
@@ -248,11 +266,25 @@ const Online = () => {
       console.log('Connecting socket...');
       connectSocket();
       
+      let retryCount = 0;
+      const maxRetries = 10;
+      
       // Wait for socket to connect before joining queue
       const checkConnection = () => {
-        if (socket && isConnected) {
+        retryCount++;
+        console.log(`Checking socket connection... (attempt ${retryCount}/${maxRetries})`, { 
+          socket: !!socket, 
+          isConnected, 
+          socketConnected: socket?.connected 
+        });
+        
+        if (socket && (socket.connected || isConnected)) {
           console.log('Socket connected, joining queue for:', selectedGameType);
           socket.emit('joinQueue', { gameType: selectedGameType });
+        } else if (retryCount >= maxRetries) {
+          console.error('Failed to connect socket after maximum retries');
+          setError('Failed to connect to game server. Please try again.');
+          setIsWaitingForPlayer(false);
         } else {
           console.log('Socket not ready, retrying in 1 second...');
           setTimeout(checkConnection, 1000);
@@ -722,6 +754,33 @@ const Online = () => {
     </Box>
   );
 
+  const testSocketConnection = () => {
+    const token = localStorage.getItem('token');
+    console.log('Testing socket connection...');
+    console.log('Token exists:', !!token);
+    
+    if (!token) {
+      console.log('No token found');
+      return;
+    }
+    
+    const testSocket = io('https://api.jamilweb.click', {
+      auth: { token }
+    });
+    
+    testSocket.on('connect', () => {
+      console.log('✅ Test socket connected successfully');
+    });
+    
+    testSocket.on('connect_error', (error) => {
+      console.error('❌ Test socket connection error:', error);
+    });
+    
+    testSocket.on('disconnect', () => {
+      console.log('❌ Test socket disconnected');
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -904,6 +963,13 @@ const Online = () => {
             <div>Current Match: {currentMatch ? 'Yes' : 'No'}</div>
             <div>Socket Connected: {isConnected ? 'Yes' : 'No'}</div>
             <div>Waiting: {isWaitingForPlayer ? 'Yes' : 'No'}</div>
+            <Button 
+              size="small" 
+              onClick={testSocketConnection}
+              sx={{ mt: 1, bgcolor: '#43cea2', color: 'white' }}
+            >
+              Test Socket
+            </Button>
           </Box>
         )}
       </Box>

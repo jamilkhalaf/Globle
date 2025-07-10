@@ -200,21 +200,29 @@ const gameData = {
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth.token;
+    console.log('Socket authentication attempt:', { hasToken: !!token });
+    
     if (!token) {
+      console.log('No token provided');
       return next(new Error('Authentication error'));
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Token decoded successfully for user:', decoded.userId);
+    
     const user = await User.findById(decoded.userId);
     
     if (!user) {
+      console.log('User not found:', decoded.userId);
       return next(new Error('User not found'));
     }
 
     socket.userId = user._id.toString();
     socket.username = user.username;
+    console.log('Socket authenticated for user:', user.username);
     next();
   } catch (error) {
+    console.error('Socket authentication error:', error.message);
     next(new Error('Authentication error'));
   }
 });
@@ -593,4 +601,5 @@ const PORT = process.env.PORT || 5051;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`JWT_SECRET exists: ${!!process.env.JWT_SECRET}`);
 }); 
