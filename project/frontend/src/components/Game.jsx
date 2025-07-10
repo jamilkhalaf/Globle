@@ -80,6 +80,13 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   const [streak, setStreak] = useState(0);
   const [showStats, setShowStats] = useState(false);
 
+  // Online mode specific state
+  const [onlineRoundsWon, setOnlineRoundsWon] = useState(0);
+  const [onlineRoundsPlayed, setOnlineRoundsPlayed] = useState(0);
+  const [onlineTargetCountries, setOnlineTargetCountries] = useState([]);
+  const [currentRoundNumber, setCurrentRoundNumber] = useState(1);
+  const [onlineGameWon, setOnlineGameWon] = useState(false);
+
   // Add state for showing more info
   const [showCountryInfo, setShowCountryInfo] = useState(false);
 
@@ -97,189 +104,57 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
     console.log('Game component props:', { targetCountry, isOnline, disabled });
   }, [targetCountry, isOnline, disabled]);
 
-  // Function to show country selection statistics
-  const logCountryVariety = (countryList) => {
-    const continents = {
-      'North America': 0,
-      'South America': 0,
-      'Europe': 0,
-      'Asia': 0,
-      'Africa': 0,
-      'Oceania': 0
-    };
-    
-    // Simple continent detection based on coordinates
-    countryList.forEach(country => {
-      try {
-        const center = getCountryCenter(country);
-        if (center.lat > 0 && center.lon < -30) {
-          continents['North America']++;
-        } else if (center.lat < 0 && center.lon < -30) {
-          continents['South America']++;
-        } else if (center.lat > 35 && center.lon > -10 && center.lon < 40) {
-          continents['Europe']++;
-        } else if (center.lat > 0 && center.lon > 40) {
-          continents['Asia']++;
-        } else if (center.lat < 0 && center.lon > -10 && center.lon < 40) {
-          continents['Africa']++;
-        } else if (center.lat < 0 && center.lon > 100) {
-          continents['Oceania']++;
-        }
-      } catch (e) {
-        // Skip countries with invalid coordinates
-      }
-    });
-    
-    console.log('Country distribution by continent:', continents);
-  };
-
-  // Function to categorize countries by difficulty
-  const getCountryDifficulty = (countryName) => {
-    // Well-known countries (easy)
-    const easyCountries = [
-      'United States', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Chile',
-      'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Portugal',
-      'China', 'Japan', 'India', 'Australia', 'South Africa', 'Egypt',
-      'Russia', 'Turkey', 'Iran', 'Saudi Arabia', 'Thailand', 'Vietnam'
-    ];
-    
-    // Medium difficulty countries
-    const mediumCountries = [
-      'Netherlands', 'Belgium', 'Switzerland', 'Austria', 'Poland', 'Czech Republic',
-      'Hungary', 'Romania', 'Bulgaria', 'Greece', 'Ukraine', 'Belarus',
-      'Pakistan', 'Bangladesh', 'Sri Lanka', 'Myanmar', 'Malaysia', 'Indonesia',
-      'Philippines', 'New Zealand', 'Fiji', 'Papua New Guinea',
-      'Nigeria', 'Kenya', 'Morocco', 'Algeria', 'Tunisia', 'Libya',
-      'Sudan', 'Ethiopia', 'Somalia', 'Madagascar', 'Zimbabwe', 'Botswana',
-      'Namibia', 'Mozambique', 'Tanzania', 'Uganda', 'Rwanda', 'Burundi',
-      'Colombia', 'Venezuela', 'Ecuador', 'Peru', 'Bolivia', 'Paraguay',
-      'Uruguay', 'Guyana', 'Suriname', 'French Guiana',
-      'Guatemala', 'Belize', 'El Salvador', 'Honduras', 'Nicaragua',
-      'Costa Rica', 'Panama', 'Cuba', 'Jamaica', 'Haiti', 'Dominican Republic'
-    ];
-    
-    if (easyCountries.includes(countryName)) return 'easy';
-    if (mediumCountries.includes(countryName)) return 'medium';
-    return 'hard';
-  };
-
-  const selectRandomCountry = (countryList) => {
-    // Filter out countries that are too small, have invalid coordinates, or aren't in the official 195 countries
-    const validCountries = countryList.filter(country => {
-      try {
-        const center = getCountryCenter(country);
-        const hasValidCoordinates = center.lat !== 0 && center.lon !== 0;
-        const isOfficialCountry = countryInfo[country.properties.name] && officialCountries.includes(country.properties.name);
-        return hasValidCoordinates && isOfficialCountry;
-      } catch (e) {
-        return false;
-      }
-    });
-    
-    // Filter out recently used countries (last 5 games) for better variety
-    const availableCountries = validCountries.filter(country => 
-      !recentlyUsedCountries.includes(country.properties.name)
-    );
-    
-    // If we've used too many countries recently, reset the list
-    const countriesToUse = availableCountries.length > 0 ? availableCountries : validCountries;
-    
-    // Add slight bias toward easier countries (70% chance for easy/medium, 30% for hard)
-    const random = Math.random();
-    let filteredCountries = countriesToUse;
-    
-    if (random < 0.7) {
-      // 70% chance: prefer easy and medium countries
-      const easyMediumCountries = countriesToUse.filter(country => {
-        const difficulty = getCountryDifficulty(country.properties.name);
-        return difficulty === 'easy' || difficulty === 'medium';
-      });
+  // Initialize online mode
+  useEffect(() => {
+    if (isOnline && targetCountry) {
+      console.log('Initializing online mode with target:', targetCountry);
+      setSecretCountry(targetCountry);
+      setMessage(`Guess the country: ${targetCountry}`);
+      setGameStartTime(Date.now());
       
-      if (easyMediumCountries.length > 0) {
-        filteredCountries = easyMediumCountries;
-        console.log('Using easy/medium bias - filtered to', filteredCountries.length, 'countries');
+      // For online mode, we need to find the country object from the countries list
+      if (countries.length > 0) {
+        const targetCountryObj = countries.find(c => c.properties.name === targetCountry);
+        if (targetCountryObj) {
+          setSecretCountry(targetCountryObj);
+        }
       }
-    } else {
-      // 30% chance: include all countries (including hard ones)
-      console.log('Using full country pool - no difficulty bias');
     }
-    
-    // Ensure we have a good mix of countries by not excluding any valid ones
-    console.log(`Total countries available: ${countryList.length}`);
-    console.log(`Valid countries after filtering: ${validCountries.length}`);
-    console.log(`Available countries (excluding recent): ${countriesToUse.length}`);
-    console.log(`Final selection pool: ${filteredCountries.length}`);
-    
-    // Use a more robust random selection
-    const randomIndex = Math.floor(Math.random() * filteredCountries.length);
-    const selectedCountry = filteredCountries[randomIndex];
-    
-    // Log the selection for debugging
-    console.log(`Random index: ${randomIndex} out of ${filteredCountries.length}`);
-    console.log(`Selected country: ${selectedCountry.properties.name}`);
-    console.log(`Difficulty: ${getCountryDifficulty(selectedCountry.properties.name)}`);
-    
-    // Log some sample countries to verify variety
-    const sampleCountries = filteredCountries.slice(0, 10).map(c => c.properties.name);
-    console.log(`Sample of available countries: ${sampleCountries.join(', ')}`);
-    
-    // Log continent distribution for verification
-    logCountryVariety(filteredCountries);
-    
-    return selectedCountry;
-  };
+  }, [isOnline, targetCountry, countries]);
 
   // Load countries data
   useEffect(() => {
-    // Don't initialize if targetCountry is null and we're in online mode
-    if (isOnline && !targetCountry) {
-      console.log('Game component: Waiting for targetCountry to be set');
-      return;
-    }
-
-    console.log('Game component: Starting initialization with targetCountry:', targetCountry);
-    
     fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
       .then(response => response.json())
       .then(data => {
         setCountries(data.features);
-        // Create options for autocomplete
-        const options = data.features.map(country => ({
-          label: country.properties.name,
-          value: country
-        }));
-        setCountryOptions(options);
         
-        // Load best score
-        loadBestScore();
-        
-        // Start new game
-        let selectedCountry;
-        if (targetCountry && isOnline) {
-          // Use the provided target country for online games
-          console.log('Game component: Using provided target country:', targetCountry);
-          selectedCountry = data.features.find(country => 
-            country.properties.name === targetCountry
-          );
-          if (!selectedCountry) {
-            console.warn(`Target country "${targetCountry}" not found, using random country`);
-            selectedCountry = selectRandomCountry(data.features);
+        if (isOnline && targetCountry) {
+          // For online mode, find the target country object
+          const targetCountryObj = data.features.find(c => c.properties.name === targetCountry);
+          if (targetCountryObj) {
+            setSecretCountry(targetCountryObj);
+            setMessage(`Guess the country: ${targetCountry}`);
           }
-        } else {
-          // Use random country for offline games
-          console.log('Game component: Using random country for offline game');
-          selectedCountry = selectRandomCountry(data.features);
+        } else if (!isOnline) {
+          // For offline mode, start with a random country
+          startNewRound(data.features);
         }
         
-        setSecretCountry(selectedCountry);
         setGameStartTime(Date.now());
-        setMessage('Guess the country!');
+        
+        // Set up country options for autocomplete
+        const options = data.features
+          .filter(country => countryInfo[country.properties.name])
+          .map(country => country.properties.name)
+          .sort();
+        setCountryOptions(options);
       })
       .catch(error => {
         console.error('Error loading countries:', error);
         setMessage('Error loading countries data');
       });
-  }, [targetCountry, isOnline]);
+  }, [isOnline, targetCountry]);
 
   // Handle map initialization and viewport fitting
   useEffect(() => {
@@ -507,13 +382,37 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       // Update stats when game is won
       updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
       
-      setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
-      setGameOver(true);
-      
-      // Call onAnswerSubmit for online games
-      if (isOnline && onAnswerSubmit) {
-        console.log('Game component: Correct answer found, calling onAnswerSubmit with:', guessedCountry.properties.name);
-        onAnswerSubmit(guessedCountry.properties.name);
+      if (isOnline) {
+        // Online mode: increment rounds won and check if game is won
+        const newRoundsWon = onlineRoundsWon + 1;
+        setOnlineRoundsWon(newRoundsWon);
+        
+        if (newRoundsWon >= 5) {
+          // Player won the online game (first to 5)
+          setOnlineGameWon(true);
+          setMessage(`🎉 You won the online game! First to 5 countries! 🎉`);
+          setGameOver(true);
+          
+          // Call onAnswerSubmit for online games
+          if (onAnswerSubmit) {
+            console.log('Game component: Online game won, calling onAnswerSubmit with:', guessedCountry.properties.name);
+            onAnswerSubmit(guessedCountry.properties.name);
+          }
+        } else {
+          // Round won, but game continues
+          setMessage(`🎉 Correct! Round ${currentRoundNumber} won! (${newRoundsWon}/5) 🎉`);
+          setGameOver(true);
+          
+          // Call onAnswerSubmit for online games
+          if (onAnswerSubmit) {
+            console.log('Game component: Round won, calling onAnswerSubmit with:', guessedCountry.properties.name);
+            onAnswerSubmit(guessedCountry.properties.name);
+          }
+        }
+      } else {
+        // Offline mode: normal win
+        setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
+        setGameOver(true);
       }
     } else {
       // Calculate distance between guessed country and secret country
@@ -561,13 +460,37 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
           // Update stats when game is won
           updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
           
-          setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
-          setGameOver(true);
-          
-          // Call onAnswerSubmit for online games
-          if (isOnline && onAnswerSubmit) {
-            console.log('Game component: Correct answer found (dropdown), calling onAnswerSubmit with:', guessedCountry.properties.name);
-            onAnswerSubmit(guessedCountry.properties.name);
+          if (isOnline) {
+            // Online mode: increment rounds won and check if game is won
+            const newRoundsWon = onlineRoundsWon + 1;
+            setOnlineRoundsWon(newRoundsWon);
+            
+            if (newRoundsWon >= 5) {
+              // Player won the online game (first to 5)
+              setOnlineGameWon(true);
+              setMessage(`🎉 You won the online game! First to 5 countries! 🎉`);
+              setGameOver(true);
+              
+              // Call onAnswerSubmit for online games
+              if (onAnswerSubmit) {
+                console.log('Game component: Online game won (dropdown), calling onAnswerSubmit with:', guessedCountry.properties.name);
+                onAnswerSubmit(guessedCountry.properties.name);
+              }
+            } else {
+              // Round won, but game continues
+              setMessage(`🎉 Correct! Round ${currentRoundNumber} won! (${newRoundsWon}/5) 🎉`);
+              setGameOver(true);
+              
+              // Call onAnswerSubmit for online games
+              if (onAnswerSubmit) {
+                console.log('Game component: Round won (dropdown), calling onAnswerSubmit with:', guessedCountry.properties.name);
+                onAnswerSubmit(guessedCountry.properties.name);
+              }
+            }
+          } else {
+            // Offline mode: normal win
+            setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
+            setGameOver(true);
           }
         } else {
           const guessedCenter = getCountryCenter(guessedCountry);
@@ -762,7 +685,48 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       <Header />
       <Toolbar /> {/* This creates space for the fixed AppBar */}
       
-      <Box sx={{ 
+      {/* Online Mode Banner */}
+      {isOnline && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: 70, md: 80 },
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 2000,
+            backgroundColor: 'rgba(67, 206, 162, 0.95)',
+            color: 'white',
+            padding: { xs: '8px 16px', md: '12px 24px' },
+            borderRadius: 2,
+            boxShadow: 3,
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(255,255,255,0.2)'
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: { xs: '0.9rem', md: '1.1rem' }
+            }}
+          >
+            🎮 ONLINE MODE
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              textAlign: 'center',
+              fontSize: { xs: '0.7rem', md: '0.9rem' },
+              opacity: 0.9
+            }}
+          >
+            First to 5 countries wins! ({onlineRoundsWon}/5)
+          </Typography>
+        </Box>
+      )}
+      
+      <Box sx={{
         position: 'absolute', 
         top: 0, 
         left: 0, 

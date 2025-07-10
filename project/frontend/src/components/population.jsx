@@ -32,6 +32,11 @@ const Population = ({ targetCountry = null, isOnline = false, onAnswerSubmit = n
   const [gameStartTime, setGameStartTime] = useState(null);
   const [streak, setStreak] = useState(0); // Add streak tracking
 
+  // Online mode specific state
+  const [onlineRoundsWon, setOnlineRoundsWon] = useState(0);
+  const [onlineRoundsPlayed, setOnlineRoundsPlayed] = useState(0);
+  const [onlineGameWon, setOnlineGameWon] = useState(false);
+
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
 

@@ -74,6 +74,12 @@ const Flagle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null,
   const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
   const [bestScore, setBestScore] = useState(0);
 
+  // Online mode specific state
+  const [onlineRoundsWon, setOnlineRoundsWon] = useState(0);
+  const [onlineRoundsPlayed, setOnlineRoundsPlayed] = useState(0);
+  const [onlineGameWon, setOnlineGameWon] = useState(false);
+  const [gameStartTime, setGameStartTime] = useState(null);
+
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
 
@@ -83,6 +89,7 @@ const Flagle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null,
       console.log('Flagle: Using provided target country:', targetCountry);
       setTarget(targetCountry);
       setMessage('Guess the country!');
+      setGameStartTime(Date.now());
     }
   }, [targetCountry, isOnline]);
 
@@ -165,9 +172,10 @@ const Flagle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null,
       setStreak(newStreak);
       setBestScore(prev => Math.max(prev, newStreak));
       
-      // For online mode, immediately call onAnswerSubmit and end the game
-      if (isOnline && onAnswerSubmit) {
-        console.log('Flagle: Online mode - calling onAnswerSubmit with:', guessToCheck);
+      if (isOnline) {
+        // Online mode: calculate time taken and call onAnswerSubmit
+        const timeTaken = gameStartTime ? Date.now() - gameStartTime : 0;
+        console.log('Flagle: Online mode - calling onAnswerSubmit with:', guessToCheck, 'time:', timeTaken);
         onAnswerSubmit(guessToCheck);
         return; // End the game immediately for online mode
       }
@@ -232,6 +240,48 @@ const Flagle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null,
     <Box sx={{ minHeight: '100vh', bgcolor: '#232a3b', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Header />
       <Toolbar />
+      
+      {/* Online Mode Banner */}
+      {isOnline && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: 70, md: 80 },
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 2000,
+            backgroundColor: 'rgba(67, 206, 162, 0.95)',
+            color: 'white',
+            padding: { xs: '8px 16px', md: '12px 24px' },
+            borderRadius: 2,
+            boxShadow: 3,
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(255,255,255,0.2)'
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: { xs: '0.9rem', md: '1.1rem' }
+            }}
+          >
+            🎮 ONLINE MODE
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              textAlign: 'center',
+              fontSize: { xs: '0.7rem', md: '0.9rem' },
+              opacity: 0.9
+            }}
+          >
+            Fastest correct guess wins!
+          </Typography>
+        </Box>
+      )}
+      
       <NotificationModal
         open={showIntro}
         onClose={() => setShowIntro(false)}
