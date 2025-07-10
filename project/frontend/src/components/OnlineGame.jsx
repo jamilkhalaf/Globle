@@ -349,7 +349,10 @@ const OnlineGame = ({
         alignItems: 'center', 
         p: 2, 
         bgcolor: '#1e1e1e',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
       }}>
         <Typography variant="h4" sx={{ color: '#43cea2' }}>
           {matchData?.gameType}

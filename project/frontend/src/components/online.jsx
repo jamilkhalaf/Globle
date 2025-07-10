@@ -241,6 +241,17 @@ const Online = () => {
 
     socketInstance.on('roundEnd', (data) => {
       console.log('Round ended:', data);
+      console.log('Round end data details:', {
+        roundWinner: data.roundWinner,
+        roundLoser: data.roundLoser,
+        winnerTime: data.winnerTime,
+        loserTime: data.loserTime,
+        correctAnswer: data.correctAnswer,
+        player1Rounds: data.player1Rounds,
+        player2Rounds: data.player2Rounds,
+        currentRound: data.currentRound,
+        gameOver: data.gameOver
+      });
       setGameState('roundEnd');
       setMatchResult(data);
       // Update round information
@@ -250,10 +261,23 @@ const Online = () => {
         player2Rounds: data.player2Rounds,
         currentRound: data.currentRound
       }));
+      
+      // Force a re-render after a short delay to ensure UI updates
+      setTimeout(() => {
+        console.log('Forcing UI update after roundEnd');
+        setGameState('roundEnd');
+      }, 100);
     });
 
     socketInstance.on('nextRound', (data) => {
       console.log('Next round starting:', data);
+      console.log('Next round data details:', {
+        matchId: data.matchId,
+        gameType: data.gameType,
+        sharedTarget: data.sharedTarget,
+        startTime: data.startTime,
+        currentRound: data.currentRound
+      });
       setGameState('playing');
       setMatchResult(null);
       setGameTimer(0);

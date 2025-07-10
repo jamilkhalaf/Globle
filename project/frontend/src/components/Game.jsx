@@ -839,17 +839,19 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
         <Box
           sx={{
             position: 'absolute',
-            top: { xs: 70, md: 80 },
+            top: { xs: 90, md: 100 }, // Increased top position for mobile
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 2000,
             backgroundColor: 'rgba(67, 206, 162, 0.95)',
             color: 'white',
-            padding: { xs: '8px 16px', md: '12px 24px' },
+            padding: { xs: '6px 12px', md: '12px 24px' },
             borderRadius: 2,
             boxShadow: 3,
             backdropFilter: 'blur(10px)',
-            border: '2px solid rgba(255,255,255,0.2)'
+            border: '2px solid rgba(255,255,255,0.2)',
+            maxWidth: { xs: '90%', md: 'auto' },
+            width: { xs: 'auto', md: 'auto' }
           }}
         >
           <Typography
@@ -857,7 +859,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
             sx={{
               fontWeight: 'bold',
               textAlign: 'center',
-              fontSize: { xs: '0.9rem', md: '1.1rem' }
+              fontSize: { xs: '0.8rem', md: '1.1rem' }
             }}
           >
             🎮 ONLINE MODE - Round {currentRoundNumber}
@@ -866,7 +868,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
             variant="body2"
             sx={{
               textAlign: 'center',
-              fontSize: { xs: '0.7rem', md: '0.9rem' },
+              fontSize: { xs: '0.6rem', md: '0.9rem' },
               opacity: 0.9
             }}
           >
