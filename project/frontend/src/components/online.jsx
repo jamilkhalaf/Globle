@@ -253,12 +253,18 @@ const Online = () => {
 
       socket.on('roundEnd', (data) => {
         console.log('🎮 Round end:', data);
-        // Handle round end for Globle games
-        if (data.roundWinner) {
-          // setCurrentRoundWinner(data.roundWinner); // This line was removed
-          // setRoundNumber(data.nextRound); // This line was removed
-          // Update player wins based on the round winner
-          // This will be handled by the backend
+        // Handle round end for FlagGuess games
+        if (data.roundWinner !== undefined) {
+          setGameState('roundEnd');
+          // Update round result state for FlagGuessGame component
+          setMatchResult({
+            roundWinner: data.roundWinner,
+            roundNumber: data.roundNumber,
+            score: data.score,
+            nextRound: data.nextRound,
+            isCorrect: data.isCorrect,
+            correctAnswer: data.correctAnswer
+          });
         }
       });
 
@@ -429,65 +435,178 @@ const Online = () => {
 
   const renderLobbyTab = () => (
     <Box>
-      <Card sx={{ mb: 3, bgcolor: '#1e1e1e', color: 'white' }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-            <PlayArrowIcon sx={{ color: '#43cea2', fontSize: 32 }} />
-            <Typography variant="h5">
-              Quick Match
-            </Typography>
-          </Box>
+      {/* Hero Section */}
+      <Box sx={{ 
+        mb: 4, 
+        textAlign: 'center',
+        p: 4,
+        bgcolor: 'rgba(255,255,255,0.05)',
+        borderRadius: 3,
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(10px)'
+      }}>
+        <Typography variant="h2" sx={{ 
+          color: 'white', 
+          mb: 2, 
+          fontWeight: 'bold',
+          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+          fontSize: { xs: '2rem', sm: '3rem', md: '4rem' }
+        }}>
+          🎮 Quick Match
+        </Typography>
+        
+        <Typography variant="h6" sx={{ 
+          color: 'rgba(255,255,255,0.8)', 
+          mb: 4,
+          fontStyle: 'italic',
+          maxWidth: 600,
+          mx: 'auto'
+        }}>
+          Challenge players worldwide in our flag guessing game. First to answer correctly wins!
+        </Typography>
+
+        {/* Game Info Cards */}
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          justifyContent: 'center', 
+          mb: 4,
+          flexWrap: 'wrap'
+        }}>
+          <Card sx={{ 
+            bgcolor: 'rgba(67, 206, 162, 0.1)', 
+            border: '1px solid rgba(67, 206, 162, 0.3)',
+            minWidth: 150
+          }}>
+            <CardContent sx={{ textAlign: 'center', p: 2 }}>
+              <Typography variant="h4" sx={{ color: '#43cea2', mb: 1 }}>🏆</Typography>
+              <Typography variant="body2" sx={{ color: 'white' }}>Win Points</Typography>
+            </CardContent>
+          </Card>
           
-          {/* Simple Join Button */}
-          <Box sx={{ textAlign: 'center' }}>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<PlayArrowIcon />}
-              onClick={() => {
-                console.log('🎮 Joining queue directly');
-                setIsWaitingForPlayer(true);
-                setWaitingTime(0);
-                setGameState('waiting');
-                setCurrentMatch(null);
-                setMatchResult(null);
-                
-                // Ensure socket is connected
-                if (!socketRef.current) {
-                  console.log('🔌 No socket, initializing...');
-                  initializeSocket().then(() => {
-                    if (socketRef.current && isConnected) {
-                      console.log('🔌 Joining queue after socket initialization');
-                      socketRef.current.emit('joinQueue', { gameType: 'FlagGuess' });
-                    }
-                  });
-                } else if (isConnected) {
-                  console.log('🔌 Socket connected, joining queue');
-                  socketRef.current.emit('joinQueue', { gameType: 'FlagGuess' });
-                } else {
-                  console.log('🔌 Socket exists but not connected, waiting for connection...');
-                }
-              }}
-              disabled={!localStorage.getItem('token')}
-              sx={{ 
-                bgcolor: '#43cea2',
-                fontSize: '1.2rem',
-                px: 4,
-                py: 2,
-                borderRadius: 2,
-                '&:hover': {
-                  bgcolor: '#3bb08f',
-                  transform: 'scale(1.05)',
-                },
-                '&:disabled': {
-                  bgcolor: 'rgba(67, 206, 162, 0.3)',
-                  color: 'rgba(255,255,255,0.5)'
-                }
-              }}
-            >
-              {!localStorage.getItem('token') ? 'Please Login First' : 'Join Queue'}
-            </Button>
-          </Box>
+          <Card sx={{ 
+            bgcolor: 'rgba(255, 193, 7, 0.1)', 
+            border: '1px solid rgba(255, 193, 7, 0.3)',
+            minWidth: 150
+          }}>
+            <CardContent sx={{ textAlign: 'center', p: 2 }}>
+              <Typography variant="h4" sx={{ color: '#ffc107', mb: 1 }}>⚡</Typography>
+              <Typography variant="body2" sx={{ color: 'white' }}>Fast Paced</Typography>
+            </CardContent>
+          </Card>
+          
+          <Card sx={{ 
+            bgcolor: 'rgba(156, 39, 176, 0.1)', 
+            border: '1px solid rgba(156, 39, 176, 0.3)',
+            minWidth: 150
+          }}>
+            <CardContent sx={{ textAlign: 'center', p: 2 }}>
+              <Typography variant="h4" sx={{ color: '#9c27b0', mb: 1 }}>🌍</Typography>
+              <Typography variant="body2" sx={{ color: 'white' }}>Global Players</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Join Button */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<PlayArrowIcon />}
+            onClick={() => {
+              console.log('🎮 Joining queue directly');
+              setIsWaitingForPlayer(true);
+              setWaitingTime(0);
+              setGameState('waiting');
+              setCurrentMatch(null);
+              setMatchResult(null);
+              
+              // Ensure socket is connected
+              if (!socketRef.current) {
+                console.log('🔌 No socket, initializing...');
+                initializeSocket().then(() => {
+                  if (socketRef.current && isConnected) {
+                    console.log('🔌 Joining queue after socket initialization');
+                    socketRef.current.emit('joinQueue', { gameType: 'FlagGuess' });
+                  }
+                });
+              } else if (isConnected) {
+                console.log('🔌 Socket connected, joining queue');
+                socketRef.current.emit('joinQueue', { gameType: 'FlagGuess' });
+              } else {
+                console.log('🔌 Socket exists but not connected, waiting for connection...');
+              }
+            }}
+            disabled={!localStorage.getItem('token')}
+            sx={{ 
+              bgcolor: '#43cea2',
+              fontSize: '1.3rem',
+              px: 6,
+              py: 2.5,
+              borderRadius: 3,
+              fontWeight: 'bold',
+              textTransform: 'none',
+              boxShadow: '0 8px 20px rgba(67, 206, 162, 0.3)',
+              '&:hover': {
+                bgcolor: '#3bb08f',
+                transform: 'scale(1.05)',
+                boxShadow: '0 12px 25px rgba(67, 206, 162, 0.4)',
+              },
+              '&:disabled': {
+                bgcolor: 'rgba(67, 206, 162, 0.3)',
+                color: 'rgba(255,255,255,0.5)',
+                boxShadow: 'none'
+              }
+            }}
+          >
+            {!localStorage.getItem('token') ? 'Please Login First' : '🎯 Join Queue Now'}
+          </Button>
+        </Box>
+      </Box>
+
+      {/* How to Play */}
+      <Card sx={{ 
+        bgcolor: 'rgba(255,255,255,0.05)', 
+        color: 'white',
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(10px)'
+      }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h5" sx={{ mb: 3, textAlign: 'center', fontWeight: 'bold' }}>
+            🎯 How to Play
+          </Typography>
+          
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ textAlign: 'center', p: 2 }}>
+                <Typography variant="h3" sx={{ mb: 2 }}>1️⃣</Typography>
+                <Typography variant="h6" sx={{ mb: 1, color: '#43cea2' }}>Join Queue</Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Click "Join Queue" to find an opponent
+                </Typography>
+              </Box>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Box sx={{ textAlign: 'center', p: 2 }}>
+                <Typography variant="h3" sx={{ mb: 2 }}>2️⃣</Typography>
+                <Typography variant="h6" sx={{ mb: 1, color: '#43cea2' }}>Guess the Flag</Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Look at the country name and click the correct flag
+                </Typography>
+              </Box>
+            </Grid>
+            
+            <Grid item xs={12} md={4}>
+              <Box sx={{ textAlign: 'center', p: 2 }}>
+                <Typography variant="h3" sx={{ mb: 2 }}>3️⃣</Typography>
+                <Typography variant="h6" sx={{ mb: 1, color: '#43cea2' }}>Win Points</Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                  First to answer correctly wins 100 points!
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
     </Box>
@@ -501,59 +620,165 @@ const Online = () => {
         left: 0,
         right: 0,
         bottom: 0,
-        bgcolor: 'rgba(0,0,0,0.9)',
+        bgcolor: 'rgba(0,0,0,0.95)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 10000
+        zIndex: 10000,
+        backdropFilter: 'blur(10px)'
       }}
     >
-      <Card sx={{ bgcolor: '#1e1e1e', color: 'white', p: 4, maxWidth: 500, textAlign: 'center' }}>
+      <Card sx={{ 
+        bgcolor: 'rgba(30,30,30,0.95)', 
+        color: 'white', 
+        p: 4, 
+        maxWidth: 500, 
+        textAlign: 'center',
+        borderRadius: 3,
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+      }}>
         <CardContent>
-          <Box sx={{ mb: 3 }}>
+          {/* Animated Loading */}
+          <Box sx={{ mb: 4, position: 'relative' }}>
             <CircularProgress 
-              size={80} 
-              sx={{ color: '#43cea2', mb: 2 }} 
+              size={100} 
+              sx={{ 
+                color: '#43cea2', 
+                mb: 2,
+                '& .MuiCircularProgress-circle': {
+                  strokeLinecap: 'round',
+                }
+              }} 
             />
-            <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
-              Waiting for Player...
+            
+            {/* Pulsing Ring */}
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 120,
+              height: 120,
+              borderRadius: '50%',
+              border: '2px solid rgba(67, 206, 162, 0.3)',
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%': {
+                  transform: 'translate(-50%, -50%) scale(1)',
+                  opacity: 1
+                },
+                '50%': {
+                  transform: 'translate(-50%, -50%) scale(1.1)',
+                  opacity: 0.5
+                },
+                '100%': {
+                  transform: 'translate(-50%, -50%) scale(1)',
+                  opacity: 1
+                }
+              }
+            }} />
+          </Box>
+
+          {/* Status Text */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h3" sx={{ 
+              mb: 2, 
+              fontWeight: 'bold',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+              color: '#43cea2'
+            }}>
+              🔍 Searching...
             </Typography>
-            <Typography variant="h6" sx={{ color: '#43cea2', mb: 1 }}>
-              {currentMatch?.gameType}
+            
+            <Typography variant="h6" sx={{ 
+              color: '#43cea2', 
+              mb: 2,
+              fontWeight: '500'
+            }}>
+              Flag Guessing Game
             </Typography>
-            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)', mb: 3 }}>
-              Searching for an opponent in the queue
+            
+            <Typography variant="body1" sx={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              mb: 3,
+              fontStyle: 'italic'
+            }}>
+              Looking for an opponent to challenge...
             </Typography>
           </Box>
 
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h3" sx={{ color: '#43cea2', fontWeight: 'bold' }}>
+          {/* Timer Display */}
+          <Box sx={{ 
+            mb: 4, 
+            p: 3,
+            bgcolor: 'rgba(67, 206, 162, 0.1)',
+            borderRadius: 2,
+            border: '1px solid rgba(67, 206, 162, 0.3)'
+          }}>
+            <Typography variant="h2" sx={{ 
+              color: '#43cea2', 
+              fontWeight: 'bold',
+              fontFamily: 'monospace',
+              textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+            }}>
               {Math.floor(waitingTime / 60)}:{(waitingTime % 60).toString().padStart(2, '0')}
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
-              Time waiting
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255,255,255,0.6)',
+              fontStyle: 'italic'
+            }}>
+              Time searching
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          {/* Action Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button
               variant="outlined"
               onClick={handleLeaveGame}
+              size="large"
               sx={{ 
                 color: 'white', 
                 borderColor: 'rgba(255,255,255,0.3)',
-                '&:hover': { borderColor: 'white' }
+                borderWidth: 2,
+                px: 3,
+                py: 1.5,
+                fontSize: '1rem',
+                '&:hover': { 
+                  borderColor: 'white',
+                  borderWidth: 2,
+                  bgcolor: 'rgba(255,255,255,0.1)'
+                }
               }}
             >
-              Cancel
+              ❌ Cancel Search
             </Button>
             <Button
               variant="contained"
-              sx={{ bgcolor: '#43cea2' }}
+              size="large"
               disabled
+              sx={{ 
+                bgcolor: 'rgba(67, 206, 162, 0.3)',
+                px: 3,
+                py: 1.5,
+                fontSize: '1rem',
+                cursor: 'not-allowed'
+              }}
             >
-              Connecting...
+              🔄 Connecting...
             </Button>
+          </Box>
+
+          {/* Tips */}
+          <Box sx={{ mt: 4, p: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255,255,255,0.7)',
+              fontStyle: 'italic'
+            }}>
+              💡 Tip: Make sure you're ready to play! The game starts immediately when an opponent is found.
+            </Typography>
           </Box>
         </CardContent>
       </Card>
@@ -575,10 +800,6 @@ const Online = () => {
       <Toolbar />
       
       <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto', width: '100%' }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white', mb: 3 }}>
-          Online Gaming Hub
-        </Typography>
-
         {/* Connection Status */}
         {!isConnected && localStorage.getItem('token') && (
           <Alert severity="warning" sx={{ mb: 2 }}>
