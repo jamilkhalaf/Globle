@@ -804,7 +804,7 @@ io.on('connection', (socket) => {
 
   // Submit answer
   socket.on('submitAnswer', async (data) => {
-    const { matchId, answer, timeTaken, isCorrect, distance } = data;
+    const { matchId, answer, timeTaken, isCorrect, distance, clientTimestamp } = data;
     const match = activeMatches.get(matchId);
     
     if (!match) {
@@ -817,6 +817,46 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Add precise server timestamp for tie-breaking
+    const serverTimestamp = Date.now();
+    const playerIndex = match.players.findIndex(p => p.userId === socket.userId);
+    const isPlayer1 = playerIndex === 0;
+    
+    // Store answer with precise timing
+    const answerData = {
+      userId: socket.userId,
+      username: socket.username,
+      answer,
+      isCorrect,
+      distance,
+      clientTimestamp,
+      serverTimestamp,
+      isPlayer1
+    };
+
+    // Initialize answer tracking if not exists
+    if (!match.answers) {
+      match.answers = [];
+    }
+
+    // Check if this player has already answered this round
+    const existingAnswer = match.answers.find(a => a.userId === socket.userId);
+    if (existingAnswer) {
+      console.log(`Player ${socket.username} already answered this round`);
+      return;
+    }
+
+    // Add answer to tracking
+    match.answers.push(answerData);
+    console.log(`🎮 Answer submitted by ${socket.username}:`, {
+      answer,
+      isCorrect,
+      serverTimestamp,
+      clientTimestamp,
+      totalAnswers: match.answers.length,
+      playerIndex: playerIndex + 1
+    });
+
     // Handle Globle games with 3-round system
     if (match.gameType === 'Globle') {
       const roundResults = globleRoundResults.get(matchId);
@@ -826,75 +866,114 @@ io.on('connection', (socket) => {
       }
 
       if (isCorrect) {
-        // Determine which player won this round
-        const playerIndex = match.players.findIndex(p => p.userId === socket.userId);
-        const isPlayer1 = playerIndex === 0;
+        // Determine which player won this round based on timing
+        const correctAnswers = match.answers.filter(a => a.isCorrect);
+        let roundWinner;
         
-        if (isPlayer1) {
-          roundResults.player1Wins++;
-        } else {
-          roundResults.player2Wins++;
+        if (correctAnswers.length === 1) {
+          // Only one player answered correctly
+          roundWinner = correctAnswers[0];
+        } else if (correctAnswers.length > 1) {
+          // Multiple correct answers - determine fastest
+          const sortedAnswers = correctAnswers.sort((a, b) => {
+            // First priority: server timestamp (more precise)
+            if (a.serverTimestamp !== b.serverTimestamp) {
+              return a.serverTimestamp - b.serverTimestamp;
+            }
+            // Second priority: client timestamp
+            if (a.clientTimestamp !== b.clientTimestamp) {
+              return a.clientTimestamp - b.clientTimestamp;
+            }
+            // Third priority: player order (player1 wins ties)
+            return a.isPlayer1 ? -1 : 1;
+          });
+          roundWinner = sortedAnswers[0];
+          
+          console.log(`🎮 Tie-breaking details:`, {
+            totalCorrectAnswers: correctAnswers.length,
+            sortedAnswers: sortedAnswers.map(a => ({
+              username: a.username,
+              serverTimestamp: a.serverTimestamp,
+              clientTimestamp: a.clientTimestamp,
+              isPlayer1: a.isPlayer1
+            })),
+            winner: roundWinner.username
+          });
         }
 
-        // Check if someone has won 2 out of 3 rounds
-        const hasWinner = roundResults.player1Wins >= 2 || roundResults.player2Wins >= 2;
-        
-        if (hasWinner) {
-          // Game is over - determine final winner
-          const finalWinner = roundResults.player1Wins >= 2 ? match.players[0] : match.players[1];
-          const finalLoser = roundResults.player1Wins >= 2 ? match.players[1] : match.players[0];
+        if (roundWinner) {
+          // Update round wins
+          if (roundWinner.isPlayer1) {
+            roundResults.player1Wins++;
+          } else {
+            roundResults.player2Wins++;
+          }
+
+          console.log(`🎮 Round winner: ${roundWinner.username} (${roundWinner.serverTimestamp}ms)`);
+
+          // Check if someone has won 2 out of 3 rounds
+          const hasWinner = roundResults.player1Wins >= 2 || roundResults.player2Wins >= 2;
           
-          match.winner = finalWinner.userId;
-          match.endTime = Date.now();
-          
-          // Update points
-          await updatePlayerPoints(finalWinner.userId, 100, true);
-          await updatePlayerPoints(finalLoser.userId, -100, false);
-          
-          // Notify both players
-          io.to(matchId).emit('gameEnd', {
-            winner: finalWinner.username,
-            finalScore: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
-            correctAnswer: match.correctAnswer,
-            points: {
-              [finalWinner.userId]: 100,
-              [finalLoser.userId]: -100
-            }
-          });
-          
-          // Clean up
-          setTimeout(() => {
-            activeMatches.delete(matchId);
-            globleRoundResults.delete(matchId);
-          }, 5000);
-        } else {
-          // Continue to next round
-          roundResults.currentRound++;
-          
-          // Generate new secret country for next round
-          const nextRoundQuestion = await generateQuestion('Globle');
-          match.correctAnswer = nextRoundQuestion;
-          roundResults.secretCountry = nextRoundQuestion.country;
-          
-          // Notify players about round result
-          io.to(matchId).emit('roundEnd', {
-            roundWinner: socket.username,
-            roundNumber: roundResults.currentRound - 1,
-            score: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
-            nextRound: roundResults.currentRound
-          });
-          
-          // Start next round after 3 seconds
-          setTimeout(() => {
-            io.to(matchId).emit('gameStart', {
-              matchId,
-              gameType: 'Globle',
-              question: nextRoundQuestion.question,
-              startTime: Date.now(),
-              secretCountry: nextRoundQuestion.country,
-              roundNumber: roundResults.currentRound
+          if (hasWinner) {
+            // Game is over - determine final winner
+            const finalWinner = roundResults.player1Wins >= 2 ? match.players[0] : match.players[1];
+            const finalLoser = roundResults.player1Wins >= 2 ? match.players[1] : match.players[0];
+            
+            match.winner = finalWinner.userId;
+            match.endTime = Date.now();
+            
+            // Update points
+            await updatePlayerPoints(finalWinner.userId, 100, true);
+            await updatePlayerPoints(finalLoser.userId, -100, false);
+            
+            // Notify both players
+            io.to(matchId).emit('gameEnd', {
+              winner: finalWinner.username,
+              finalScore: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
+              correctAnswer: match.correctAnswer,
+              points: {
+                [finalWinner.userId]: 100,
+                [finalLoser.userId]: -100
+              }
             });
-          }, 3000);
+            
+            // Clean up
+            setTimeout(() => {
+              activeMatches.delete(matchId);
+              globleRoundResults.delete(matchId);
+            }, 5000);
+          } else {
+            // Continue to next round
+            roundResults.currentRound++;
+            
+            // Generate new secret country for next round
+            const nextRoundQuestion = await generateQuestion('Globle');
+            match.correctAnswer = nextRoundQuestion;
+            roundResults.secretCountry = nextRoundQuestion.country;
+            
+            // Clear answers for next round
+            match.answers = [];
+            
+            // Notify players about round result
+            io.to(matchId).emit('roundEnd', {
+              roundWinner: roundWinner.username,
+              roundNumber: roundResults.currentRound - 1,
+              score: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
+              nextRound: roundResults.currentRound
+            });
+            
+            // Start next round after 3 seconds
+            setTimeout(() => {
+              io.to(matchId).emit('gameStart', {
+                matchId,
+                gameType: 'Globle',
+                question: nextRoundQuestion.question,
+                startTime: Date.now(),
+                secretCountry: nextRoundQuestion.country,
+                roundNumber: roundResults.currentRound
+              });
+            }, 3000);
+          }
         }
       } else {
         // Incorrect guess - continue playing
@@ -915,7 +994,8 @@ io.on('connection', (socket) => {
         isCorrect,
         currentRound: match.currentRound,
         player1Wins: match.player1Wins,
-        player2Wins: match.player2Wins
+        player2Wins: match.player2Wins,
+        serverTimestamp
       });
       
       // Initialize round tracking if not exists
@@ -925,230 +1005,142 @@ io.on('connection', (socket) => {
         match.player2Wins = 0;
       }
       
-      // Determine which player answered
-      const playerIndex = match.players.findIndex(p => p.userId === socket.userId);
-      const isPlayer1 = playerIndex === 0;
-      
-      if (isCorrect) {
-        // Player wins this round
-        if (isPlayer1) {
-          match.player1Wins++;
+      // Check if both players have answered
+      if (match.answers.length === 2) {
+        // Both players answered - determine winner based on timing and correctness
+        const correctAnswers = match.answers.filter(a => a.isCorrect);
+        let roundWinner;
+        
+        if (correctAnswers.length === 1) {
+          // Only one player answered correctly
+          roundWinner = correctAnswers[0];
+        } else if (correctAnswers.length > 1) {
+          // Multiple correct answers - determine fastest
+          const sortedAnswers = correctAnswers.sort((a, b) => {
+            // First priority: server timestamp (more precise)
+            if (a.serverTimestamp !== b.serverTimestamp) {
+              return a.serverTimestamp - b.serverTimestamp;
+            }
+            // Second priority: client timestamp
+            if (a.clientTimestamp !== b.clientTimestamp) {
+              return a.clientTimestamp - b.clientTimestamp;
+            }
+            // Third priority: player order (player1 wins ties)
+            return a.isPlayer1 ? -1 : 1;
+          });
+          roundWinner = sortedAnswers[0];
         } else {
-          match.player2Wins++;
+          // No correct answers - determine who answered first (for tie-breaking)
+          const sortedAnswers = match.answers.sort((a, b) => {
+            if (a.serverTimestamp !== b.serverTimestamp) {
+              return a.serverTimestamp - b.serverTimestamp;
+            }
+            if (a.clientTimestamp !== b.clientTimestamp) {
+              return a.clientTimestamp - b.clientTimestamp;
+            }
+            return a.isPlayer1 ? -1 : 1;
+          });
+          roundWinner = sortedAnswers[0];
         }
-      } else {
-        // Player answered incorrectly - opponent gets the point
-        if (isPlayer1) {
-          match.player2Wins++; // Player 2 gets the point
-        } else {
-          match.player1Wins++; // Player 1 gets the point
-        }
-      }
-      
-      console.log('🎮 FlagGuess - Round result:', {
-        isCorrect,
-        player1Wins: match.player1Wins,
-        player2Wins: match.player2Wins,
-        currentRound: match.currentRound
-      });
-      
-      // Check if we've reached 5 rounds
-      if (match.currentRound >= 5) {
-        console.log('🎮 FlagGuess - Game ending after 5 rounds');
-        // Game is over - determine final winner
-        const finalWinner = match.player1Wins > match.player2Wins ? match.players[0] : match.players[1];
-        const finalLoser = match.player1Wins > match.player2Wins ? match.players[1] : match.players[0];
-        const finalScore = `${match.player1Wins}-${match.player2Wins}`;
-        
-        match.winner = finalWinner.userId;
-        match.endTime = Date.now();
-        
-        // Update points - winner gets +100, loser gets -100
-        await updatePlayerPoints(finalWinner.userId, 100, true);
-        await updatePlayerPoints(finalLoser.userId, -100, false);
-        
-        // Notify both players
-        io.to(matchId).emit('gameEnd', {
-          winner: finalWinner.username,
-          finalScore: finalScore,
-          correctAnswer: questionData.correctAnswer,
-          points: {
-            [finalWinner.userId]: 100,
-            [finalLoser.userId]: -100
+
+        if (roundWinner) {
+          // Update round wins
+          if (roundWinner.isPlayer1) {
+            match.player1Wins++;
+          } else {
+            match.player2Wins++;
           }
-        });
-        
-        // Send individual points to each player
-        const winnerSocket = userSockets.get(finalWinner.userId);
-        const loserSocket = userSockets.get(finalLoser.userId);
-        
-        if (winnerSocket) {
-          winnerSocket.emit('gameEnd', {
-            winner: finalWinner.username,
-            finalScore: finalScore,
-            correctAnswer: questionData.correctAnswer,
-            userPoints: 100,
-            isWinner: true
-          });
-        }
-        
-        if (loserSocket) {
-          loserSocket.emit('gameEnd', {
-            winner: finalWinner.username,
-            finalScore: finalScore,
-            correctAnswer: questionData.correctAnswer,
-            userPoints: -100,
-            isWinner: false
-          });
-        }
-        
-        // Clean up match after delay
-        setTimeout(() => {
-          activeMatches.delete(matchId);
-        }, 5000);
-      } else {
-        // Continue to next round - regardless of correct or incorrect answer
-        match.currentRound++;
-        
-        console.log('🎮 FlagGuess - Moving to next round:', {
-          newRound: match.currentRound,
-          isCorrect,
-          roundWinner: isCorrect ? socket.username : null
-        });
-        
-        // Generate new question for next round
-        const nextRoundQuestion = await generateQuestion('FlagGuess');
-        match.correctAnswer = nextRoundQuestion;
-        
-        // Notify players about round result and continue to next round
-        const roundEndData = {
-          roundWinner: isCorrect ? socket.username : (isPlayer1 ? match.players[1].username : match.players[0].username),
-          roundNumber: match.currentRound - 1,
-          score: `${match.player1Wins}-${match.player2Wins}`,
-          nextRound: match.currentRound,
-          isCorrect: isCorrect,
-          correctAnswer: questionData.correctAnswer
-        };
-        
-        console.log('🎮 FlagGuess - Emitting roundEnd:', roundEndData);
-        io.to(matchId).emit('roundEnd', roundEndData);
-        
-        // Start next round after 3 seconds
-        setTimeout(() => {
-          const gameStartData = {
-            matchId,
-            gameType: 'FlagGuess',
-            question: nextRoundQuestion.question,
-            startTime: Date.now(),
-            roundNumber: match.currentRound
-          };
           
-          console.log('🎮 FlagGuess - Emitting gameStart for next round:', gameStartData);
-          io.to(matchId).emit('gameStart', gameStartData);
-        }, 3000);
-      }
-    } else {
-      // Handle other games with original logic
-      const isCorrect = checkAnswer(match.gameType, answer);
-      
-      if (isCorrect) {
-        // Player wins
-        match.winner = socket.userId;
-        match.winnerTime = timeTaken;
-        match.endTime = Date.now();
+          console.log(`🎮 FlagGuess - Round winner: ${roundWinner.username} (${roundWinner.serverTimestamp}ms)`);
+        }
         
-        // Update points
-        await updatePlayerPoints(socket.userId, 100, true);
-        await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, -100, false);
-        
-        // Notify both players
-        io.to(matchId).emit('gameEnd', {
-          winner: socket.username,
-          winnerTime: timeTaken,
-          correctAnswer: match.correctAnswer,
-          points: {
-            [socket.userId]: 100,
-            [match.players.find(p => p.userId !== socket.userId).userId]: -100
+        // Check if we've reached 5 rounds
+        if (match.currentRound >= 5) {
+          console.log('🎮 FlagGuess - Game ending after 5 rounds');
+          // Game is over - determine final winner
+          const finalWinner = match.player1Wins > match.player2Wins ? match.players[0] : match.players[1];
+          const finalLoser = match.player1Wins > match.player2Wins ? match.players[1] : match.players[0];
+          const finalScore = `${match.player1Wins}-${match.player2Wins}`;
+          
+          match.winner = finalWinner.userId;
+          match.endTime = Date.now();
+          
+          // Update points - winner gets +100, loser gets -100
+          await updatePlayerPoints(finalWinner.userId, 100, true);
+          await updatePlayerPoints(finalLoser.userId, -100, false);
+          
+          // Notify both players
+          io.to(matchId).emit('gameEnd', {
+            winner: finalWinner.username,
+            finalScore: finalScore,
+            correctAnswer: questionData.correctAnswer,
+            points: {
+              [finalWinner.userId]: 100,
+              [finalLoser.userId]: -100
+            }
+          });
+          
+          // Send individual points to each player
+          const winnerSocket = userSockets.get(finalWinner.userId);
+          const loserSocket = userSockets.get(finalLoser.userId);
+          
+          if (winnerSocket) {
+            winnerSocket.emit('gameEnd', {
+              winner: finalWinner.username,
+              finalScore: finalScore,
+              correctAnswer: questionData.correctAnswer,
+              userPoints: 100,
+              isWinner: true
+            });
           }
-        });
-        
-        // Send individual points to each player
-        const winnerSocket = userSockets.get(socket.userId);
-        const loserSocket = userSockets.get(match.players.find(p => p.userId !== socket.userId).userId);
-        
-        if (winnerSocket) {
-          winnerSocket.emit('gameEnd', {
-            winner: socket.username,
-            winnerTime: timeTaken,
-            correctAnswer: match.correctAnswer,
-            userPoints: 100,
-            isWinner: true
+          
+          if (loserSocket) {
+            loserSocket.emit('gameEnd', {
+              winner: finalWinner.username,
+              finalScore: finalScore,
+              correctAnswer: questionData.correctAnswer,
+              userPoints: -100,
+              isWinner: false
+            });
+          }
+          
+          // Clean up
+          setTimeout(() => {
+            activeMatches.delete(matchId);
+          }, 5000);
+        } else {
+          // Continue to next round
+          match.currentRound++;
+          
+          // Generate new question for next round
+          const nextQuestion = await generateQuestion('FlagGuess');
+          match.correctAnswer = nextQuestion;
+          
+          // Clear answers for next round
+          match.answers = [];
+          
+          // Notify players about round result
+          io.to(matchId).emit('roundEnd', {
+            roundWinner: roundWinner ? roundWinner.username : null,
+            roundNumber: match.currentRound - 1,
+            score: `${match.player1Wins}-${match.player2Wins}`,
+            nextRound: match.currentRound
           });
+          
+          // Start next round after 3 seconds
+          setTimeout(() => {
+            io.to(matchId).emit('gameStart', {
+              matchId,
+              gameType: 'FlagGuess',
+              question: nextQuestion.question,
+              startTime: Date.now(),
+              roundNumber: match.currentRound
+            });
+          }, 3000);
         }
-        
-        if (loserSocket) {
-          loserSocket.emit('gameEnd', {
-            winner: socket.username,
-            winnerTime: timeTaken,
-            correctAnswer: match.correctAnswer,
-            userPoints: -100,
-            isWinner: false
-          });
-        }
-        
-        // Clean up match after delay
-        setTimeout(() => {
-          activeMatches.delete(matchId);
-        }, 5000);
       } else {
-        // Player loses
-        match.winner = match.players.find(p => p.userId !== socket.userId).userId;
-        match.loserTime = timeTaken;
-        match.endTime = Date.now();
-        
-        // Update points
-        await updatePlayerPoints(socket.userId, -100, false);
-        await updatePlayerPoints(match.players.find(p => p.userId !== socket.userId).userId, 100, true);
-        
-        // Notify both players
-        io.to(matchId).emit('gameEnd', {
-          winner: match.players.find(p => p.userId !== socket.userId).username,
-          loserTime: timeTaken,
-          correctAnswer: match.correctAnswer,
-          points: {
-            [socket.userId]: -100,
-            [match.players.find(p => p.userId !== socket.userId).userId]: 100
-          }
-        });
-        
-        // Send individual points to each player
-        const winnerSocket = userSockets.get(match.players.find(p => p.userId !== socket.userId).userId);
-        const loserSocket = userSockets.get(socket.userId);
-        
-        if (winnerSocket) {
-          winnerSocket.emit('gameEnd', {
-            winner: match.players.find(p => p.userId !== socket.userId).username,
-            loserTime: timeTaken,
-            correctAnswer: match.correctAnswer,
-            userPoints: 100,
-            isWinner: true
-          });
-        }
-        
-        if (loserSocket) {
-          loserSocket.emit('gameEnd', {
-            winner: match.players.find(p => p.userId !== socket.userId).username,
-            loserTime: timeTaken,
-            correctAnswer: match.correctAnswer,
-            userPoints: -100,
-            isWinner: false
-          });
-        }
-        
-        // Clean up match after delay
-        setTimeout(() => {
-          activeMatches.delete(matchId);
-        }, 5000);
+        // Only one player has answered - wait for the other
+        console.log(`🎮 FlagGuess - Waiting for other player. Answers: ${match.answers.length}/2`);
       }
     }
   });
@@ -1214,7 +1206,8 @@ async function tryMatchPlayers(gameType) {
       winner: null,
       currentRound: 1,
       player1Wins: 0,
-      player2Wins: 0
+      player2Wins: 0,
+      answers: [] // Initialize answers array for new matches
     };
     
     activeMatches.set(matchId, match);
@@ -1286,4 +1279,4 @@ server.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log('WebSocket server is ready for connections');
   console.log('CORS configuration:', io.engine.opts.cors);
-}); 
+});

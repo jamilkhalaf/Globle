@@ -248,7 +248,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     onAnswerSubmit({
       answer: flagCode,
       timeTaken: Date.now() - (matchData?.startTime || Date.now()),
-      isCorrect: isCorrect
+      isCorrect: isCorrect,
+      distance: 0 // Add distance field for compatibility with backend
     });
     
     // Update UI state after server submission

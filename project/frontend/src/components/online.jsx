@@ -343,7 +343,10 @@ const Online = () => {
     socketRef.current.emit('submitAnswer', {
       matchId: currentMatch.matchId,
       answer: answerData.answer,
-      timeTaken: answerData.timeTaken
+      timeTaken: answerData.timeTaken,
+      isCorrect: answerData.isCorrect,
+      distance: answerData.distance,
+      clientTimestamp: Date.now() // Add precise client timestamp
     });
   };
 
