@@ -168,4 +168,23 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/verify
+// @desc    Verify token is valid
+// @access  Public
+router.get('/verify', auth, async (req, res) => {
+  try {
+    // If we get here, the token is valid (auth middleware passed)
+    res.json({ 
+      valid: true, 
+      user: {
+        id: req.user.id,
+        username: req.user.username
+      }
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router; 
