@@ -280,6 +280,11 @@ const Online = () => {
           };
           console.log('🎮 Setting matchResult to:', roundResult);
           setMatchResult(roundResult);
+          
+          // Keep the current match data to prevent lobby from showing
+          if (currentMatch) {
+            console.log('🎮 Keeping current match data during round transition');
+          }
         }
       });
 
@@ -345,14 +350,18 @@ const Online = () => {
   const handleNewOpponent = () => {
     if (!socketRef.current) return;
     
+    console.log('🎮 Finding new opponent - joining queue again');
     setGameState('waiting');
     setCurrentMatch(null);
     setMatchResult(null);
     setGameAnswer('');
     setGameQuestion('');
     setGameTimer(0);
+    setIsWaitingForPlayer(true);
+    setWaitingTime(0);
     
-    socketRef.current.emit('requestNewOpponent', { gameType: 'FlagGuess' });
+    // Join queue again instead of going back to lobby
+    socketRef.current.emit('joinQueue', { gameType: 'FlagGuess' });
   };
 
   const handleLeaveGame = () => {
@@ -847,38 +856,44 @@ const Online = () => {
         )}
 
         {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'rgba(255,255,255,0.1)', mb: 3 }}>
-          <Tabs 
-            value={activeTab} 
-            onChange={handleTabChange}
-            sx={{
-              '& .MuiTab-root': {
-                color: 'rgba(255,255,255,0.7)',
-                '&.Mui-selected': {
-                  color: '#43cea2'
+        {(!currentMatch && gameState === 'waiting') && (
+          <Box sx={{ borderBottom: 1, borderColor: 'rgba(255,255,255,0.1)', mb: 3 }}>
+            <Tabs 
+              value={activeTab} 
+              onChange={handleTabChange}
+              sx={{
+                '& .MuiTab-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                  '&.Mui-selected': {
+                    color: '#43cea2'
+                  }
+                },
+                '& .MuiTabs-indicator': {
+                  bgcolor: '#43cea2'
                 }
-              },
-              '& .MuiTabs-indicator': {
-                bgcolor: '#43cea2'
-              }
-            }}
-          >
-            <Tab 
-              icon={<LeaderboardIcon />} 
-              label="Leaderboard" 
-              iconPosition="start"
-            />
-            <Tab 
-              icon={<PlayArrowIcon />} 
-              label="Lobby" 
-              iconPosition="start"
-            />
-          </Tabs>
-        </Box>
+              }}
+            >
+              <Tab 
+                icon={<LeaderboardIcon />} 
+                label="Leaderboard" 
+                iconPosition="start"
+              />
+              <Tab 
+                icon={<PlayArrowIcon />} 
+                label="Lobby" 
+                iconPosition="start"
+              />
+            </Tabs>
+          </Box>
+        )}
 
         {/* Tab Content */}
-        {activeTab === 0 && renderLeaderboardTab()}
-        {activeTab === 1 && renderLobbyTab()}
+        {(!currentMatch && gameState === 'waiting') && (
+          <>
+            {activeTab === 0 && renderLeaderboardTab()}
+            {activeTab === 1 && renderLobbyTab()}
+          </>
+        )}
 
         {/* Join Lobby Dialog */}
         <Dialog
@@ -940,15 +955,15 @@ const Online = () => {
         )}
 
         {/* Waiting Page */}
-        {isWaitingForPlayer && gameState === 'waiting' && !currentMatch && (
+        {isWaitingForPlayer && gameState === 'waiting' && !currentMatch && !matchResult && (
           <>
-            {console.log('⏳ Rendering waiting page:', { isWaitingForPlayer, gameState, currentMatch })}
+            {console.log('⏳ Rendering waiting page:', { isWaitingForPlayer, gameState, currentMatch, matchResult })}
             {renderWaitingPage()}
           </>
         )}
 
         {/* Game Page - Render specific game component or generic interface */}
-        {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && (
+        {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended' || gameState === 'roundEnd' || (currentMatch && gameState !== 'waiting')) && (
           <Box
             sx={{
               position: 'fixed',
@@ -957,10 +972,10 @@ const Online = () => {
               right: 0,
               bottom: 0,
               zIndex: 10002, // Higher than waiting page
-              bgcolor: 'rgba(0,0,0,0.9)'
+              bgcolor: '#000000' // Completely black background
             }}
           >
-            {console.log('🎮 Rendering game component:', { gameState, currentMatch, isWaitingForPlayer })}
+            {console.log('🎮 Rendering game component:', { gameState, currentMatch, isWaitingForPlayer, matchResult })}
             {console.log('🎮 Game state conditions met, rendering game component')}
             {console.log('🎮 currentMatch?.gameType:', currentMatch?.gameType)}
             {renderGameComponent()}

@@ -62,7 +62,7 @@ const FlagCard = React.memo(({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: '#f5f5f5',
+        bgcolor: '#ffffff', // Changed from '#f5f5f5' to white
         borderRadius: 1,
         overflow: 'hidden',
         minHeight: 0,
@@ -214,6 +214,13 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     }
   }, [gameState, matchData]);
 
+  // Keep component visible during round transitions
+  useEffect(() => {
+    if (gameState === 'roundEnd' || gameState === 'playing' || gameState === 'countdown') {
+      console.log('🎮 FlagGuessGame - Keeping component visible during game session');
+    }
+  }, [gameState]);
+
   useEffect(() => {
     console.log('🎮 FlagGuessGame - Component state changed:', { 
       gameState, 
@@ -258,7 +265,15 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     const score = roundResult.score;
     
     return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
+      <Box sx={{ 
+        textAlign: 'center', 
+        p: 4,
+        bgcolor: '#000000', // Added black background
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h2" sx={{ 
             mb: 3, 
@@ -283,7 +298,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         <Box sx={{ 
           mb: 4, 
           p: 3,
-          bgcolor: 'rgba(255,255,255,0.05)',
+          bgcolor: 'transparent', // Changed from 'rgba(255,255,255,0.05)' to transparent
           borderRadius: 3,
           border: '1px solid rgba(255,255,255,0.1)',
           maxWidth: 500,
@@ -358,7 +373,15 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     });
     
     return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
+      <Box sx={{ 
+        textAlign: 'center', 
+        p: 4,
+        bgcolor: '#000000', // Added black background
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h1" sx={{ 
             mb: 3, 
@@ -384,7 +407,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
           <Box sx={{ 
             mb: 4, 
             p: 3,
-            bgcolor: 'rgba(255,255,255,0.05)',
+            bgcolor: 'transparent', // Changed from 'rgba(255,255,255,0.05)' to transparent
             borderRadius: 3,
             border: '1px solid rgba(255,255,255,0.1)',
             maxWidth: 500,
@@ -469,11 +492,12 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
       display: 'flex', 
       flexDirection: 'column', 
       justifyContent: 'center',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      bgcolor: '#000000' // Completely black background
     }}>
       {/* Main Game Container */}
       <Card sx={{ 
-        bgcolor: 'rgba(30,30,30,0.95)', 
+        bgcolor: '#000000', // Changed from 'rgba(30,30,30,0.95)' to black
         color: 'white', 
         p: 3, 
         maxWidth: 600, 
@@ -546,7 +570,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
           <Box sx={{ 
             mb: 2,
             p: 2,
-            bgcolor: 'rgba(255,255,255,0.05)',
+            bgcolor: 'transparent', // Changed from 'rgba(255,255,255,0.05)' to transparent
             borderRadius: 2,
             border: '1px solid rgba(255,255,255,0.1)'
           }}>
@@ -608,7 +632,15 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
   );
 
   const renderCountdown = () => (
-    <Box sx={{ textAlign: 'center', p: 4 }}>
+    <Box sx={{ 
+      textAlign: 'center', 
+      p: 4,
+      bgcolor: '#000000', // Added black background
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center'
+    }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h1" sx={{ 
           color: '#43cea2', 
@@ -666,14 +698,14 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         left: 0,
         right: 0,
         bottom: 0,
-        bgcolor: 'rgba(0,0,0,0.9)',
+        bgcolor: '#000000', // Changed from 'rgba(0,0,0,0.9)' to completely black
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 10000
       }}
     >
-      <Card sx={{ bgcolor: '#1e1e1e', color: 'white', p: 4, maxWidth: 800, width: '100%' }}>
+      <Card sx={{ bgcolor: '#000000', color: 'white', p: 4, maxWidth: 800, width: '100%' }}>
         <CardContent>
           {gameState === 'countdown' && renderCountdown()}
           {gameState === 'playing' && renderGameInterface()}

@@ -936,6 +936,13 @@ io.on('connection', (socket) => {
         } else {
           match.player2Wins++;
         }
+      } else {
+        // Player answered incorrectly - opponent gets the point
+        if (isPlayer1) {
+          match.player2Wins++; // Player 2 gets the point
+        } else {
+          match.player1Wins++; // Player 1 gets the point
+        }
       }
       
       console.log('🎮 FlagGuess - Round result:', {
@@ -1015,7 +1022,7 @@ io.on('connection', (socket) => {
         
         // Notify players about round result and continue to next round
         const roundEndData = {
-          roundWinner: isCorrect ? socket.username : null,
+          roundWinner: isCorrect ? socket.username : (isPlayer1 ? match.players[1].username : match.players[0].username),
           roundNumber: match.currentRound - 1,
           score: `${match.player1Wins}-${match.player2Wins}`,
           nextRound: match.currentRound,
