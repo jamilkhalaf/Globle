@@ -100,6 +100,87 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   // Add state for showing the intro modal
   const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
 
+  // Helper function to select a random country
+  const selectRandomCountry = (countriesList) => {
+    if (!countriesList || countriesList.length === 0) {
+      console.error('No countries list provided to selectRandomCountry');
+      return null;
+    }
+    
+    // Filter out countries that don't have valid geometry
+    const validCountries = countriesList.filter(country => 
+      country && 
+      country.properties && 
+      country.properties.name && 
+      country.geometry && 
+      country.geometry.coordinates &&
+      country.geometry.coordinates.length > 0
+    );
+    
+    if (validCountries.length === 0) {
+      console.error('No valid countries found in list');
+      return null;
+    }
+    
+    // Avoid recently used countries for better variety
+    const availableCountries = validCountries.filter(country => 
+      !recentlyUsedCountries.includes(country.properties.name)
+    );
+    
+    const countryList = availableCountries.length > 0 ? availableCountries : validCountries;
+    
+    if (countryList.length === 0) {
+      console.error('No countries available after filtering');
+      return null;
+    }
+    
+    const randomIndex = Math.floor(Math.random() * countryList.length);
+    const randomCountry = countryList[randomIndex];
+    
+    if (!randomCountry) {
+      console.error('Failed to select random country from list');
+      return null;
+    }
+    
+    console.log('Selected random country:', randomCountry?.properties?.name);
+    return randomCountry;
+  };
+
+  // Function to start a new round
+  const startNewRound = (countriesList) => {
+    if (!countriesList || countriesList.length === 0) {
+      console.error('No countries list provided to startNewRound');
+      setMessage('Error: No countries available');
+      return;
+    }
+    
+    const newSecretCountry = selectRandomCountry(countriesList);
+    if (newSecretCountry) {
+      setSecretCountry(newSecretCountry);
+      setGuessedCountries([]);
+      setMessage('Guess the country!');
+      setGameOver(false);
+      setShowSecret(false);
+      setLastDistance(null);
+      setGuess('');
+      setGameStartTime(Date.now());
+      setGameEndTime(null);
+      setScore(0);
+      
+      // Add to recently used countries
+      if (newSecretCountry.properties && newSecretCountry.properties.name) {
+        setRecentlyUsedCountries(prev => {
+          const updated = [...prev, newSecretCountry.properties.name];
+          // Keep only last 10 to prevent memory issues
+          return updated.slice(-10);
+        });
+      }
+    } else {
+      console.error('Failed to select random country for new round');
+      setMessage('Error starting new game - no valid countries available');
+    }
+  };
+
   // Debug logging for props
   useEffect(() => {
     console.log('Game component props:', { targetCountry, isOnline, disabled });
@@ -128,24 +209,42 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
     fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
       .then(response => response.json())
       .then(data => {
-        setCountries(data.features);
+        // Filter out countries with invalid geometry
+        const validCountries = data.features.filter(country => 
+          country && 
+          country.properties && 
+          country.properties.name && 
+          country.geometry && 
+          country.geometry.coordinates
+        );
+        
+        console.log(`Loaded ${validCountries.length} valid countries out of ${data.features.length} total`);
+        setCountries(validCountries);
         
         if (isOnline && targetCountry) {
           // For online mode, find the target country object
-          const targetCountryObj = data.features.find(c => c.properties.name === targetCountry);
+          const targetCountryObj = validCountries.find(c => c.properties.name === targetCountry);
           if (targetCountryObj) {
             setSecretCountry(targetCountryObj);
             setMessage(`Guess the country: ${targetCountry}`);
+          } else {
+            console.error('Target country not found in valid countries:', targetCountry);
+            setMessage('Error: Target country not found');
           }
         } else if (!isOnline) {
           // For offline mode, start with a random country
-          startNewRound(data.features);
+          if (validCountries.length > 0) {
+            startNewRound(validCountries);
+          } else {
+            console.error('No valid countries available for offline mode');
+            setMessage('Error: No valid countries available');
+          }
         }
         
         setGameStartTime(Date.now());
         
         // Set up country options for autocomplete
-        const options = data.features
+        const options = validCountries
           .filter(country => countryInfo[country.properties.name])
           .map(country => country.properties.name)
           .sort();
@@ -825,6 +924,12 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
             maxZoom={10}
           />
           {countries.map((country, index) => {
+            // Skip countries with invalid geometry
+            if (!country || !country.properties || !country.properties.name || !country.geometry || !country.geometry.coordinates) {
+              console.warn('Skipping country with invalid geometry:', country);
+              return null;
+            }
+            
             const isGuessed = guessedCountries.some(c => c.properties.name === country.properties.name);
             const guessedCenter = isGuessed ? getCountryCenter(country) : null;
             const secretCenter = getCountryCenter(secretCountry);
