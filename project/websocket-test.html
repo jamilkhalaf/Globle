@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="logs"></div>
+    
+    <script>
+        const token = localStorage.getItem('token');
+        console.log('Token:', token);
+        
+        if (!token) {
+            document.getElementById('status').innerHTML = 'No token found. Please login first.';
+        } else {
+            log('Attempting to connect to WebSocket server...');
+            const socket = io('https://api.jamilweb.click', {
+                auth: { token },
+                transports: ['websocket', 'polling'],
+                upgrade: true,
+                rememberUpgrade: true,
+                timeout: 20000
+            });
+            
+            socket.on('connect', () => {
+                console.log('Connected!');
+                document.getElementById('status').innerHTML = 'Connected! Socket ID: ' + socket.id;
+                log('Connected to server with ID: ' + socket.id);
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('Disconnected');
+                document.getElementById('status').innerHTML = 'Disconnected';
+                log('Disconnected from server');
+            });
+            
+            socket.on('connect_error', (error) => {
+                console.error('Connection error:', error);
+                document.getElementById('status').innerHTML = 'Connection error: ' + error.message;
+                log('Connection error: ' + error.message);
+                log('Error details: ' + JSON.stringify(error));
+            });
+            
+            socket.on('queueJoined', (data) => {
+                console.log('Queue joined:', data);
+                log('Joined queue: ' + JSON.stringify(data));
+            });
+            
+            socket.on('matchFound', (data) => {
+                console.log('Match found:', data);
+                log('Match found: ' + JSON.stringify(data));
+            });
+            
+            function log(message) {
+                const logs = document.getElementById('logs');
+                logs.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+            }
+            
+            // Test joining a queue
+            setTimeout(() => {
+                if (socket.connected) {
+                    log('Joining Globle queue...');
+                    socket.emit('joinQueue', { gameType: 'Globle' });
+                } else {
+                    log('Socket not connected, cannot join queue');
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+</html> 

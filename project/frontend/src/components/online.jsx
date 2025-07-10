@@ -163,23 +163,83 @@ const Online = () => {
 
   const connectSocket = () => {
     const token = localStorage.getItem('token');
+    console.log('Token from localStorage:', token ? 'present' : 'missing');
     if (!token) {
       setError('Please login to play online');
       return;
     }
 
+    // Check if token is valid by making a test API call
+    fetch('https://api.jamilweb.click/api/auth/verify', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        console.log('Token is valid, proceeding with WebSocket connection');
+        proceedWithSocketConnection(token);
+      } else {
+        console.log('Token is invalid, redirecting to login');
+        setError('Please login again');
+        localStorage.removeItem('token');
+      }
+    })
+    .catch(error => {
+      console.error('Error verifying token:', error);
+      setError('Failed to verify authentication');
+    });
+  };
+
+  const proceedWithSocketConnection = (token) => {
+    console.log('Connecting to socket with token:', token.substring(0, 20) + '...');
+
     // Import socket.io-client dynamically
     const socketInstance = io('https://api.jamilweb.click', {
-      auth: { token }
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      rememberUpgrade: true,
+      timeout: 20000
     });
 
+    console.log('Socket instance created, attempting connection...');
+
     socketInstance.on('connect', () => {
+      console.log('Socket connected successfully');
+      console.log('Socket ID:', socketInstance.id);
+      console.log('Socket connected:', socketInstance.connected);
       setIsConnected(true);
       setError('');
+      
+      // If we were waiting to join a queue, do it now
+      if (isWaitingForPlayer && selectedGameType) {
+        console.log('Socket connected, now joining queue for:', selectedGameType);
+        socketInstance.emit('joinQueue', { gameType: selectedGameType });
+      }
     });
 
     socketInstance.on('disconnect', () => {
+      console.log('Socket disconnected');
+      console.log('Disconnect reason:', socketInstance.disconnectReason);
       setIsConnected(false);
+    });
+
+    socketInstance.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        description: error.description,
+        context: error.context,
+        type: error.type
+      });
+      setError('Failed to connect to game server: ' + error.message);
+    });
+
+    socketInstance.on('error', (error) => {
+      console.error('Socket error:', error);
+      setError('Socket error: ' + error.message);
     });
 
     socketInstance.on('queueJoined', (data) => {
@@ -187,6 +247,7 @@ const Online = () => {
     });
 
     socketInstance.on('queueError', (data) => {
+      console.log('Queue error:', data);
       setError(data.message);
     });
 
@@ -215,6 +276,7 @@ const Online = () => {
     });
 
     socketInstance.on('opponentDisconnected', () => {
+      console.log('Opponent disconnected');
       setError('Opponent disconnected');
       setGameState('waiting');
       setCurrentMatch(null);
@@ -253,6 +315,7 @@ const Online = () => {
   };
 
   const handleConfirmJoinGame = () => {
+    console.log('Confirming join game for:', selectedGameType);
     setJoinGameDialog(false);
     setIsWaitingForPlayer(true);
     setWaitingTime(0);
@@ -262,12 +325,14 @@ const Online = () => {
     
     // Connect socket if not connected
     if (!socket) {
+      console.log('No socket, connecting...');
       connectSocket();
-    }
-    
-    // Join queue
-    if (socket && selectedGameType) {
+    } else if (isConnected) {
+      // Join queue immediately if socket is connected
+      console.log('Socket already connected, joining queue for:', selectedGameType);
       socket.emit('joinQueue', { gameType: selectedGameType });
+    } else {
+      console.log('Socket exists but not connected, waiting for connection...');
     }
   };
 

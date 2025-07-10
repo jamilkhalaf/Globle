@@ -101,22 +101,28 @@ const userSockets = new Map();
 // Socket.IO middleware for authentication
 io.use(async (socket, next) => {
   try {
+    console.log('Socket auth attempt - token:', socket.handshake.auth.token ? 'present' : 'missing');
     const token = socket.handshake.auth.token;
     if (!token) {
+      console.log('No token provided');
       return next(new Error('Authentication error'));
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Token decoded, userId:', decoded.userId);
     const user = await User.findById(decoded.userId);
     
     if (!user) {
+      console.log('User not found in database');
       return next(new Error('User not found'));
     }
 
     socket.userId = user._id.toString();
     socket.username = user.username;
+    console.log('Socket authenticated for user:', user.username);
     next();
   } catch (error) {
+    console.log('Socket auth error:', error.message);
     next(new Error('Authentication error'));
   }
 });
@@ -124,11 +130,18 @@ io.use(async (socket, next) => {
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.username} (${socket.userId})`);
+  console.log('Total connected users:', userSockets.size + 1);
+  console.log('Socket handshake:', {
+    headers: socket.handshake.headers,
+    query: socket.handshake.query,
+    auth: socket.handshake.auth
+  });
   
   userSockets.set(socket.userId, socket);
 
   // Join game queue
   socket.on('joinQueue', async (data) => {
+    console.log('joinQueue event received:', data);
     const { gameType } = data;
     
     if (!gameQueues[gameType]) {
@@ -138,6 +151,7 @@ io.on('connection', (socket) => {
     // Check if user is already in queue
     const alreadyInQueue = gameQueues[gameType].find(player => player.userId === socket.userId);
     if (alreadyInQueue) {
+      console.log('User already in queue:', socket.username);
       socket.emit('queueError', { message: 'Already in queue for this game' });
       return;
     }
@@ -151,6 +165,7 @@ io.on('connection', (socket) => {
     };
 
     gameQueues[gameType].push(player);
+    console.log(`User ${socket.username} joined ${gameType} queue. Queue length: ${gameQueues[gameType].length}`);
     socket.join(`queue_${gameType}`);
     socket.emit('queueJoined', { gameType, position: gameQueues[gameType].length });
 
@@ -244,6 +259,7 @@ io.on('connection', (socket) => {
   // Disconnect handling
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.username}`);
+    console.log('Remaining connected users:', userSockets.size - 1);
     
     // Remove from all queues
     Object.keys(gameQueues).forEach(gameType => {
@@ -272,9 +288,11 @@ function leaveQueue(socket, gameType) {
 }
 
 async function tryMatchPlayers(gameType) {
+  console.log(`Trying to match players for ${gameType}. Queue length: ${gameQueues[gameType]?.length || 0}`);
   const queue = gameQueues[gameType];
   
   if (queue.length >= 2) {
+    console.log(`Found 2+ players in ${gameType} queue, creating match`);
     const player1 = queue.shift();
     const player2 = queue.shift();
     
@@ -291,6 +309,7 @@ async function tryMatchPlayers(gameType) {
     };
     
     activeMatches.set(matchId, match);
+    console.log(`Created match ${matchId} between ${player1.username} and ${player2.username}`);
     
     // Join match room
     const socket1 = userSockets.get(player1.userId);
@@ -301,7 +320,7 @@ async function tryMatchPlayers(gameType) {
       socket2.join(matchId);
       
       // Notify players
-      io.to(matchId).emit('matchFound', {
+      const matchData = {
         matchId,
         gameType,
         players: [
@@ -310,10 +329,14 @@ async function tryMatchPlayers(gameType) {
         ],
         question: match.correctAnswer.question,
         startTime: Date.now() + 3000 // 3 second countdown
-      });
+      };
+      
+      console.log('Emitting matchFound event:', matchData);
+      io.to(matchId).emit('matchFound', matchData);
       
       // Start game after countdown
       setTimeout(() => {
+        console.log('Starting game for match:', matchId);
         io.to(matchId).emit('gameStart', {
           matchId,
           gameType,
@@ -321,7 +344,11 @@ async function tryMatchPlayers(gameType) {
           startTime: Date.now()
         });
       }, 3000);
+    } else {
+      console.log('One or both sockets not found for match');
     }
+  } else {
+    console.log(`Not enough players in ${gameType} queue (${queue.length})`);
   }
 }
 
@@ -418,4 +445,6 @@ const PORT = process.env.PORT || 5051;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('WebSocket server is ready for connections');
+  console.log('CORS configuration:', io.engine.opts.cors);
 }); 
