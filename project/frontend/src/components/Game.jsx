@@ -186,12 +186,19 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
     console.log('Game component props:', { targetCountry, isOnline, disabled });
   }, [targetCountry, isOnline, disabled]);
 
+  // Handle disabled state changes for online mode
+  useEffect(() => {
+    if (isOnline && disabled) {
+      console.log('Game component: Game disabled during online play');
+      // Don't change the message here - let the parent component handle notifications
+    }
+  }, [isOnline, disabled]);
+
   // Initialize online mode
   useEffect(() => {
     if (isOnline && targetCountry) {
       console.log('Initializing online mode with target:', targetCountry);
-      setSecretCountry(targetCountry);
-      setMessage(`Guess the country: ${targetCountry}`);
+      setMessage('Guess the country!'); // Don't show target in online mode
       setGameStartTime(Date.now());
       
       // For online mode, we need to find the country object from the countries list
@@ -226,7 +233,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
           const targetCountryObj = validCountries.find(c => c.properties.name === targetCountry);
           if (targetCountryObj) {
             setSecretCountry(targetCountryObj);
-            setMessage(`Guess the country: ${targetCountry}`);
+            setMessage('Guess the country!'); // Don't show the target country in online mode
           } else {
             console.error('Target country not found in valid countries:', targetCountry);
             setMessage('Error: Target country not found');
@@ -245,7 +252,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
         
         // Set up country options for autocomplete
         const options = validCountries
-          .filter(country => countryInfo[country.properties.name])
+          .filter(country => country.properties.name) // Remove the countryInfo filter to include all countries
           .map(country => country.properties.name)
           .sort((a, b) => a.localeCompare(b)); // Proper alphabetical sorting
         setCountryOptions(options);
@@ -461,7 +468,10 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   };
 
   const handleGuess = () => {
-    if (!guess || disabled) return;
+    if (!guess || disabled) {
+      console.log('Game component: handleGuess blocked - guess:', guess, 'disabled:', disabled);
+      return;
+    }
 
     const guessedCountry = countries.find(
       country => country.properties.name.toLowerCase() === guess.toLowerCase()
@@ -497,6 +507,8 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
         const newRoundsWon = onlineRoundsWon + 1;
         setOnlineRoundsWon(newRoundsWon);
         setRoundResult('won');
+        
+        console.log('Game component: Round won! Rounds won:', newRoundsWon, 'Target:', secretCountry.properties.name);
         
         if (newRoundsWon >= 5) {
           // Player won the online game (first to 5)
@@ -578,6 +590,8 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
             const newRoundsWon = onlineRoundsWon + 1;
             setOnlineRoundsWon(newRoundsWon);
             setRoundResult('won');
+            
+            console.log('Game component: Round won via dropdown! Rounds won:', newRoundsWon, 'Target:', secretCountry.properties.name);
             
             if (newRoundsWon >= 5) {
               // Player won the online game (first to 5)
