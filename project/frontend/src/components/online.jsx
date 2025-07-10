@@ -103,31 +103,51 @@ const Online = () => {
     };
   }, []);
 
-  // Timer for waiting page
+  // Timer effect for game countdown and playing state
   useEffect(() => {
     let interval;
+    
+    if (gameState === 'countdown') {
+      interval = setInterval(() => {
+        setGameTimer(prev => {
+          if (prev <= 1) {
+            setGameState('playing');
+            return 60; // Start 60 second game
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (gameState === 'playing') {
+      interval = setInterval(() => {
+        setGameTimer(prev => {
+          if (prev <= 1) {
+            setGameState('ended');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [gameState]);
+
+  // Timer effect for waiting
+  useEffect(() => {
+    let interval;
+    
     if (isWaitingForPlayer) {
       interval = setInterval(() => {
         setWaitingTime(prev => prev + 1);
       }, 1000);
     }
+    
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [isWaitingForPlayer]);
-
-  // Game timer
-  useEffect(() => {
-    let interval;
-    if (gameState === 'playing' && gameTimer > 0) {
-      interval = setInterval(() => {
-        setGameTimer(prev => prev - 1);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [gameState, gameTimer]);
 
   const fetchLeaderboard = async () => {
     try {
@@ -171,20 +191,24 @@ const Online = () => {
     });
 
     socketInstance.on('matchFound', (data) => {
+      console.log('Match found:', data);
       setCurrentMatch(data);
       setGameState('countdown');
       setGameQuestion(data.question);
       setIsWaitingForPlayer(false);
       setWaitingTime(0);
+      setGameTimer(3); // 3 second countdown
     });
 
     socketInstance.on('gameStart', (data) => {
+      console.log('Game start:', data);
       setGameState('playing');
       setGameTimer(60); // 60 second game
       setGameQuestion(data.question);
     });
 
     socketInstance.on('gameEnd', (data) => {
+      console.log('Game end:', data);
       setGameState('ended');
       setMatchResult(data);
       setGameTimer(0);
@@ -873,11 +897,26 @@ const Online = () => {
           </Box>
         )}
 
+        {/* Debug Info */}
+        {process.env.NODE_ENV === 'development' && (
+          <Box sx={{ position: 'fixed', top: 10, right: 10, bgcolor: 'rgba(0,0,0,0.8)', color: 'white', p: 2, borderRadius: 1, zIndex: 10001, fontSize: '12px' }}>
+            <div>isWaitingForPlayer: {isWaitingForPlayer.toString()}</div>
+            <div>gameState: {gameState}</div>
+            <div>currentMatch: {currentMatch ? 'yes' : 'no'}</div>
+            <div>isConnected: {isConnected.toString()}</div>
+          </Box>
+        )}
+
         {/* Waiting Page */}
-        {isWaitingForPlayer && renderWaitingPage()}
+        {isWaitingForPlayer && gameState === 'waiting' && renderWaitingPage()}
 
         {/* Game Page - Render specific game component or generic interface */}
-        {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && renderGameComponent()}
+        {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && (
+          <>
+            {console.log('Rendering game component:', { gameState, currentMatch })}
+            {renderGameComponent()}
+          </>
+        )}
       </Box>
     </Box>
   );
