@@ -52,85 +52,136 @@ const Game = () => {
   // Add state for showing the intro modal
   const [showIntro, setShowIntro] = useState(true);
 
-  // Helper function to select a random country
-  const selectRandomCountry = (countriesList) => {
-    if (!countriesList || countriesList.length === 0) {
-      console.error('No countries list provided to selectRandomCountry');
-      return null;
-    }
+  // Function to show country selection statistics
+  const logCountryVariety = (countryList) => {
+    const continents = {
+      'North America': 0,
+      'South America': 0,
+      'Europe': 0,
+      'Asia': 0,
+      'Africa': 0,
+      'Oceania': 0
+    };
     
-    // Filter out countries that don't have valid geometry
-    const validCountries = countriesList.filter(country => 
-      country && 
-      country.properties && 
-      country.properties.name && 
-      country.geometry && 
-      country.geometry.coordinates &&
-      country.geometry.coordinates.length > 0
-    );
+    // Simple continent detection based on coordinates
+    countryList.forEach(country => {
+      try {
+        const center = getCountryCenter(country);
+        if (center.lat > 0 && center.lon < -30) {
+          continents['North America']++;
+        } else if (center.lat < 0 && center.lon < -30) {
+          continents['South America']++;
+        } else if (center.lat > 35 && center.lon > -10 && center.lon < 40) {
+          continents['Europe']++;
+        } else if (center.lat > 0 && center.lon > 40) {
+          continents['Asia']++;
+        } else if (center.lat < 0 && center.lon > -10 && center.lon < 40) {
+          continents['Africa']++;
+        } else if (center.lat < 0 && center.lon > 100) {
+          continents['Oceania']++;
+        }
+      } catch (e) {
+        // Skip countries with invalid coordinates
+      }
+    });
     
-    if (validCountries.length === 0) {
-      console.error('No valid countries found in list');
-      return null;
-    }
+    console.log('Country distribution by continent:', continents);
+  };
+
+  // Function to categorize countries by difficulty
+  const getCountryDifficulty = (countryName) => {
+    // Well-known countries (easy)
+    const easyCountries = [
+      'United States', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Chile',
+      'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Portugal',
+      'China', 'Japan', 'India', 'Australia', 'South Africa', 'Egypt',
+      'Russia', 'Turkey', 'Iran', 'Saudi Arabia', 'Thailand', 'Vietnam'
+    ];
     
-    // Avoid recently used countries for better variety
+    // Medium difficulty countries
+    const mediumCountries = [
+      'Netherlands', 'Belgium', 'Switzerland', 'Austria', 'Poland', 'Czech Republic',
+      'Hungary', 'Romania', 'Bulgaria', 'Greece', 'Ukraine', 'Belarus',
+      'Pakistan', 'Bangladesh', 'Sri Lanka', 'Myanmar', 'Malaysia', 'Indonesia',
+      'Philippines', 'New Zealand', 'Fiji', 'Papua New Guinea',
+      'Nigeria', 'Kenya', 'Morocco', 'Algeria', 'Tunisia', 'Libya',
+      'Sudan', 'Ethiopia', 'Somalia', 'Madagascar', 'Zimbabwe', 'Botswana',
+      'Namibia', 'Mozambique', 'Tanzania', 'Uganda', 'Rwanda', 'Burundi',
+      'Colombia', 'Venezuela', 'Ecuador', 'Peru', 'Bolivia', 'Paraguay',
+      'Uruguay', 'Guyana', 'Suriname', 'French Guiana',
+      'Guatemala', 'Belize', 'El Salvador', 'Honduras', 'Nicaragua',
+      'Costa Rica', 'Panama', 'Cuba', 'Jamaica', 'Haiti', 'Dominican Republic'
+    ];
+    
+    if (easyCountries.includes(countryName)) return 'easy';
+    if (mediumCountries.includes(countryName)) return 'medium';
+    return 'hard';
+  };
+
+  const selectRandomCountry = (countryList) => {
+    // Filter out countries that are too small, have invalid coordinates, or aren't in the official 195 countries
+    const validCountries = countryList.filter(country => {
+      try {
+        const center = getCountryCenter(country);
+        const hasValidCoordinates = center.lat !== 0 && center.lon !== 0;
+        const isOfficialCountry = countryInfo[country.properties.name] && officialCountries.includes(country.properties.name);
+        return hasValidCoordinates && isOfficialCountry;
+      } catch (e) {
+        return false;
+      }
+    });
+    
+    // Filter out recently used countries (last 5 games) for better variety
     const availableCountries = validCountries.filter(country => 
       !recentlyUsedCountries.includes(country.properties.name)
     );
     
-    const countryList = availableCountries.length > 0 ? availableCountries : validCountries;
+    // If we've used too many countries recently, reset the list
+    const countriesToUse = availableCountries.length > 0 ? availableCountries : validCountries;
     
-    if (countryList.length === 0) {
-      console.error('No countries available after filtering');
-      return null;
-    }
+    // Add slight bias toward easier countries (70% chance for easy/medium, 30% for hard)
+    const random = Math.random();
+    let filteredCountries = countriesToUse;
     
-    const randomIndex = Math.floor(Math.random() * countryList.length);
-    const randomCountry = countryList[randomIndex];
-    
-    if (!randomCountry) {
-      console.error('Failed to select random country from list');
-      return null;
-    }
-    
-    console.log('Selected random country:', randomCountry?.properties?.name);
-    return randomCountry;
-  };
-
-  // Function to start a new round
-  const startNewRound = (countriesList) => {
-    if (!countriesList || countriesList.length === 0) {
-      console.error('No countries list provided to startNewRound');
-      setMessage('Error: No countries available');
-      return;
-    }
-    
-    const newSecretCountry = selectRandomCountry(countriesList);
-    if (newSecretCountry) {
-      setSecretCountry(newSecretCountry);
-      setGuessedCountries([]);
-      setMessage('Guess the country!');
-      setGameOver(false);
-      setShowSecret(false);
-      setLastDistance(null);
-      setGuess('');
-      setGameStartTime(Date.now());
-      setGameEndTime(null);
-      setScore(0);
+    if (random < 0.7) {
+      // 70% chance: prefer easy and medium countries
+      const easyMediumCountries = countriesToUse.filter(country => {
+        const difficulty = getCountryDifficulty(country.properties.name);
+        return difficulty === 'easy' || difficulty === 'medium';
+      });
       
-      // Add to recently used countries
-      if (newSecretCountry.properties && newSecretCountry.properties.name) {
-        setRecentlyUsedCountries(prev => {
-          const updated = [...prev, newSecretCountry.properties.name];
-          // Keep only last 10 to prevent memory issues
-          return updated.slice(-10);
-        });
+      if (easyMediumCountries.length > 0) {
+        filteredCountries = easyMediumCountries;
+        console.log('Using easy/medium bias - filtered to', filteredCountries.length, 'countries');
       }
     } else {
-      console.error('Failed to select random country for new round');
-      setMessage('Error starting new game - no valid countries available');
+      // 30% chance: include all countries (including hard ones)
+      console.log('Using full country pool - no difficulty bias');
     }
+    
+    // Ensure we have a good mix of countries by not excluding any valid ones
+    console.log(`Total countries available: ${countryList.length}`);
+    console.log(`Valid countries after filtering: ${validCountries.length}`);
+    console.log(`Available countries (excluding recent): ${countriesToUse.length}`);
+    console.log(`Final selection pool: ${filteredCountries.length}`);
+    
+    // Use a more robust random selection
+    const randomIndex = Math.floor(Math.random() * filteredCountries.length);
+    const selectedCountry = filteredCountries[randomIndex];
+    
+    // Log the selection for debugging
+    console.log(`Random index: ${randomIndex} out of ${filteredCountries.length}`);
+    console.log(`Selected country: ${selectedCountry.properties.name}`);
+    console.log(`Difficulty: ${getCountryDifficulty(selectedCountry.properties.name)}`);
+    
+    // Log some sample countries to verify variety
+    const sampleCountries = filteredCountries.slice(0, 10).map(c => c.properties.name);
+    console.log(`Sample of available countries: ${sampleCountries.join(', ')}`);
+    
+    // Log continent distribution for verification
+    logCountryVariety(filteredCountries);
+    
+    return selectedCountry;
   };
 
   // Load countries data
@@ -138,34 +189,22 @@ const Game = () => {
     fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
       .then(response => response.json())
       .then(data => {
-        // Filter out countries with invalid geometry
-        const validCountries = data.features.filter(country => 
-          country && 
-          country.properties && 
-          country.properties.name && 
-          country.geometry && 
-          country.geometry.coordinates
-        );
-        
-        console.log(`Loaded ${validCountries.length} valid countries out of ${data.features.length} total`);
-        setCountries(validCountries);
-        
-        // Start with a random country
-        if (validCountries.length > 0) {
-          startNewRound(validCountries);
-        } else {
-          console.error('No valid countries available for offline mode');
-          setMessage('Error: No valid countries available');
-        }
-        
-        setGameStartTime(Date.now());
-        
-        // Set up country options for autocomplete
-        const options = validCountries
-          .filter(country => country.properties.name) // Remove the countryInfo filter to include all countries
-          .map(country => country.properties.name)
-          .sort((a, b) => a.localeCompare(b)); // Proper alphabetical sorting
+        setCountries(data.features);
+        // Create options for autocomplete
+        const options = data.features.map(country => ({
+          label: country.properties.name,
+          value: country
+        }));
         setCountryOptions(options);
+        
+        // Load best score
+        loadBestScore();
+        
+        // Start new game
+        const randomCountry = selectRandomCountry(data.features);
+        setSecretCountry(randomCountry);
+        setGameStartTime(Date.now());
+        setMessage('Guess the country!');
       })
       .catch(error => {
         console.error('Error loading countries:', error);
@@ -367,20 +406,8 @@ const Game = () => {
     return center;
   };
 
-  const handleInputKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      if (guess.trim()) {
-        handleGuess();
-      }
-    }
-  };
-
   const handleGuess = () => {
-    if (!guess || gameOver) {
-      return;
-    }
+    if (!guess) return;
 
     const guessedCountry = countries.find(
       country => country.properties.name.toLowerCase() === guess.toLowerCase()
@@ -432,12 +459,10 @@ const Game = () => {
   };
 
   const handleCountrySelect = (event, newValue) => {
-    if (newValue && !gameOver) {
-      const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
-      setGuess(selectedCountry);
-      
+    if (newValue) {
+      setGuess(newValue.label);
       const guessedCountry = countries.find(
-        country => country.properties.name.toLowerCase() === selectedCountry.toLowerCase()
+        country => country.properties.name.toLowerCase() === newValue.label.toLowerCase()
       );
       
       if (guessedCountry) {
@@ -656,7 +681,7 @@ const Game = () => {
       <Header />
       <Toolbar /> {/* This creates space for the fixed AppBar */}
       
-      <Box sx={{
+      <Box sx={{ 
         position: 'absolute', 
         top: 0, 
         left: 0, 
@@ -731,12 +756,6 @@ const Game = () => {
             maxZoom={10}
           />
           {countries.map((country, index) => {
-            // Skip countries with invalid geometry
-            if (!country || !country.properties || !country.properties.name || !country.geometry || !country.geometry.coordinates) {
-              console.warn('Skipping country with invalid geometry:', country);
-              return null;
-            }
-            
             const isGuessed = guessedCountries.some(c => c.properties.name === country.properties.name);
             const guessedCenter = isGuessed ? getCountryCenter(country) : null;
             const secretCenter = getCountryCenter(secretCountry);
@@ -861,7 +880,12 @@ const Game = () => {
                       fontSize: '16px', // Prevents zoom on iOS
                       transform: 'scale(1)', // Prevents zoom
                     },
-                    onKeyDown: handleInputKeyDown
+                    onKeyDown: (e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleGuess();
+                      }
+                    }
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -889,27 +913,17 @@ const Game = () => {
               sx={{ flexGrow: 1 }}
               open={isDropdownOpen}
               onClose={() => setIsDropdownOpen(false)}
-              onKeyDown={handleInputKeyDown}
               ListboxProps={{
                 style: {
                   maxHeight: isMobile ? '100px' : '150px',
                   fontSize: { xs: '0.7rem', md: '0.9rem' }
                 }
               }}
-              filterOptions={(options, { inputValue }) => {
-                const filtered = options.filter(option => 
-                  option.toLowerCase().includes(inputValue.toLowerCase())
-                );
-                return filtered.slice(0, 10); // Limit to 10 options for better performance
-              }}
-              isOptionEqualToValue={(option, value) => 
-                option.toLowerCase() === value.toLowerCase()
-              }
             />
             <Button
               variant="contained"
               onClick={handleGuess}
-              disabled={gameOver || !guess.trim()}
+              disabled={gameOver}
               size="small"
               sx={{
                 minWidth: { xs: '40px', md: '60px' },
@@ -919,10 +933,6 @@ const Game = () => {
                 padding: { xs: '4px 8px', md: '8px 16px' },
                 '&:hover': {
                   backgroundColor: '#1565c0',
-                },
-                '&:disabled': {
-                  backgroundColor: '#666',
-                  color: '#999',
                 },
               }}
             >

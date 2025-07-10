@@ -1,448 +1,428 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Paper, Stack, Autocomplete, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
-import Header from './Header';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box, Typography, Button, Paper, Stack, Fade, Avatar, Toolbar, useTheme, useMediaQuery, IconButton } from '@mui/material';
 import countryInfo from './countryInfo';
+import Header from './Header';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import NotificationModal from './NotificationModal';
+
+const getRandomCountry = (exclude) => {
+  const keys = Object.keys(countryInfo).filter(k => k !== exclude);
+  return keys[Math.floor(Math.random() * keys.length)];
+};
+
+const getPopulation = (name) => countryInfo[name]?.population || 0;
+
+const getCountryCapital = (countryName) => {
+  return countryInfo[countryName]?.capital || 'Unknown';
+};
 
 const Population = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [guess, setGuess] = useState('');
-  const [message, setMessage] = useState('Guess the population!');
-  const [countryOptions, setCountryOptions] = useState([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMenuExpanded, setIsMenuExpanded] = useState(true);
-  const [targetCountry, setTargetCountry] = useState(null);
-  const [gameOver, setGameOver] = useState(false);
+  const [countries, setCountries] = useState([]); // [left, right]
   const [score, setScore] = useState(0);
+  const [message, setMessage] = useState('');
+  const [fadeKey, setFadeKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [bestScore, setBestScore] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(null);
-  
-  // Game state
-  const [gameEndTime, setGameEndTime] = useState(null);
+  const [streak, setStreak] = useState(0); // Add streak tracking
 
-  // Load country options and start new game
-  useEffect(() => {
-    // Set up country options for autocomplete from countryInfo
-    const options = Object.keys(countryInfo)
-      .sort((a, b) => a.localeCompare(b));
-    setCountryOptions(options);
-    
-    // Start with a random country
-    startNewGame();
+  // Add state for contact dialog
+  const [contactOpen, setContactOpen] = useState(false);
+
+  // Add state for notification modal
+  const [showIntro, setShowIntro] = useState(true);
+
+  const updateGameStats = async (finalScore, gameTime, currentStreak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('https://api.jamilweb.click/api/games/update-stats', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: 'population',
+          score: finalScore,
+          gameTime,
+          streak: currentStreak,
+          attempts: 10 // Population has 10 questions
+        }),
+      });
+
+      if (response.ok) {
+        // Update badge progress
+        await updateBadgeProgress('population', finalScore, 10, currentStreak);
+      }
+    } catch (error) {
+      console.error('Error updating game stats:', error);
+    }
+  };
+
+  const updateBadgeProgress = async (gameId, score, attempts, streak) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('https://api.jamilweb.click/api/badges/update', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId,
+          score,
+          attempts,
+          streak
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.totalNewBadges > 0) {
+          console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
+    }
+  };
+
+  // Memoize the random country generation to prevent unnecessary re-renders
+  const generateNewCountries = useCallback(() => {
+    const left = getRandomCountry();
+    const right = getRandomCountry(left);
+    return [left, right];
   }, []);
 
-  const startNewGame = () => {
-    const countryNames = Object.keys(countryInfo);
-    const randomCountryName = countryNames[Math.floor(Math.random() * countryNames.length)];
-    const randomCountry = {
-      name: randomCountryName,
-      ...countryInfo[randomCountryName]
-    };
-    setTargetCountry(randomCountry);
-    setGuess('');
-    setMessage('Guess the population!');
-    setGameOver(false);
-    setScore(0);
+  useEffect(() => {
+    // Initial two random countries
+    setCountries(generateNewCountries());
+    setMessage('Which country has a higher population?');
     setGameStartTime(Date.now());
-    setGameEndTime(null);
-  };
+  }, [generateNewCountries]);
 
-  const handleInputKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      if (guess.trim()) {
-        handleGuess();
-      }
-    }
-  };
-
-  const handleGuess = () => {
-    if (!guess || gameOver) {
-      return;
-    }
-
-    const correctPopulation = targetCountry.population;
-    const guessedPopulation = parseInt(guess.replace(/,/g, ''));
-
-    if (isNaN(guessedPopulation)) {
-      setMessage('Please enter a valid number!');
-      return;
-    }
-
-    // Calculate the difference and percentage
-    const difference = Math.abs(guessedPopulation - correctPopulation);
-    const percentageError = (difference / correctPopulation) * 100;
-
-    // Determine if the guess is correct (within 5% error)
-    if (percentageError <= 5) {
-      const endTime = Date.now();
-      const timeTaken = endTime - gameStartTime;
-      const finalScore = calculateScore(timeTaken, percentageError);
+  const handleGuess = useCallback((guessIdx) => {
+    if (isLoading) return; // Prevent multiple clicks
+    
+    setIsLoading(true);
+    const [left, right] = countries;
+    const popLeft = getPopulation(left);
+    const popRight = getPopulation(right);
+    const correct = (guessIdx === 0 && popLeft >= popRight) || (guessIdx === 1 && popRight > popLeft);
+    
+    if (correct) {
+      const newScore = score + 1;
+      const newStreak = streak + 1;
+      setScore(newScore);
+      setBestScore(prev => Math.max(prev, newScore));
+      setStreak(newStreak);
+      setMessage('Correct! 🎉');
       
-      setGameEndTime(endTime);
-      setScore(finalScore);
-      setGameOver(true);
+      // Update stats after each correct answer
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      updateGameStats(newScore, gameTime, newStreak);
       
-      setMessage('🎉 Correct! You got it right! 🎉');
+      // Faster transition for correct answers
+      setTimeout(() => {
+        setCountries(generateNewCountries());
+        setMessage('Which country has a higher population?');
+        setFadeKey(prev => prev + 1);
+        setIsLoading(false);
+      }, 600);
     } else {
-      // Show feedback based on how close the guess was
-      let feedback = '';
-      if (percentageError <= 10) {
-        feedback = 'Very close!';
-      } else if (percentageError <= 20) {
-        feedback = 'Getting warmer!';
-      } else if (percentageError <= 50) {
-        feedback = 'Not quite right.';
-      } else {
-        feedback = 'Way off!';
-      }
+      setScore(0);
+      setStreak(0); // Reset streak on wrong answer
+      setMessage(`Wrong! The answer was ${popLeft > popRight ? left : right}.`);
       
-      const direction = guessedPopulation > correctPopulation ? 'lower' : 'higher';
-      setMessage(`${feedback} Try ${direction}! (${Math.round(percentageError)}% off)`);
+      // Update stats when game ends (wrong answer)
+      const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
+      updateGameStats(0, gameTime, 0);
+      
+      setTimeout(() => {
+        setCountries(generateNewCountries());
+        setMessage('Which country has a higher population?');
+        setFadeKey(prev => prev + 1);
+        setIsLoading(false);
+        setGameStartTime(Date.now()); // Reset timer for new game
+      }, 1000);
     }
+  }, [countries, isLoading, generateNewCountries, score, gameStartTime, bestScore, streak]);
 
-    setGuess('');
-  };
+  if (showIntro) {
+    return (
+      <>
+        <Header />
+        <Toolbar />
+        <NotificationModal
+          open={showIntro}
+          onClose={() => setShowIntro(false)}
+          title="How to Play Population Showdown"
+          description={"Choose which country has the higher population. Each correct answer increases your score. Try to get the highest streak!"}
+          color="info"
+        />
+      </>
+    );
+  }
 
-  const handleCountrySelect = (event, newValue) => {
-    if (newValue && !gameOver) {
-      const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
-      setGuess(selectedCountry);
-      
-      const correctPopulation = targetCountry.population;
-      const guessedPopulation = parseInt(selectedCountry.replace(/,/g, ''));
-
-      if (isNaN(guessedPopulation)) {
-        setMessage('Please enter a valid number!');
-        return;
-      }
-
-      // Calculate the difference and percentage
-      const difference = Math.abs(guessedPopulation - correctPopulation);
-      const percentageError = (difference / correctPopulation) * 100;
-
-      // Determine if the guess is correct (within 5% error)
-      if (percentageError <= 5) {
-        const endTime = Date.now();
-        const timeTaken = endTime - gameStartTime;
-        const finalScore = calculateScore(timeTaken, percentageError);
-        
-        setGameEndTime(endTime);
-        setScore(finalScore);
-        setGameOver(true);
-        
-        setMessage('🎉 Correct! You got it right! 🎉');
-      } else {
-        // Show feedback based on how close the guess was
-        let feedback = '';
-        if (percentageError <= 10) {
-          feedback = 'Very close!';
-        } else if (percentageError <= 20) {
-          feedback = 'Getting warmer!';
-        } else if (percentageError <= 50) {
-          feedback = 'Not quite right.';
-        } else {
-          feedback = 'Way off!';
-        }
-        
-        const direction = guessedPopulation > correctPopulation ? 'lower' : 'higher';
-        setMessage(`${feedback} Try ${direction}! (${Math.round(percentageError)}% off)`);
-      }
-      
-      setGuess('');
-      setIsDropdownOpen(false);
-    }
-  };
-
-  const resetGame = () => {
-    startNewGame();
-  };
-
-  // Calculate score based on time and accuracy
-  const calculateScore = (timeTaken, percentageError) => {
-    const baseScore = 1000;
-    const timePenalty = Math.floor(timeTaken / 1000) * 5; // 5 points per second
-    const accuracyBonus = Math.max(0, 100 - percentageError * 10); // Bonus for accuracy
-    return Math.max(0, baseScore - timePenalty + accuracyBonus);
-  };
+  if (countries.length < 2) return null;
+  const [left, right] = countries;
 
   return (
     <Box sx={{ 
-      position: 'relative', 
-      width: '100vw', 
-      height: '100vh', 
-      overflow: 'hidden',
-      margin: 0,
-      padding: 0,
-      backgroundColor: '#2b2b2b',
-      touchAction: 'none',
-      WebkitOverflowScrolling: 'touch'
+      minHeight: '100vh', 
+      background: 'radial-gradient(ellipse at 60% 40%, #232a3b 60%, #121213 100%)', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center',
+      overflow: 'hidden', // Prevent scrolling issues on mobile
+      position: 'relative'
     }}>
       <Header />
       <Toolbar />
       
-      {/* Main Game Area */}
       <Box sx={{
-        position: 'absolute', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        margin: 0,
-        padding: 0,
-        zIndex: 1,
-        backgroundColor: '#2b2b2b',
-        overflow: 'hidden',
-        touchAction: 'none',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
-        alignItems: 'center'
+        flex: 1,
+        width: '100%',
+        px: { xs: 2, md: 4 },
+        py: { xs: 1, md: 2 }
       }}>
-        {/* Target Country Display */}
-        <Box sx={{ 
-          textAlign: 'center', 
-          mb: 4,
-          p: 3,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          borderRadius: 2,
-          border: '2px solid rgba(67, 206, 162, 0.5)'
-        }}>
-          <Typography variant="h3" sx={{ color: '#43cea2', mb: 2 }}>
-            {targetCountry?.name || 'Loading...'}
-          </Typography>
-          <Typography variant="h6" sx={{ color: '#ccc' }}>
-            What is the population?
-          </Typography>
-        </Box>
-
-        {/* Game Info Panel */}
-        <Paper
-          sx={{
-            padding: { xs: 2, md: 3 },
-            backgroundColor: 'rgba(0, 0, 0, 0.95)',
-            color: 'white',
-            zIndex: 1000,
-            maxWidth: { xs: '90%', md: '500px' },
-            width: '100%',
-            boxShadow: 3,
-            borderRadius: { xs: 1, md: 2 },
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <Stack spacing={isMobile ? 2 : 3}>
-            {/* Header with expand/collapse button */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Fade in key={fadeKey} timeout={400}>
+          <Paper 
+            elevation={6} 
+            sx={{ 
+              p: { xs: 1.5, md: 4 }, 
+              borderRadius: { xs: 2, md: 4 }, 
+              width: { xs: '100%', md: 400 }, 
+              maxWidth: { xs: 300, sm: 340, md: 480 },
+              textAlign: 'center', 
+              background: 'rgba(30,34,44,0.95)', 
+              color: 'white', 
+              boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)', 
+              backdropFilter: 'blur(12px)', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Background gradient overlay */}
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(0,188,212,0.1) 100%)',
+              pointerEvents: 'none'
+            }} />
+            
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Typography 
-                variant="h6"
+                variant={isMobile ? "h5" : "h4"} 
                 sx={{ 
-                  fontWeight: 'bold',
-                  color: gameOver ? '#4CAF50' : '#1976d2',
-                  fontSize: { xs: '1rem', md: '1.25rem' },
-                  lineHeight: 1.2,
-                  flex: 1,
-                  mr: 1
+                  mb: { xs: 2, md: 3 }, 
+                  fontWeight: 'bold', 
+                  color: 'transparent', 
+                  background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)', 
+                  WebkitBackgroundClip: 'text', 
+                  WebkitTextFillColor: 'transparent',
+                  fontSize: { xs: '1.75rem', md: '2.125rem' },
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                }}
+              >
+                Population Showdown
+              </Typography>
+              
+              <Typography 
+                variant={isMobile ? "body1" : "subtitle1"} 
+                sx={{ 
+                  mb: { xs: 3, md: 4 }, 
+                  color: '#b0c4de',
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  fontWeight: 500,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.5)'
                 }}
               >
                 {message}
               </Typography>
-              <IconButton
-                size="small"
-                onClick={() => setIsMenuExpanded(!isMenuExpanded)}
-                sx={{ 
-                  color: 'white',
-                  padding: 0.5,
-                  minWidth: '32px',
-                  height: '32px',
-                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
-                }}
+              
+              <Stack 
+                direction={isMobile ? "column" : "row"} 
+                spacing={isMobile ? 2 : 3} 
+                justifyContent="center" 
+                alignItems="center" 
+                sx={{ mb: { xs: 3, md: 4 } }}
               >
-                {isMenuExpanded ? '−' : '+'}
-              </IconButton>
-            </Box>
-
-            {/* Population input */}
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <TextField
-                value={guess}
-                onChange={(e) => setGuess(e.target.value)}
-                placeholder="Enter population (e.g., 1000000)"
-                disabled={gameOver}
-                fullWidth
-                variant="outlined"
-                size="large"
-                inputProps={{
-                  style: {
-                    fontSize: '16px',
-                    transform: 'scale(1)',
-                  },
-                  onKeyDown: handleInputKeyDown
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: 'white',
-                    fontSize: { xs: '0.9rem', md: '1rem' },
-                    height: { xs: '48px', md: '56px' },
-                    '&:hover fieldset': {
-                      borderColor: '#1976d2',
-                    },
-                    '& input': {
-                      padding: { xs: '12px 16px', md: '16px 20px' },
-                      fontSize: { xs: '0.9rem', md: '1rem' },
-                      fontSize: '16px !important',
-                      transform: 'scale(1) !important',
-                      '&:focus': {
-                        fontSize: '16px !important',
-                      }
-                    }
-                  },
-                }}
-              />
-              <Button
-                variant="contained"
-                onClick={handleGuess}
-                disabled={gameOver || !guess.trim()}
-                size="large"
-                sx={{
-                  minWidth: { xs: '60px', md: '80px' },
-                  height: { xs: '48px', md: '56px' },
-                  backgroundColor: '#1976d2',
-                  fontSize: { xs: '0.8rem', md: '1rem' },
-                  padding: { xs: '8px 16px', md: '12px 24px' },
-                  '&:hover': {
-                    backgroundColor: '#1565c0',
-                  },
-                  '&:disabled': {
-                    backgroundColor: '#666',
-                    color: '#999',
-                  },
-                }}
-              >
-                Guess
-              </Button>
-            </Box>
-
-            {/* Game controls */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {!gameOver && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => {
-                    setGameOver(true);
-                    setMessage(`Game Over! The population was ${targetCountry?.population?.toLocaleString()}`);
-                  }}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    borderColor: '#d32f2f',
-                    color: '#d32f2f',
-                    fontSize: { xs: '0.8rem', md: '1rem' },
-                    height: { xs: '40px', md: '48px' },
-                    '&:hover': {
-                      borderColor: '#b71c1c',
-                      backgroundColor: 'rgba(211, 47, 47, 0.04)',
-                    },
-                  }}
-                >
-                  Give Up
-                </Button>
-              )}
-              {gameOver && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={resetGame}
-                  fullWidth
-                  size="small"
-                  sx={{
-                    backgroundColor: '#4CAF50',
-                    fontSize: { xs: '0.8rem', md: '1rem' },
-                    height: { xs: '40px', md: '48px' },
-                    '&:hover': {
-                      backgroundColor: '#388E3C',
-                    },
-                  }}
-                >
-                  Next Country
-                </Button>
-              )}
-            </Box>
-
-            {/* Collapsible content */}
-            {isMenuExpanded && (
-              <>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  padding: { xs: 1, md: 1.5 },
-                  borderRadius: 1,
-                  fontSize: { xs: '0.8rem', md: '1rem' }
-                }}>
-                  <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', md: '1rem' }, color: '#ccc' }}>
-                    Target Country:
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      fontWeight: 'bold',
-                      color: '#43cea2',
-                      fontSize: { xs: '0.8rem', md: '1rem' }
+                {[left, right].map((name, idx) => (
+                  <Button 
+                    key={`${name}-${fadeKey}`} 
+                    onClick={() => handleGuess(idx)}
+                    disabled={isLoading}
+                    sx={{
+                      p: 0,
+                      borderRadius: { xs: 3, md: 4 },
+                      width: { xs: '100%', md: 200 },
+                      height: { xs: 120, md: 160 },
+                      background: 'rgba(25,118,210,0.15)',
+                      border: '2px solid rgba(25,118,210,0.3)',
+                      '&:hover': { 
+                        background: 'rgba(25,118,210,0.25)', 
+                        transform: 'translateY(-2px)',
+                        border: '2px solid rgba(25,118,210,0.5)',
+                        boxShadow: '0 8px 25px rgba(25,118,210,0.3)'
+                      },
+                      '&:active': {
+                        transform: 'translateY(0px)',
+                        transition: 'transform 0.1s'
+                      },
+                      '&:disabled': {
+                        opacity: 0.7,
+                        transform: 'none'
+                      },
+                      boxShadow: '0 4px 20px rgba(25,118,210,0.2)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      overflow: 'hidden'
                     }}
                   >
-                    {targetCountry?.name || 'Loading...'}
-                  </Typography>
-                </Box>
-
-                {gameOver && (
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    padding: { xs: 1, md: 1.5 },
-                    borderRadius: 1,
-                    fontSize: { xs: '0.8rem', md: '1rem' }
-                  }}>
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.8rem', md: '1rem' }, color: '#ccc' }}>
-                      Actual Population:
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 'bold',
-                        color: '#4CAF50',
-                        fontSize: { xs: '0.8rem', md: '1rem' }
-                      }}
-                    >
-                      {targetCountry?.population?.toLocaleString() || 'N/A'}
-                    </Typography>
-                  </Box>
-                )}
-
-                <Box sx={{ 
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  padding: { xs: 1, md: 1.5 },
-                  borderRadius: 1,
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
-                }}>
-                  <Typography variant="body2" sx={{ color: '#ccc', mb: 1 }}>
-                    💡 Tip: You need to be within 5% of the actual population to win!
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#999' }}>
-                    Example: If the population is 1,000,000, your guess must be between 950,000 and 1,050,000
-                  </Typography>
-                </Box>
-              </>
-            )}
-          </Stack>
-        </Paper>
+                    {/* Button background gradient */}
+                    <Box sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                      pointerEvents: 'none'
+                    }} />
+                    
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      p: { xs: 1.5, md: 2 }, 
+                      width: '100%',
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      <Typography 
+                        variant={isMobile ? "h6" : "h5"} 
+                        sx={{ 
+                          color: '#90caf9', 
+                          fontWeight: 700, 
+                          fontSize: { xs: 18, md: 20 }, 
+                          mb: { xs: 0.5, md: 1 }, 
+                          wordBreak: 'break-word',
+                          textAlign: 'center',
+                          lineHeight: 1.2,
+                          textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                        }}
+                      >
+                        {name}
+                      </Typography>
+                      <Typography 
+                        variant={isMobile ? "body2" : "body1"} 
+                        sx={{ 
+                          color: '#b0c4de', 
+                          fontWeight: 500, 
+                          fontSize: { xs: 14, md: 16 }, 
+                          textAlign: 'center',
+                          lineHeight: 1.2,
+                          textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                          fontStyle: 'italic'
+                        }}
+                      >
+                        {getCountryCapital(name)}
+                      </Typography>
+                    </Box>
+                  </Button>
+                ))}
+              </Stack>
+              
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2,
+                p: { xs: 2, md: 3 },
+                borderRadius: 2,
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(8px)'
+              }}>
+                <Typography 
+                  variant={isMobile ? "h6" : "h5"} 
+                  sx={{ 
+                    color: '#4caf50', 
+                    fontWeight: 'bold',
+                    fontSize: { xs: '1.5rem', md: '2rem' },
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  Score: {score}
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
+        </Fade>
       </Box>
+
+      {/* Footer with ? button */}
+      <Box sx={{
+        position: 'fixed',
+        bottom: { xs: 20, md: 16 },
+        left: 0,
+        width: '100vw',
+        display: { xs: 'none', md: 'flex' }, // Hide on mobile, show on desktop
+        justifyContent: 'center',
+        zIndex: 2001
+      }}>
+        <Button
+          variant="outlined"
+          sx={{ 
+            borderRadius: '50%', 
+            minWidth: 0, 
+            width: { xs: 48, md: 40 }, 
+            height: { xs: 48, md: 40 }, 
+            fontSize: { xs: 28, md: 24 }, 
+            color: 'white', 
+            borderColor: 'white', 
+            backgroundColor: 'rgba(0,0,0,0.7)', 
+            '&:hover': { backgroundColor: 'rgba(0,0,0,0.9)' } 
+          }}
+          onClick={() => setContactOpen(true)}
+          aria-label="Contact Info"
+        >
+          ?
+        </Button>
+      </Box>
+      <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
+        <DialogTitle>Contact</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            For questions, contact: <br />
+            <b>Jamil Khalaf</b><br />
+            <a href="mailto:jamilkhalaf04@gmail.com">jamilkhalaf04@gmail.com</a>
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

@@ -106,34 +106,22 @@ const updateGameStats = async (finalScore, streak, attempts) => {
   }
 };
 
-const Shaple = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
+const Shaple = () => {
   const [mode, setMode] = useState('world');
   const [secret, setSecret] = useState('');
   const [guess, setGuess] = useState('');
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
+  const [showIntro, setShowIntro] = useState(true);
   const [guessesLeft, setGuessesLeft] = useState(5);
   const [gameOver, setGameOver] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
 
   useEffect(() => {
-    if (!showIntro) {
-      if (targetCountry && isOnline) {
-        // Use the provided target for online games
-        setSecret(targetCountry);
-        setGuess('');
-        setMessage('');
-        setGuessesLeft(5);
-        setGameOver(false);
-      } else {
-        // Use random target for offline games
-        startNewGame();
-      }
-    }
+    if (!showIntro) startNewGame();
     // eslint-disable-next-line
-  }, [mode, showIntro, targetCountry, isOnline]);
+  }, [mode, showIntro]);
 
   const startNewGame = () => {
     setSecret(mode === 'world' ? getRandom(countryList) : getRandom(stateList));
@@ -154,7 +142,7 @@ const Shaple = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null,
   };
 
   const handleGuess = () => {
-    if (gameOver || !secret || disabled) return;
+    if (gameOver || !secret) return;
     const guessName = guess.trim();
     const validList = mode === 'world' ? countryList : stateList;
     if (!validList.includes(guessName)) {
@@ -162,14 +150,6 @@ const Shaple = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null,
       setGuess('');
       return;
     }
-    
-    // For online mode, immediately call onAnswerSubmit and end the game
-    if (isOnline && onAnswerSubmit) {
-      console.log('Shaple: Online mode - calling onAnswerSubmit with:', guessName);
-      onAnswerSubmit(guessName);
-      return; // End the game immediately for online mode
-    }
-    
     if (guessName.toLowerCase() === secret.toLowerCase()) {
       setScore(score + 1);
       setStreak(streak + 1);

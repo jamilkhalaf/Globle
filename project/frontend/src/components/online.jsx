@@ -48,8 +48,14 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import TimerIcon from '@mui/icons-material/Timer';
 import GroupIcon from '@mui/icons-material/Group';
 import Header from './Header';
-import OnlineGame from './OnlineGame';
 import { io } from 'socket.io-client';
+
+// Import online game components
+import OnlineGloble from './online/Globle';
+import OnlinePopulation from './online/Population';
+import OnlineUS from './online/US';
+import OnlineFindle from './online/Findle';
+import OnlineFlagle from './online/Flagle';
 
 const Online = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -85,13 +91,6 @@ const Online = () => {
 
     // Load leaderboard data
     fetchLeaderboard();
-
-    // Automatically connect to socket if user is logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      console.log('Auto-connecting to socket server...');
-      connectSocket();
-    }
 
     return () => {
       window.removeEventListener('online', handleOnline);
@@ -137,7 +136,7 @@ const Online = () => {
     }
   };
 
-  const connectSocket = (gameType = null) => {
+  const connectSocket = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       setError('Please login to play online');
@@ -146,65 +145,27 @@ const Online = () => {
 
     // Import socket.io-client dynamically
     const socketInstance = io('https://api.jamilweb.click', {
-      auth: { token },
-      timeout: 10000, // 10 second timeout
-      forceNew: true
+      auth: { token }
     });
 
-    // Set a timeout for connection
-    const connectionTimeout = setTimeout(() => {
-      if (!socketInstance.connected) {
-        console.log('Socket connection timeout');
-        setIsConnected(false);
-        setError('Connection timeout. Please try again.');
-        socketInstance.disconnect();
-      }
-    }, 10000);
-
     socketInstance.on('connect', () => {
-      clearTimeout(connectionTimeout);
       setIsConnected(true);
       setError('');
-      console.log('Socket connected successfully');
-      
-      // If we have a game type to join, do it now
-      if (gameType) {
-        console.log('Joining queue after connection for:', gameType);
-        console.log('Emitting joinQueue event with:', { gameType: gameType });
-        socketInstance.emit('joinQueue', { gameType: gameType });
-      }
     });
 
     socketInstance.on('disconnect', () => {
       setIsConnected(false);
-      console.log('Socket disconnected');
-    });
-
-    socketInstance.on('connect_error', (error) => {
-      console.log('Socket connection error:', error);
-      setIsConnected(false);
-      setError('Failed to connect to game server. Please try again.');
-    });
-
-    socketInstance.on('error', (error) => {
-      console.log('Socket error:', error);
-      setIsConnected(false);
-      setError('Connection error. Please try again.');
     });
 
     socketInstance.on('queueJoined', (data) => {
-      console.log('Joined queue successfully:', data);
-      console.log('Queue joined for game type:', data.gameType);
+      console.log('Joined queue:', data);
     });
 
     socketInstance.on('queueError', (data) => {
-      console.log('Queue error:', data);
       setError(data.message);
     });
 
     socketInstance.on('matchFound', (data) => {
-      console.log('Match found:', data);
-      console.log('Match data:', JSON.stringify(data, null, 2));
       setCurrentMatch(data);
       setGameState('countdown');
       setGameQuestion(data.question);
@@ -213,106 +174,18 @@ const Online = () => {
     });
 
     socketInstance.on('gameStart', (data) => {
-      console.log('Game started:', data);
       setGameState('playing');
       setGameTimer(60); // 60 second game
       setGameQuestion(data.question);
     });
 
-    socketInstance.on('playerCorrect', (data) => {
-      console.log('Player got correct answer:', data);
-      console.log('Player correct data details:', {
-        correctPlayer: data.correctPlayer,
-        correctAnswer: data.correctAnswer,
-        timeTaken: data.timeTaken
-      });
-      
-      // Show notification that other player got it right
-      const currentUsername = localStorage.getItem('username') || 'You';
-      if (data.correctPlayer !== currentUsername) {
-        // Show notification that opponent got it right
-        setError(`${data.correctPlayer} found the answer in ${data.timeTaken}s! Moving to next round...`);
-        
-        // Clear the error after 3 seconds
-        setTimeout(() => {
-          setError('');
-        }, 3000);
-      }
-    });
-
     socketInstance.on('gameEnd', (data) => {
-      console.log('Game ended:', data);
-      console.log('Game end data details:', {
-        winner: data.winner,
-        loser: data.loser,
-        winnerTime: data.winnerTime,
-        loserTime: data.loserTime,
-        correctAnswer: data.correctAnswer,
-        points: data.points,
-        bothCorrect: data.bothCorrect,
-        bothWrong: data.bothWrong,
-        timeout: data.timeout,
-        gameOver: data.gameOver,
-        finalScore: data.finalScore
-      });
       setGameState('ended');
       setMatchResult(data);
       setGameTimer(0);
     });
 
-    socketInstance.on('roundEnd', (data) => {
-      console.log('Round ended:', data);
-      console.log('Round end data details:', {
-        roundWinner: data.roundWinner,
-        roundLoser: data.roundLoser,
-        winnerTime: data.winnerTime,
-        loserTime: data.loserTime,
-        correctAnswer: data.correctAnswer,
-        player1Rounds: data.player1Rounds,
-        player2Rounds: data.player2Rounds,
-        currentRound: data.currentRound,
-        gameOver: data.gameOver
-      });
-      setGameState('roundEnd');
-      setMatchResult(data);
-      // Update round information
-      setCurrentMatch(prev => ({
-        ...prev,
-        player1Rounds: data.player1Rounds,
-        player2Rounds: data.player2Rounds,
-        currentRound: data.currentRound
-      }));
-      
-      // Force a re-render after a short delay to ensure UI updates
-      setTimeout(() => {
-        console.log('Forcing UI update after roundEnd');
-        setGameState('roundEnd');
-      }, 100);
-    });
-
-    socketInstance.on('nextRound', (data) => {
-      console.log('Next round starting:', data);
-      console.log('Next round data details:', {
-        matchId: data.matchId,
-        gameType: data.gameType,
-        sharedTarget: data.sharedTarget,
-        startTime: data.startTime,
-        currentRound: data.currentRound
-      });
-      setGameState('playing');
-      setMatchResult(null);
-      setGameTimer(0);
-      // Update match data with new round information
-      setCurrentMatch(prev => ({
-        ...prev,
-        sharedTarget: data.sharedTarget,
-        currentRound: data.currentRound,
-        startTime: data.startTime
-      }));
-    });
-
     socketInstance.on('opponentDisconnected', () => {
-      console.log('Opponent disconnected');
       setError('Opponent disconnected');
       setGameState('waiting');
       setCurrentMatch(null);
@@ -342,7 +215,7 @@ const Online = () => {
     
     // If random is selected, pick a random game type
     if (selectedGameType === 'random') {
-      const gameTypes = ['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US'];
+      const gameTypes = ['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'];
       const randomGameType = gameTypes[Math.floor(Math.random() * gameTypes.length)];
       setSelectedGameType(randomGameType);
     }
@@ -351,11 +224,6 @@ const Online = () => {
   };
 
   const handleConfirmJoinGame = () => {
-    console.log('handleConfirmJoinGame called');
-    console.log('selectedGameType:', selectedGameType);
-    console.log('socket exists:', !!socket);
-    console.log('isConnected:', isConnected);
-    
     setJoinGameDialog(false);
     setIsWaitingForPlayer(true);
     setWaitingTime(0);
@@ -365,12 +233,11 @@ const Online = () => {
     
     // Connect socket if not connected
     if (!socket) {
-      console.log('No socket, connecting...');
-      connectSocket(selectedGameType);
-    } else {
-      // Socket already exists, join queue immediately
-      console.log('Socket exists, joining queue for:', selectedGameType);
-      console.log('Emitting joinQueue event with:', { gameType: selectedGameType });
+      connectSocket();
+    }
+    
+    // Join queue
+    if (socket && selectedGameType) {
       socket.emit('joinQueue', { gameType: selectedGameType });
     }
   };
@@ -388,22 +255,9 @@ const Online = () => {
   };
 
   const handleSubmitAnswer = (answer) => {
-    console.log('handleSubmitAnswer called with answer:', answer);
-    console.log('socket exists:', !!socket);
-    console.log('currentMatch:', currentMatch);
-    
-    if (!socket || !currentMatch) {
-      console.log('Missing socket or currentMatch');
-      return;
-    }
+    if (!socket || !currentMatch) return;
     
     const timeTaken = 60 - gameTimer;
-    console.log('Emitting submitAnswer with:', {
-      matchId: currentMatch.matchId,
-      answer: answer,
-      timeTaken
-    });
-    
     socket.emit('submitAnswer', {
       matchId: currentMatch.matchId,
       answer: answer,
@@ -446,6 +300,31 @@ const Online = () => {
       case 'starting': return 'warning';
       case 'full': return 'error';
       default: return 'default';
+    }
+  };
+
+  // Render the appropriate online game component
+  const renderOnlineGame = () => {
+    const gameProps = {
+      socket,
+      matchId: currentMatch?.matchId,
+      gameState,
+      onAnswerSubmit: handleSubmitAnswer
+    };
+
+    switch (selectedGameType) {
+      case 'Globle':
+        return <OnlineGloble {...gameProps} />;
+      case 'Population':
+        return <OnlinePopulation {...gameProps} />;
+      case 'US':
+        return <OnlineUS {...gameProps} />;
+      case 'Findle':
+        return <OnlineFindle {...gameProps} />;
+      case 'Flagle':
+        return <OnlineFlagle {...gameProps} />;
+      default:
+        return renderGamePage();
     }
   };
 
@@ -521,7 +400,7 @@ const Online = () => {
             </Typography>
             
             <Grid container spacing={2}>
-              {['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US'].map((gameType) => (
+              {['Globle', 'Population', 'Findle', 'Flagle', 'Worldle', 'Capitals', 'Hangman', 'Shaple', 'US', 'Namle'].map((gameType) => (
                 <Grid item xs={12} sm={6} md={4} key={gameType}>
                   <Card 
                     sx={{ 
@@ -703,15 +582,116 @@ const Online = () => {
         zIndex: 10000
       }}
     >
-      <OnlineGame
-        matchData={currentMatch}
-        gameState={gameState}
-        gameTimer={gameTimer}
-        onAnswerSubmit={handleSubmitAnswer}
-        onLeaveGame={handleLeaveGame}
-        onNewOpponent={handleNewOpponent}
-        matchResult={matchResult}
-      />
+      <Card sx={{ bgcolor: '#1e1e1e', color: 'white', p: 4, maxWidth: 600, width: '100%' }}>
+        <CardContent>
+          {gameState === 'countdown' && (
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
+                Match Found!
+              </Typography>
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                {currentMatch?.players?.map(p => p.username).join(' vs ')}
+              </Typography>
+              <Typography variant="h6" sx={{ mb: 3 }}>
+                Game: {currentMatch?.gameType}
+              </Typography>
+              <CircularProgress size={60} sx={{ color: '#43cea2' }} />
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Starting in 3 seconds...
+              </Typography>
+            </Box>
+          )}
+
+          {gameState === 'playing' && (
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h4" sx={{ color: '#43cea2' }}>
+                  {currentMatch?.gameType}
+                </Typography>
+                <Typography variant="h4" sx={{ color: gameTimer <= 10 ? '#f44336' : '#43cea2' }}>
+                  {Math.floor(gameTimer / 60)}:{(gameTimer % 60).toString().padStart(2, '0')}
+                </Typography>
+              </Box>
+
+              <Typography variant="h5" sx={{ mb: 3, textAlign: 'center' }}>
+                {gameQuestion}
+              </Typography>
+
+              <TextField
+                fullWidth
+                label="Your Answer"
+                value={gameAnswer}
+                onChange={(e) => setGameAnswer(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSubmitAnswer(gameAnswer)}
+                sx={{
+                  mb: 3,
+                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.7)' },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                    '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                    '&.Mui-focused fieldset': { borderColor: '#43cea2' }
+                  },
+                  '& .MuiInputBase-input': { color: 'white' }
+                }}
+              />
+
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => handleSubmitAnswer(gameAnswer)}
+                  disabled={!gameAnswer.trim()}
+                  sx={{ bgcolor: '#43cea2' }}
+                >
+                  Submit Answer
+                </Button>
+              </Box>
+            </Box>
+          )}
+
+          {gameState === 'ended' && matchResult && (
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
+                Game Over!
+              </Typography>
+              
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                Winner: {matchResult.winner}
+              </Typography>
+              
+              <Typography variant="body1" sx={{ mb: 3 }}>
+                Correct Answer: {matchResult.correctAnswer?.answer}
+              </Typography>
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ color: '#43cea2' }}>
+                  Points: {matchResult.points ? Object.values(matchResult.points)[0] : 0}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleLeaveGame}
+                  sx={{ 
+                    color: 'white', 
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    '&:hover': { borderColor: 'white' }
+                  }}
+                >
+                  Leave Game
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleNewOpponent}
+                  sx={{ bgcolor: '#43cea2' }}
+                >
+                  Find New Opponent
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
     </Box>
   );
 
@@ -735,16 +715,9 @@ const Online = () => {
         </Typography>
 
         {/* Connection Status */}
-        {!isConnected && localStorage.getItem('token') && (
+        {!isConnected && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Connecting to game server... Please wait.
-          </Alert>
-        )}
-        
-        {/* Login Required */}
-        {!localStorage.getItem('token') && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Please login to play online games.
+            Not connected to game server. Please login to play online.
           </Alert>
         )}
 
@@ -888,8 +861,13 @@ const Online = () => {
         {/* Waiting Page */}
         {isWaitingForPlayer && renderWaitingPage()}
 
-        {/* Game Page */}
-        {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && renderGamePage()}
+        {/* Game Page - Only show for games that don't have specific online components */}
+        {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && 
+         !['Globle', 'Population', 'US', 'Findle', 'Flagle'].includes(selectedGameType) && renderGamePage()}
+
+        {/* Online Game Components */}
+        {(gameState === 'countdown' || gameState === 'playing' || gameState === 'ended') && 
+         ['Globle', 'Population', 'US', 'Findle', 'Flagle'].includes(selectedGameType) && renderOnlineGame()}
       </Box>
     </Box>
   );

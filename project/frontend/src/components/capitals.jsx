@@ -4,7 +4,7 @@ import officialCountries from './officialCountries';
 import Header from './Header';
 import NotificationModal from './NotificationModal';
 
-const Capitals = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
+const Capitals = () => {
   const [currentCountry, setCurrentCountry] = useState('');
   const [options, setOptions] = useState([]);
   const [correctAnswer, setCorrectAnswer] = useState('');
@@ -15,7 +15,7 @@ const Capitals = ({ targetCountry = null, isOnline = false, onAnswerSubmit = nul
   const [isCorrect, setIsCorrect] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
+  const [showIntro, setShowIntro] = useState(true);
   const [bestStreak, setBestStreak] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(null);
 
@@ -28,29 +28,6 @@ const Capitals = ({ targetCountry = null, isOnline = false, onAnswerSubmit = nul
   const allCapitals = Object.values(countryInfo)
     .map(country => country.capital)
     .filter(capital => capital && capital.trim() !== '');
-
-  // Initialize target for online mode
-  useEffect(() => {
-    if (targetCountry && isOnline) {
-      console.log('Capitals: Using provided target country:', targetCountry);
-      setCurrentCountry(targetCountry);
-      const correctCapital = countryInfo[targetCountry]?.capital;
-      if (correctCapital) {
-        setCorrectAnswer(correctCapital);
-        // Generate 3 wrong options
-        const wrongCapitals = allCapitals
-          .filter(capital => capital !== correctCapital)
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 3);
-        
-        // Combine and shuffle all options
-        const allOptions = [...wrongCapitals, correctCapital]
-          .sort(() => Math.random() - 0.5);
-        
-        setOptions(allOptions);
-      }
-    }
-  }, [targetCountry, isOnline, allCapitals]);
 
   const updateGameStats = async (finalScore, gameTime, bestStreak) => {
     try {
@@ -154,13 +131,6 @@ const Capitals = ({ targetCountry = null, isOnline = false, onAnswerSubmit = nul
       setStreak(newStreak);
       setScore(prev => prev + 1);
       setBestStreak(prev => Math.max(prev, newStreak));
-      
-      // For online mode, immediately call onAnswerSubmit and end the game
-      if (isOnline && onAnswerSubmit) {
-        console.log('Capitals: Online mode - calling onAnswerSubmit with:', selectedCapital);
-        onAnswerSubmit(selectedCapital);
-        return; // End the game immediately for online mode
-      }
     } else {
       setStreak(0);
     }

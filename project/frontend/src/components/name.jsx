@@ -13,12 +13,12 @@ import DialogActions from '@mui/material/DialogActions';
 import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
 
-const Name = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
+const Name = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [countries, setCountries] = useState([]);
-  const [targetCountryState, setTargetCountryState] = useState(null);
+  const [targetCountry, setTargetCountry] = useState(null);
   const [streak, setStreak] = useState(0);
   const [message, setMessage] = useState('Loading...');
   const [gameOver, setGameOver] = useState(false);
@@ -34,7 +34,7 @@ const Name = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   const [contactOpen, setContactOpen] = useState(false);
 
   // Add state for notification modal
-  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
+  const [showIntro, setShowIntro] = useState(true);
 
   const updateGameStats = async (finalScore, gameTime, bestStreak) => {
     try {
@@ -101,22 +101,14 @@ const Name = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       .then(response => response.json())
       .then(data => {
         setCountries(data.features);
-        if (targetCountry && isOnline) {
-          // Use the provided target for online games
-          console.log('Name: Using provided target country:', targetCountry);
-          setTargetCountryState(data.features.find(c => c.properties.name === targetCountry));
-          setMessage(`Click on ${targetCountry} on the map!`);
-        } else {
-          // Use random target for offline games
-          startNewRound(data.features);
-        }
+        startNewRound(data.features);
         setGameStartTime(Date.now());
       })
       .catch(error => {
         console.error('Error loading countries:', error);
         setMessage('Error loading countries data');
       });
-  }, [targetCountry, isOnline]);
+  }, []);
 
   // Handle map initialization and viewport fitting
   useEffect(() => {
@@ -261,7 +253,7 @@ const Name = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
 
   const startNewRound = (countryList) => {
     const randomCountry = selectRandomCountry(countryList);
-    setTargetCountryState(randomCountry);
+    setTargetCountry(randomCountry);
     setMessage(`Click on ${randomCountry.properties.name} on the map!`);
     setShowTarget(false);
     setClickedCountry(null);
@@ -278,54 +270,44 @@ const Name = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   };
 
   const handleCountryClick = (clickedCountry) => {
-    if (isLoading || !targetCountryState || showContinueButton || disabled) return;
+    if (isLoading || !targetCountry || showContinueButton) return;
     
     setIsLoading(true);
     setClickedCountry(clickedCountry);
     
     const clickedName = clickedCountry.properties.name;
-    const targetName = targetCountryState.properties.name;
+    const targetName = targetCountry.properties.name;
     
     if (clickedName === targetName) {
       // Correct guess
-      setMessage('🎉 Correct! Well done!');
-      setStreak(prev => prev + 1);
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      setBestScore(prev => Math.max(prev, newStreak));
+      setMessage(`🎉 Correct! +1 point!`);
+      setShowTarget(true);
       setShowContinueButton(true);
-      setGameOver(true);
+      setIsLoading(false);
       
-      // Update stats
+      // Update stats after each correct answer
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
-      updateGameStats(1, gameTime, streak + 1);
+      updateGameStats(newStreak, gameTime, newStreak);
       
       // Zoom in to the correct country
-      zoomToCountry(targetCountryState);
-      
-      // For online mode, immediately call onAnswerSubmit and end the game
-      if (isOnline && onAnswerSubmit) {
-        console.log('Name: Online mode - calling onAnswerSubmit with:', clickedName);
-        onAnswerSubmit(clickedName);
-        return; // End the game immediately for online mode
-      }
+      zoomToCountry(targetCountry);
     } else {
       // Wrong guess
-      setMessage(`Wrong! You clicked ${clickedName}. The correct answer was ${targetName}.`);
       setStreak(0);
+      setMessage(`❌ Wrong! That's ${clickedName}. The correct answer was ${targetName}.`);
+      setShowTarget(true);
       setShowContinueButton(true);
-      setGameOver(true);
+      setIsLoading(false);
       
-      // Update stats
+      // Update stats when game ends (wrong answer)
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
       updateGameStats(0, gameTime, 0);
       
       // Zoom in to the correct country
-      zoomToCountry(targetCountryState);
-      
-      // For online mode, immediately call onAnswerSubmit and end the game
-      if (isOnline && onAnswerSubmit) {
-        console.log('Name: Online mode - calling onAnswerSubmit with:', clickedName);
-        onAnswerSubmit(clickedName);
-        return; // End the game immediately for online mode
-      }
+      zoomToCountry(targetCountry);
     }
   };
 
@@ -464,7 +446,7 @@ const Name = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
             maxZoom={10}
           />
           {countries.map((country, index) => {
-            const isTarget = targetCountryState && country.properties.name === targetCountryState.properties.name;
+            const isTarget = targetCountry && country.properties.name === targetCountry.properties.name;
             const isClicked = clickedCountry && country.properties.name === clickedCountry.properties.name;
             
             let fillColor = '#333'; // Default for unclicked countries

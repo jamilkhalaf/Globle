@@ -12,7 +12,7 @@ import NotificationModal from './NotificationModal';
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 
-const Wordle = ({ targetWord: propTargetWord = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
+const Wordle = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [targetWord, setTargetWord] = useState('');
@@ -36,7 +36,7 @@ const Wordle = ({ targetWord: propTargetWord = null, isOnline = false, onAnswerS
   // Add state for contact dialog
   const [contactOpen, setContactOpen] = useState(false);
 
-  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     const handleResize = () => {
@@ -81,43 +81,28 @@ const Wordle = ({ targetWord: propTargetWord = null, isOnline = false, onAnswerS
   }, [isMobile]);
 
   useEffect(() => {
-    // Don't initialize if targetWord is null and we're in online mode
-    if (isOnline && !propTargetWord) {
-      console.log('Wordle: Waiting for targetWord to be set');
-      return;
-    }
+    const fetchRandomWord = async () => {
+      try {
+        const response = await fetch('https://api.datamuse.com/words?sp=?????&max=1000');
+        const words = await response.json();
+        const fiveLetterWords = words
+          .map(word => word.word.toUpperCase())
+          .filter(word => word.length === 5);
+        
+        const randomWord = fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
+        setTargetWord(randomWord);
+        setMessage('Guess the word!');
+      } catch (error) {
+        console.error('Error fetching word:', error);
+        // Fallback to a default word if API fails
+        setTargetWord('LOCAL');
+        setMessage('Guess the word!');
+      }
+    };
 
-    if (propTargetWord && isOnline) {
-      // Use the provided target word for online games
-      console.log('Wordle: Using provided target word:', propTargetWord);
-      setTargetWord(propTargetWord.toUpperCase());
-      setMessage('Guess the word!');
-      loadStreakData();
-    } else {
-      // Use random word for offline games
-      const fetchRandomWord = async () => {
-        try {
-          const response = await fetch('https://api.datamuse.com/words?sp=?????&max=1000');
-          const words = await response.json();
-          const fiveLetterWords = words
-            .map(word => word.word.toUpperCase())
-            .filter(word => word.length === 5);
-          
-          const randomWord = fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
-          setTargetWord(randomWord);
-          setMessage('Guess the word!');
-        } catch (error) {
-          console.error('Error fetching word:', error);
-          // Fallback to a default word if API fails
-          setTargetWord('LOCAL');
-          setMessage('Guess the word!');
-        }
-      };
-
-      fetchRandomWord();
-      loadStreakData();
-    }
-  }, [propTargetWord, isOnline]);
+    fetchRandomWord();
+    loadStreakData();
+  }, []);
 
   // Load streak data from localStorage
   const loadStreakData = () => {
@@ -275,14 +260,6 @@ const Wordle = ({ targetWord: propTargetWord = null, isOnline = false, onAnswerS
         setShowConfetti(true);
         setMessage('🎉 Amazing! You got it! 🎉');
         updateStreak(true);
-        
-        // For online mode, immediately call onAnswerSubmit and end the game
-        if (isOnline && onAnswerSubmit) {
-          console.log('Wordle: Online mode - calling onAnswerSubmit with:', currentInput);
-          onAnswerSubmit(currentInput);
-          return;
-        }
-        
         return;
       }
 

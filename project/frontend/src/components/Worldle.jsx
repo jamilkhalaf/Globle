@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Box, Typography, Paper, Button, Stack, Fade, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
@@ -105,7 +105,7 @@ function getHints(country, extra, revealed, target) {
   return hints;
 }
 
-const Worldle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false }) => {
+const Worldle = () => {
   const [target, setTarget] = useState(() => getRandomCountry());
   const [guess, setGuess] = useState('');
   const [inputValue, setInputValue] = useState('');
@@ -116,7 +116,7 @@ const Worldle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null
   const [inputError, setInputError] = useState('');
   const [round, setRound] = useState(0);
   const [scrollHint, setScrollHint] = useState(false);
-  const [showIntro, setShowIntro] = useState(!isOnline); // Don't show intro for online games
+  const [showIntro, setShowIntro] = useState(true);
   const [openImage, setOpenImage] = useState(null); // null | { type: 'image' | 'flag', src: string }
   const [bestScore, setBestScore] = useState(0);
 
@@ -124,15 +124,6 @@ const Worldle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null
   const extra = countryExtra[target];
   const flagCode = getFlagCode(target);
   const flagSrc = `/flags/${flagCode}.png`;
-
-  // Initialize target for online mode
-  useEffect(() => {
-    if (targetCountry && isOnline) {
-      console.log('Worldle: Using provided target country:', targetCountry);
-      setTarget(targetCountry);
-      setMessage('Guess the country!');
-    }
-  }, [targetCountry, isOnline]);
 
   const updateGameStats = async (finalScore, gameTime, bestStreak) => {
     try {
@@ -210,13 +201,6 @@ const Worldle = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null
       setMessage('🎉 Correct!');
       setGameOver(true);
       setRevealed(6);
-      
-      // For online mode, immediately call onAnswerSubmit and end the game
-      if (isOnline && onAnswerSubmit) {
-        console.log('Worldle: Online mode - calling onAnswerSubmit with:', guess);
-        onAnswerSubmit(guess);
-        return; // End the game immediately for online mode
-      }
       
       // Calculate score based on number of guesses (fewer guesses = higher score)
       const score = Math.max(1, NUM_TRIES - guesses.length);
