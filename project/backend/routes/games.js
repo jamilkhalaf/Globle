@@ -17,7 +17,7 @@ router.use((req, res, next) => {
 // @desc    Update user game statistics
 // @access  Private
 router.post('/update-stats', [
-  body('gameId').isIn(['globle', 'population', 'findle', 'flagle', 'worldle', 'capitals', 'hangman', 'shaple', 'usstates'])
+  body('gameId').isIn(['globle', 'population', 'findle', 'flagle', 'worldle', 'capitals', 'hangman', 'shaple', 'usstates', 'namle', 'satle'])
     .withMessage('Invalid game ID'),
   body('score').isNumeric().withMessage('Score must be a number'),
   body('gameTime').optional().isNumeric().withMessage('Game time must be a number'),
@@ -110,6 +110,10 @@ router.post('/update-stats', [
     } else if (gameId === 'shaple') {
       isWin = score > 0;
     } else if (gameId === 'usstates') {
+      isWin = score > 0;
+    } else if (gameId === 'namle') {
+      isWin = score > 0;
+    } else if (gameId === 'satle') {
       isWin = score > 0;
     }
 

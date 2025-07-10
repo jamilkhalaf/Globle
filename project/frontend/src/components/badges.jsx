@@ -38,6 +38,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
+import SatelliteIcon from '@mui/icons-material/Satellite';
 
 const Badges = () => {
   const theme = useTheme();
@@ -139,7 +140,8 @@ const Badges = () => {
       ...(badges.capitals || []),
       ...(badges.hangman || []),
       ...(badges.usstates || []),
-      ...(badges.namle || [])
+      ...(badges.namle || []),
+      ...(badges.satle || [])
     ];
     return allBadges.find(badge => badge.badgeId === badgeId);
   };
@@ -1365,6 +1367,62 @@ const Badges = () => {
           unlocked: userStats?.games?.namle?.currentStreak >= 10,
           progress: Math.min(userStats?.games?.namle?.currentStreak || 0, 10),
           maxProgress: 10
+        }
+      ]
+    },
+    {
+      name: 'Satle',
+      icon: <SatelliteIcon sx={{ fontSize: 20, color: '#9c27b0' }} />,
+      badges: [
+        {
+          id: 'satle_first_win',
+          name: 'Satle Explorer',
+          description: 'Win your first Satle game',
+          icon: <SatelliteIcon sx={{ fontSize: 24, color: '#9c27b0' }} />,
+          color: 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)',
+          unlocked: userStats?.games?.satle?.gamesPlayed >= 1,
+          progress: userStats?.games?.satle?.gamesPlayed || 0,
+          maxProgress: 1
+        },
+        {
+          id: 'satle_10_games',
+          name: 'Satle Regular',
+          description: 'Play 10 Satle games',
+          icon: <SatelliteIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: userStats?.games?.satle?.gamesPlayed >= 10,
+          progress: Math.min(userStats?.games?.satle?.gamesPlayed || 0, 10),
+          maxProgress: 10
+        },
+        {
+          id: 'satle_50_games',
+          name: 'Satle Master',
+          description: 'Play 50 Satle games',
+          icon: <SatelliteIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: userStats?.games?.satle?.gamesPlayed >= 50,
+          progress: Math.min(userStats?.games?.satle?.gamesPlayed || 0, 50),
+          maxProgress: 50
+        },
+        {
+          id: 'satle_perfect_guess',
+          name: 'Satle Perfect',
+          description: 'Guess correctly on first attempt',
+          icon: <EmojiEventsIcon sx={{ fontSize: 24, color: '#FFD700' }} />,
+          color: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          unlocked: false, // This will be determined by the backend badge system
+          progress: 0,
+          maxProgress: 1
+        },
+        {
+          id: 'satle_quick_guess',
+          name: 'Satle Quick',
+          description: 'Guess correctly within 2 attempts',
+          icon: <StarIcon sx={{ fontSize: 24, color: '#2196F3' }} />,
+          color: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
+          unlocked: false, // This will be determined by the backend badge system
+          progress: 0,
+          maxProgress: 2
         }
       ]
     }
