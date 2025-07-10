@@ -70,6 +70,24 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint to check queue status
+app.get('/api/debug/queues', (req, res) => {
+  const queueStatus = {};
+  Object.keys(gameQueues).forEach(gameType => {
+    queueStatus[gameType] = {
+      players: gameQueues[gameType].length,
+      usernames: gameQueues[gameType].map(p => p.username)
+    };
+  });
+  
+  res.json({
+    queues: queueStatus,
+    connectedUsers: userSockets.size,
+    activeMatches: activeMatches.size,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -229,14 +247,20 @@ io.use(async (socket, next) => {
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.username} (${socket.userId})`);
+  console.log(`🔌 User connected: ${socket.username} (${socket.userId})`);
   
   userSockets.set(socket.userId, socket);
+  console.log(`📊 Total connected users: ${userSockets.size}`);
+  console.log(`👥 Connected users:`, Array.from(userSockets.keys()).map(id => {
+    const userSocket = userSockets.get(id);
+    return userSocket ? userSocket.username : 'unknown';
+  }));
 
   // Join game queue
   socket.on('joinQueue', async (data) => {
     const { gameType } = data;
-    console.log(`User ${socket.username} joining queue for ${gameType}`);
+    console.log(`🎯 User ${socket.username} joining queue for ${gameType}`);
+    console.log(`📊 Current queue state for ${gameType}:`, gameQueues[gameType].length, 'players');
     
     if (!gameQueues[gameType]) {
       gameQueues[gameType] = [];
@@ -245,6 +269,7 @@ io.on('connection', (socket) => {
     // Check if user is already in queue
     const alreadyInQueue = gameQueues[gameType].find(player => player.userId === socket.userId);
     if (alreadyInQueue) {
+      console.log(`⚠️ User ${socket.username} already in queue for ${gameType}`);
       socket.emit('queueError', { message: 'Already in queue for this game' });
       return;
     }
@@ -261,7 +286,9 @@ io.on('connection', (socket) => {
     socket.join(`queue_${gameType}`);
     socket.emit('queueJoined', { gameType, position: gameQueues[gameType].length });
     
-    console.log(`Queue for ${gameType}: ${gameQueues[gameType].length} players`);
+    console.log(`✅ User ${socket.username} added to queue for ${gameType}`);
+    console.log(`📊 Queue for ${gameType}: ${gameQueues[gameType].length} players`);
+    console.log(`👥 All players in queue:`, gameQueues[gameType].map(p => p.username));
 
     // Try to match players
     await tryMatchPlayers(gameType);
@@ -352,7 +379,7 @@ io.on('connection', (socket) => {
 
   // Disconnect handling
   socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.username}`);
+    console.log(`🔌 User disconnected: ${socket.username}`);
     
     // Remove from all queues
     Object.keys(gameQueues).forEach(gameType => {
@@ -362,12 +389,14 @@ io.on('connection', (socket) => {
     // Remove from active matches
     for (const [matchId, match] of activeMatches.entries()) {
       if (match.players.some(p => p.userId === socket.userId)) {
+        console.log(`🏁 Removing match ${matchId} due to player disconnect`);
         activeMatches.delete(matchId);
         io.to(matchId).emit('opponentDisconnected');
       }
     }
     
     userSockets.delete(socket.userId);
+    console.log(`📊 Total connected users after disconnect: ${userSockets.size}`);
   });
 });
 
@@ -382,19 +411,20 @@ function leaveQueue(socket, gameType) {
 
 async function tryMatchPlayers(gameType) {
   const queue = gameQueues[gameType];
-  console.log(`Trying to match players for ${gameType}. Queue length: ${queue.length}`);
+  console.log(`🔍 Trying to match players for ${gameType}. Queue length: ${queue.length}`);
+  console.log(`👥 Players in queue:`, queue.map(p => p.username));
   
   if (queue.length >= 2) {
     const player1 = queue.shift();
     const player2 = queue.shift();
     
-    console.log(`Creating match: ${player1.username} vs ${player2.username}`);
+    console.log(`🎮 Creating match: ${player1.username} vs ${player2.username}`);
     
     const matchId = `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // Generate game-specific question
     const gameQuestion = generateQuestion(gameType);
-    console.log(`Generated question for ${gameType}:`, gameQuestion);
+    console.log(`📝 Generated question for ${gameType}:`, gameQuestion);
     
     // Create match
     const match = {
@@ -407,17 +437,24 @@ async function tryMatchPlayers(gameType) {
     };
     
     activeMatches.set(matchId, match);
-    console.log(`Match created with ID: ${matchId}`);
+    console.log(`✅ Match created with ID: ${matchId}`);
     
     // Join match room
     const socket1 = userSockets.get(player1.userId);
     const socket2 = userSockets.get(player2.userId);
     
+    console.log(`🔌 Socket lookup:`, {
+      player1: player1.username,
+      socket1Exists: !!socket1,
+      player2: player2.username,
+      socket2Exists: !!socket2
+    });
+    
     if (socket1 && socket2) {
       socket1.join(matchId);
       socket2.join(matchId);
       
-      console.log(`Both players joined match room: ${matchId}`);
+      console.log(`✅ Both players joined match room: ${matchId}`);
       
       // Notify players
       const matchData = {
@@ -432,7 +469,7 @@ async function tryMatchPlayers(gameType) {
         startTime: Date.now() + 3000 // 3 second countdown
       };
       
-      console.log('Emitting matchFound with data:', matchData);
+      console.log('📤 Emitting matchFound with data:', matchData);
       io.to(matchId).emit('matchFound', matchData);
       
       // Start game after countdown
@@ -445,16 +482,20 @@ async function tryMatchPlayers(gameType) {
           startTime: Date.now()
         };
         
-        console.log('Emitting gameStart with data:', gameStartData);
+        console.log('🚀 Emitting gameStart with data:', gameStartData);
         io.to(matchId).emit('gameStart', gameStartData);
       }, 3000);
     } else {
-      console.log('Error: One or both sockets not found');
-      if (!socket1) console.log(`Socket not found for player1: ${player1.userId}`);
-      if (!socket2) console.log(`Socket not found for player2: ${player2.userId}`);
+      console.log('❌ Error: One or both sockets not found');
+      if (!socket1) console.log(`❌ Socket not found for player1: ${player1.userId} (${player1.username})`);
+      if (!socket2) console.log(`❌ Socket not found for player2: ${player2.userId} (${player2.username})`);
+      
+      // Put players back in queue if sockets not found
+      if (socket1) gameQueues[gameType].unshift(player1);
+      if (socket2) gameQueues[gameType].unshift(player2);
     }
   } else {
-    console.log(`Not enough players in queue for ${gameType}. Need 2, have ${queue.length}`);
+    console.log(`⏳ Not enough players in queue for ${gameType}. Need 2, have ${queue.length}`);
   }
 }
 
