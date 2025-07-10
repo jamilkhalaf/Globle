@@ -983,7 +983,7 @@ io.on('connection', (socket) => {
           activeMatches.delete(matchId);
         }, 5000);
       } else {
-        // Continue to next round
+        // Continue to next round - regardless of correct or incorrect answer
         match.currentRound++;
         
         // Generate new question for next round

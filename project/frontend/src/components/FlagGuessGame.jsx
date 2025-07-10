@@ -293,43 +293,55 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
   };
 
   const renderGameInterface = () => (
-    <Box sx={{ textAlign: 'center', p: 3, height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+    <Box sx={{ 
+      textAlign: 'center', 
+      p: 1, 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      justifyContent: 'center',
+      overflow: 'hidden'
+    }}>
       {/* Round Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ 
+      <Box sx={{ mb: 1, flexShrink: 0 }}>
+        <Typography variant="h6" sx={{ 
           color: '#43cea2', 
-          mb: 1, 
+          mb: 0.5, 
           fontWeight: 'bold',
-          textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+          textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+          fontSize: { xs: '1rem', sm: '1.2rem' }
         }}>
           Round {currentRound} of 5
         </Typography>
         
-        <Typography variant="h6" sx={{ 
+        <Typography variant="body2" sx={{ 
           color: 'rgba(255,255,255,0.8)', 
-          mb: 2,
-          fontStyle: 'italic'
+          mb: 0.5,
+          fontStyle: 'italic',
+          fontSize: { xs: '0.8rem', sm: '0.9rem' }
         }}>
           Score: {player1Wins} - {player2Wins}
         </Typography>
       </Box>
 
       {/* Game Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" sx={{ 
+      <Box sx={{ mb: 1, flexShrink: 0 }}>
+        <Typography variant="h5" sx={{ 
           color: 'white', 
-          mb: 2, 
+          mb: 0.5, 
           fontWeight: 'bold',
           textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+          fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.6rem' },
+          lineHeight: 1.2
         }}>
           {question}
         </Typography>
         
-        <Typography variant="h6" sx={{ 
+        <Typography variant="body2" sx={{ 
           color: 'rgba(255,255,255,0.8)', 
-          mb: 3,
-          fontStyle: 'italic'
+          mb: 1,
+          fontStyle: 'italic',
+          fontSize: { xs: '0.8rem', sm: '0.9rem' }
         }}>
           Click on the correct flag
         </Typography>
@@ -339,11 +351,11 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         <Alert 
           severity={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'} 
           sx={{ 
-            mb: 3, 
-            maxWidth: 400, 
+            mb: 1, 
+            maxWidth: 350, 
             mx: 'auto',
-            fontSize: '1.1rem',
-            '& .MuiAlert-message': { fontSize: '1.1rem' }
+            fontSize: { xs: '0.8rem', sm: '0.9rem' },
+            '& .MuiAlert-message': { fontSize: { xs: '0.8rem', sm: '0.9rem' } }
           }}
         >
           {message}
@@ -352,30 +364,35 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
 
       {/* Flag Options Grid */}
       <Box sx={{ 
-        mb: 4, 
-        maxWidth: 600, 
+        mb: 1, 
+        maxWidth: 500, 
         mx: 'auto',
-        p: 2,
+        p: 0.5,
         bgcolor: 'rgba(255,255,255,0.05)',
-        borderRadius: 3,
-        border: '1px solid rgba(255,255,255,0.1)'
+        borderRadius: 1.5,
+        border: '1px solid rgba(255,255,255,0.1)',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        minHeight: 0
       }}>
-        <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid container spacing={0.5} sx={{ mb: 0.5 }}>
           {flagCodes.map((flagCode, index) => (
             <Grid item xs={6} key={index}>
               <Card 
                 sx={{ 
                   bgcolor: 'white', 
-                  p: 1,
+                  p: 0.25,
                   cursor: 'pointer',
-                  border: isAnswered && flagCode === JSON.parse(matchData.question).correctFlagCode ? '4px solid #4caf50' : 
-                          isAnswered && selectedAnswer === flagCode && flagCode !== JSON.parse(matchData.question).correctFlagCode ? '4px solid #f44336' : '2px solid #e0e0e0',
-                  borderRadius: 2,
-                  boxShadow: isAnswered ? '0 8px 16px rgba(0,0,0,0.3)' : '0 4px 8px rgba(0,0,0,0.2)',
+                  border: isAnswered && flagCode === JSON.parse(matchData.question).correctFlagCode ? '2px solid #4caf50' : 
+                          isAnswered && selectedAnswer === flagCode && flagCode !== JSON.parse(matchData.question).correctFlagCode ? '2px solid #f44336' : '1px solid #e0e0e0',
+                  borderRadius: 1,
+                  boxShadow: isAnswered ? '0 4px 8px rgba(0,0,0,0.3)' : '0 2px 4px rgba(0,0,0,0.2)',
                   '&:hover': {
-                    transform: 'scale(1.05)',
+                    transform: 'scale(1.02)',
                     transition: 'all 0.3s ease',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                     borderColor: isAnswered ? 'transparent' : '#43cea2'
                   },
                   '&:active': {
@@ -384,7 +401,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
                   },
                   position: 'relative',
                   overflow: 'hidden',
-                  height: 120, // Smaller fixed height
+                  height: { xs: 60, sm: 70, md: 80 },
                   display: 'flex',
                   flexDirection: 'column'
                 }}
@@ -398,7 +415,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
                   alignItems: 'center',
                   justifyContent: 'center',
                   bgcolor: '#f5f5f5',
-                  borderRadius: 1,
+                  borderRadius: 0.5,
                   overflow: 'hidden',
                   minHeight: 0
                 }}>
@@ -409,7 +426,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
                       width: '100%', 
                       height: '100%',
                       objectFit: 'contain',
-                      padding: '8px'
+                      padding: '2px'
                     }}
                     onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
                     onError={(e) => {
@@ -421,11 +438,11 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
                   <Box sx={{ 
                     display: 'none', 
                     textAlign: 'center', 
-                    py: 2,
+                    py: 0.5,
                     color: '#666'
                   }}>
-                    <FlagIcon sx={{ fontSize: 40, color: '#ccc', mb: 1 }} />
-                    <Typography variant="caption" color="textSecondary">
+                    <FlagIcon sx={{ fontSize: 16, color: '#ccc', mb: 0.25 }} />
+                    <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.6rem' }}>
                       Flag not available
                     </Typography>
                   </Box>
@@ -434,17 +451,17 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
                 {/* Flag Number Badge */}
                 <Box sx={{
                   position: 'absolute',
-                  top: 4,
-                  right: 4,
+                  top: 1,
+                  right: 1,
                   bgcolor: 'rgba(0,0,0,0.7)',
                   color: 'white',
                   borderRadius: '50%',
-                  width: 20,
-                  height: 20,
+                  width: 12,
+                  height: 12,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '10px',
+                  fontSize: '6px',
                   fontWeight: 'bold'
                 }}>
                   {index + 1}
@@ -460,12 +477,12 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
                     bgcolor: flagCode === JSON.parse(matchData.question).correctFlagCode ? 'rgba(76, 175, 80, 0.9)' : 'rgba(244, 67, 54, 0.9)',
                     color: 'white',
                     borderRadius: '50%',
-                    width: 40,
-                    height: 40,
+                    width: 20,
+                    height: 20,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '18px',
+                    fontSize: '10px',
                     fontWeight: 'bold',
                     zIndex: 2
                   }}>
@@ -478,10 +495,11 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         </Grid>
         
         {/* Instructions */}
-        <Typography variant="body2" sx={{ 
+        <Typography variant="caption" sx={{ 
           color: 'rgba(255,255,255,0.6)', 
-          mt: 2,
-          fontStyle: 'italic'
+          mt: 0.5,
+          fontStyle: 'italic',
+          fontSize: { xs: '0.6rem', sm: '0.7rem' }
         }}>
           {isAnswered ? 'Round completed!' : 'Select the flag that matches the country name above'}
         </Typography>
@@ -489,16 +507,17 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
 
       {/* Game Status */}
       {isAnswered && (
-        <Box sx={{ mt: 3 }}>
+        <Box sx={{ mt: 0.5, flexShrink: 0 }}>
           <Chip
             icon={<EmojiEventsIcon />}
             label={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'You got it right!' : 'Better luck next time!'}
             color={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'}
+            size="small"
             sx={{ 
-              fontSize: '1.2rem', 
-              py: 2,
-              px: 3,
-              '& .MuiChip-label': { fontSize: '1.2rem' }
+              fontSize: { xs: '0.7rem', sm: '0.8rem' }, 
+              py: 0.5,
+              px: 1,
+              '& .MuiChip-label': { fontSize: { xs: '0.7rem', sm: '0.8rem' } }
             }}
           />
         </Box>
