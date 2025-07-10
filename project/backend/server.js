@@ -1005,48 +1005,23 @@ io.on('connection', (socket) => {
         match.player2Wins = 0;
       }
       
-      // Check if both players have answered OR if one player answered correctly and we've waited long enough
-      const shouldEndRound = match.answers.length === 2 || 
-        (match.answers.length === 1 && match.answers[0].isCorrect && 
-         (Date.now() - match.answers[0].serverTimestamp) > 10000); // 10 second timeout
+      // End round immediately when one player answers (no waiting for second player)
+      const shouldEndRound = match.answers.length === 1;
       
       if (shouldEndRound) {
-        // Both players answered or timeout reached - determine winner based on timing and correctness
-        const correctAnswers = match.answers.filter(a => a.isCorrect);
-        let roundWinner;
+        // One player answered - determine winner based on correctness
+        const playerAnswer = match.answers[0];
+        let roundWinner = null;
         
-        if (correctAnswers.length === 1) {
-          // Only one player answered correctly
-          roundWinner = correctAnswers[0];
-        } else if (correctAnswers.length > 1) {
-          // Multiple correct answers - determine fastest
-          const sortedAnswers = correctAnswers.sort((a, b) => {
-            // First priority: server timestamp (more precise)
-            if (a.serverTimestamp !== b.serverTimestamp) {
-              return a.serverTimestamp - b.serverTimestamp;
-            }
-            // Second priority: client timestamp
-            if (a.clientTimestamp !== b.clientTimestamp) {
-              return a.clientTimestamp - b.clientTimestamp;
-            }
-            // Third priority: player order (player1 wins ties)
-            return a.isPlayer1 ? -1 : 1;
-          });
-          roundWinner = sortedAnswers[0];
+        if (playerAnswer.isCorrect) {
+          // Player answered correctly - they win the round
+          roundWinner = playerAnswer;
         } else {
-          // No correct answers - determine who answered first (for tie-breaking)
-          const sortedAnswers = match.answers.sort((a, b) => {
-            if (a.serverTimestamp !== b.serverTimestamp) {
-              return a.serverTimestamp - b.serverTimestamp;
-            }
-            if (a.clientTimestamp !== b.clientTimestamp) {
-              return a.clientTimestamp - b.clientTimestamp;
-            }
-            return a.isPlayer1 ? -1 : 1;
-          });
-          roundWinner = sortedAnswers[0];
+          // Player answered incorrectly - they lose, but we still need to determine if other player gets a chance
+          // For now, the player who answered incorrectly loses the round
+          roundWinner = null; // No winner this round
         }
-
+        
         if (roundWinner) {
           // Update round wins
           if (roundWinner.isPlayer1) {
@@ -1055,7 +1030,9 @@ io.on('connection', (socket) => {
             match.player2Wins++;
           }
           
-          console.log(`🎮 FlagGuess - Round winner: ${roundWinner.username} (${roundWinner.serverTimestamp}ms)`);
+          console.log(`🎮 FlagGuess - Round winner: ${roundWinner.username} (answered correctly)`);
+        } else {
+          console.log(`🎮 FlagGuess - No round winner (player answered incorrectly)`);
         }
         
         // Send round result to both players with correct information
@@ -1161,22 +1138,8 @@ io.on('connection', (socket) => {
           }, 3000);
         }
       } else {
-        // Only one player has answered - wait for the other or timeout
-        console.log(`🎮 FlagGuess - Waiting for other player. Answers: ${match.answers.length}/2`);
-        
-        // If this is the first answer and it's correct, start a timeout
-        if (match.answers.length === 1 && isCorrect) {
-          setTimeout(() => {
-            // Re-check if round should end (in case other player answered in the meantime)
-            const currentMatch = activeMatches.get(matchId);
-            if (currentMatch && currentMatch.answers.length === 1 && 
-                (Date.now() - currentMatch.answers[0].serverTimestamp) > 10000) {
-              // Force end the round
-              console.log('🎮 FlagGuess - Round timeout reached, ending round');
-              // This will trigger the round end logic above
-            }
-          }, 10000);
-        }
+        // This should not happen anymore since we end round immediately
+        console.log(`🎮 FlagGuess - Unexpected state: ${match.answers.length} answers`);
       }
     }
   });
