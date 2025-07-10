@@ -909,6 +909,15 @@ io.on('connection', (socket) => {
       const questionData = JSON.parse(match.correctAnswer.question);
       const isCorrect = answer === questionData.correctFlagCode;
       
+      console.log('🎮 FlagGuess - Answer submitted:', {
+        answer,
+        correctFlagCode: questionData.correctFlagCode,
+        isCorrect,
+        currentRound: match.currentRound,
+        player1Wins: match.player1Wins,
+        player2Wins: match.player2Wins
+      });
+      
       // Initialize round tracking if not exists
       if (!match.currentRound) {
         match.currentRound = 1;
@@ -929,8 +938,16 @@ io.on('connection', (socket) => {
         }
       }
       
+      console.log('🎮 FlagGuess - Round result:', {
+        isCorrect,
+        player1Wins: match.player1Wins,
+        player2Wins: match.player2Wins,
+        currentRound: match.currentRound
+      });
+      
       // Check if we've reached 5 rounds
       if (match.currentRound >= 5) {
+        console.log('🎮 FlagGuess - Game ending after 5 rounds');
         // Game is over - determine final winner
         const finalWinner = match.player1Wins > match.player2Wins ? match.players[0] : match.players[1];
         const finalLoser = match.player1Wins > match.player2Wins ? match.players[1] : match.players[0];
@@ -986,29 +1003,41 @@ io.on('connection', (socket) => {
         // Continue to next round - regardless of correct or incorrect answer
         match.currentRound++;
         
+        console.log('🎮 FlagGuess - Moving to next round:', {
+          newRound: match.currentRound,
+          isCorrect,
+          roundWinner: isCorrect ? socket.username : null
+        });
+        
         // Generate new question for next round
         const nextRoundQuestion = await generateQuestion('FlagGuess');
         match.correctAnswer = nextRoundQuestion;
         
         // Notify players about round result and continue to next round
-        io.to(matchId).emit('roundEnd', {
+        const roundEndData = {
           roundWinner: isCorrect ? socket.username : null,
           roundNumber: match.currentRound - 1,
           score: `${match.player1Wins}-${match.player2Wins}`,
           nextRound: match.currentRound,
           isCorrect: isCorrect,
           correctAnswer: questionData.correctAnswer
-        });
+        };
+        
+        console.log('🎮 FlagGuess - Emitting roundEnd:', roundEndData);
+        io.to(matchId).emit('roundEnd', roundEndData);
         
         // Start next round after 3 seconds
         setTimeout(() => {
-          io.to(matchId).emit('gameStart', {
+          const gameStartData = {
             matchId,
             gameType: 'FlagGuess',
             question: nextRoundQuestion.question,
             startTime: Date.now(),
             roundNumber: match.currentRound
-          });
+          };
+          
+          console.log('🎮 FlagGuess - Emitting gameStart for next round:', gameStartData);
+          io.to(matchId).emit('gameStart', gameStartData);
         }, 3000);
       }
     } else {

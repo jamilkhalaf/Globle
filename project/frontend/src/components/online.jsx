@@ -99,6 +99,16 @@ const Online = () => {
     };
   }, []);
 
+  useEffect(() => {
+    console.log('🎮 Online component state changed:', {
+      gameState,
+      currentMatch: currentMatch ? { matchId: currentMatch.matchId, gameType: currentMatch.gameType, roundNumber: currentMatch.roundNumber } : null,
+      matchResult,
+      isWaitingForPlayer,
+      gameTimer
+    });
+  }, [gameState, currentMatch, matchResult, isWaitingForPlayer, gameTimer]);
+
   // Timer effect for game countdown and playing state
   useEffect(() => {
     let interval;
@@ -238,9 +248,11 @@ const Online = () => {
       socket.on('gameStart', (data) => {
         console.log('🎮 Game start:', data);
         console.log('🎮 Setting gameState to playing');
+        console.log('🎮 Setting currentMatch to:', data);
         setGameState('playing');
         setGameTimer(60);
         setGameQuestion(data.question);
+        setCurrentMatch(data); // Ensure match data is updated
         console.log('🎮 Game start event handlers completed');
       });
 
@@ -255,16 +267,19 @@ const Online = () => {
         console.log('🎮 Round end:', data);
         // Handle round end for FlagGuess games
         if (data.roundWinner !== undefined) {
+          console.log('🎮 Setting gameState to roundEnd');
           setGameState('roundEnd');
           // Update round result state for FlagGuessGame component
-          setMatchResult({
+          const roundResult = {
             roundWinner: data.roundWinner,
             roundNumber: data.roundNumber,
             score: data.score,
             nextRound: data.nextRound,
             isCorrect: data.isCorrect,
             correctAnswer: data.correctAnswer
-          });
+          };
+          console.log('🎮 Setting matchResult to:', roundResult);
+          setMatchResult(roundResult);
         }
       });
 

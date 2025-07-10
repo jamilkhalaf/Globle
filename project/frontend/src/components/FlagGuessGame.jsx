@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -12,6 +12,138 @@ import {
 } from '@mui/material';
 import FlagIcon from '@mui/icons-material/Flag';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+
+// Memoized Flag Component
+const FlagCard = React.memo(({ 
+  flagCode, 
+  index, 
+  isAnswered, 
+  selectedAnswer, 
+  correctFlagCode, 
+  onAnswerSubmit 
+}) => {
+  const handleClick = useCallback(() => {
+    onAnswerSubmit(flagCode);
+  }, [flagCode, onAnswerSubmit]);
+
+  return (
+    <Card 
+      sx={{ 
+        bgcolor: 'white', 
+        p: 0.5,
+        cursor: 'pointer',
+        border: isAnswered && flagCode === correctFlagCode ? '3px solid #4caf50' : 
+                isAnswered && selectedAnswer === flagCode && flagCode !== correctFlagCode ? '3px solid #f44336' : '2px solid #e0e0e0',
+        borderRadius: 1.5,
+        boxShadow: isAnswered ? '0 6px 12px rgba(0,0,0,0.3)' : '0 3px 6px rgba(0,0,0,0.2)',
+        '&:hover': {
+          transform: 'scale(1.03)',
+          transition: 'all 0.3s ease',
+          boxShadow: '0 6px 16px rgba(0,0,0,0.4)',
+          borderColor: isAnswered ? 'transparent' : '#43cea2'
+        },
+        '&:active': {
+          transform: 'scale(0.98)',
+          transition: 'all 0.1s ease'
+        },
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: '100%'
+      }}
+      onClick={handleClick}
+    >
+      {/* Flag Image Container */}
+      <Box sx={{ 
+        position: 'relative',
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: '#f5f5f5',
+        borderRadius: 1,
+        overflow: 'hidden',
+        minHeight: 0,
+        height: '100%'
+      }}>
+        <img 
+          src={`/flags/${flagCode}.png`}
+          alt={`Flag ${index + 1}`}
+          style={{ 
+            width: '100%', 
+            height: '100%',
+            objectFit: 'contain',
+            padding: '6px'
+          }}
+          onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
+          onError={(e) => {
+            console.log(`Flag failed to load: ${flagCode}.png`);
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'block';
+          }}
+        />
+        <Box sx={{ 
+          display: 'none', 
+          textAlign: 'center', 
+          py: 1,
+          color: '#666'
+        }}>
+          <FlagIcon sx={{ fontSize: 20, color: '#ccc', mb: 0.5 }} />
+          <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem' }}>
+            Flag not available
+          </Typography>
+        </Box>
+      </Box>
+      
+      {/* Flag Number Badge */}
+      <Box sx={{
+        position: 'absolute',
+        top: 3,
+        right: 3,
+        bgcolor: 'rgba(0,0,0,0.8)',
+        color: 'white',
+        borderRadius: '50%',
+        width: 20,
+        height: 20,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '10px',
+        fontWeight: 'bold'
+      }}>
+        {index + 1}
+      </Box>
+      
+      {/* Result Indicator */}
+      {isAnswered && (
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: flagCode === correctFlagCode ? 'rgba(76, 175, 80, 0.95)' : 'rgba(244, 67, 54, 0.95)',
+          color: 'white',
+          borderRadius: '50%',
+          width: 32,
+          height: 32,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          zIndex: 2,
+          boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+        }}>
+          {flagCode === correctFlagCode ? '✓' : '✗'}
+        </Box>
+      )}
+    </Card>
+  );
+});
+
+FlagCard.displayName = 'FlagCard';
 
 const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeaveGame, onNewOpponent, matchResult }) => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
@@ -39,6 +171,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
 
   useEffect(() => {
     if (matchData && matchData.roundNumber) {
+      console.log('🎮 FlagGuessGame - Updating current round:', matchData.roundNumber);
       setCurrentRound(matchData.roundNumber);
     }
   }, [matchData]);
@@ -47,6 +180,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     if (matchResult && matchResult.score) {
       // Parse score like "2-1" to update player wins
       const [p1Wins, p2Wins] = matchResult.score.split('-').map(Number);
+      console.log('🎮 FlagGuessGame - Updating player wins:', { p1Wins, p2Wins });
       setPlayer1Wins(p1Wins);
       setPlayer2Wins(p2Wins);
     }
@@ -54,6 +188,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
 
   useEffect(() => {
     if (gameState === 'roundEnd' && matchResult) {
+      console.log('🎮 FlagGuessGame - Round end detected:', { gameState, matchResult });
       setRoundResult(matchResult);
       // Reset answer state for next round
       setSelectedAnswer('');
@@ -62,24 +197,58 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     }
   }, [gameState, matchResult]);
 
-  const handleAnswerSubmit = (flagCode) => {
+  useEffect(() => {
+    if (gameState === 'playing' && matchData) {
+      console.log('🎮 FlagGuessGame - Starting new round:', { gameState, matchData });
+      // Reset answer state when starting a new round
+      setSelectedAnswer('');
+      setIsAnswered(false);
+      setMessage('');
+      setRoundResult(null); // Clear previous round result
+      
+      // Update round number if provided
+      if (matchData.roundNumber) {
+        console.log('🎮 FlagGuessGame - Setting round number to:', matchData.roundNumber);
+        setCurrentRound(matchData.roundNumber);
+      }
+    }
+  }, [gameState, matchData]);
+
+  useEffect(() => {
+    console.log('🎮 FlagGuessGame - Component state changed:', { 
+      gameState, 
+      currentRound,
+      player1Wins,
+      player2Wins,
+      isAnswered,
+      matchData: matchData ? { matchId: matchData.matchId, roundNumber: matchData.roundNumber } : null,
+      matchResult 
+    });
+  }, [gameState, currentRound, player1Wins, player2Wins, isAnswered, matchData, matchResult]);
+
+  const handleAnswerSubmit = useCallback((flagCode) => {
     if (isAnswered) return;
     
-    setIsAnswered(true);
-    setSelectedAnswer(flagCode);
+    console.log('🎮 Submitting answer:', flagCode);
     
     // Check if the selected flag code matches the correct flag code
     const questionData = JSON.parse(matchData.question);
     const isCorrect = flagCode === questionData.correctFlagCode;
-    setMessage(isCorrect ? 'Correct!' : `Wrong! The correct flag was for ${correctAnswer}`);
     
-    // Submit answer to server
+    console.log('🎮 Answer result:', { isCorrect, correctFlagCode: questionData.correctFlagCode });
+    
+    // Submit answer to server immediately
     onAnswerSubmit({
       answer: flagCode,
       timeTaken: Date.now() - (matchData?.startTime || Date.now()),
       isCorrect: isCorrect
     });
-  };
+    
+    // Update UI state after server submission
+    setIsAnswered(true);
+    setSelectedAnswer(flagCode);
+    setMessage(isCorrect ? 'Correct!' : `Wrong! The correct flag was for ${correctAnswer}`);
+  }, [isAnswered, matchData, onAnswerSubmit, correctAnswer]);
 
   const renderRoundResult = () => {
     if (!roundResult) return null;
@@ -295,233 +464,146 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
   const renderGameInterface = () => (
     <Box sx={{ 
       textAlign: 'center', 
-      p: 1, 
+      p: 3, 
       height: '100vh', 
       display: 'flex', 
       flexDirection: 'column', 
       justifyContent: 'center',
       overflow: 'hidden'
     }}>
-      {/* Round Header */}
-      <Box sx={{ mb: 1, flexShrink: 0 }}>
-        <Typography variant="h6" sx={{ 
-          color: '#43cea2', 
-          mb: 0.5, 
-          fontWeight: 'bold',
-          textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-          fontSize: { xs: '1rem', sm: '1.2rem' }
-        }}>
-          Round {currentRound} of 5
-        </Typography>
-        
-        <Typography variant="body2" sx={{ 
-          color: 'rgba(255,255,255,0.8)', 
-          mb: 0.5,
-          fontStyle: 'italic',
-          fontSize: { xs: '0.8rem', sm: '0.9rem' }
-        }}>
-          Score: {player1Wins} - {player2Wins}
-        </Typography>
-      </Box>
-
-      {/* Game Header */}
-      <Box sx={{ mb: 1, flexShrink: 0 }}>
-        <Typography variant="h5" sx={{ 
-          color: 'white', 
-          mb: 0.5, 
-          fontWeight: 'bold',
-          textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-          fontSize: { xs: '1.1rem', sm: '1.4rem', md: '1.6rem' },
-          lineHeight: 1.2
-        }}>
-          {question}
-        </Typography>
-        
-        <Typography variant="body2" sx={{ 
-          color: 'rgba(255,255,255,0.8)', 
-          mb: 1,
-          fontStyle: 'italic',
-          fontSize: { xs: '0.8rem', sm: '0.9rem' }
-        }}>
-          Click on the correct flag
-        </Typography>
-      </Box>
-      
-      {message && (
-        <Alert 
-          severity={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'} 
-          sx={{ 
-            mb: 1, 
-            maxWidth: 350, 
-            mx: 'auto',
-            fontSize: { xs: '0.8rem', sm: '0.9rem' },
-            '& .MuiAlert-message': { fontSize: { xs: '0.8rem', sm: '0.9rem' } }
-          }}
-        >
-          {message}
-        </Alert>
-      )}
-
-      {/* Flag Options Grid */}
-      <Box sx={{ 
-        mb: 1, 
-        maxWidth: 500, 
+      {/* Main Game Container */}
+      <Card sx={{ 
+        bgcolor: 'rgba(30,30,30,0.95)', 
+        color: 'white', 
+        p: 3, 
+        maxWidth: 600, 
         mx: 'auto',
-        p: 0.5,
-        bgcolor: 'rgba(255,255,255,0.05)',
-        borderRadius: 1.5,
+        borderRadius: 3,
         border: '1px solid rgba(255,255,255,0.1)',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        minHeight: 0
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
       }}>
-        <Grid container spacing={0.5} sx={{ mb: 0.5 }}>
-          {flagCodes.map((flagCode, index) => (
-            <Grid item xs={6} key={index}>
-              <Card 
-                sx={{ 
-                  bgcolor: 'white', 
-                  p: 0.25,
-                  cursor: 'pointer',
-                  border: isAnswered && flagCode === JSON.parse(matchData.question).correctFlagCode ? '2px solid #4caf50' : 
-                          isAnswered && selectedAnswer === flagCode && flagCode !== JSON.parse(matchData.question).correctFlagCode ? '2px solid #f44336' : '1px solid #e0e0e0',
-                  borderRadius: 1,
-                  boxShadow: isAnswered ? '0 4px 8px rgba(0,0,0,0.3)' : '0 2px 4px rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    transform: 'scale(1.02)',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                    borderColor: isAnswered ? 'transparent' : '#43cea2'
-                  },
-                  '&:active': {
-                    transform: 'scale(0.98)',
-                    transition: 'all 0.1s ease'
-                  },
-                  position: 'relative',
-                  overflow: 'hidden',
-                  height: { xs: 60, sm: 70, md: 80 },
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-                onClick={() => handleAnswerSubmit(flagCode)}
-              >
-                {/* Flag Image Container */}
-                <Box sx={{ 
-                  position: 'relative',
-                  flex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: '#f5f5f5',
-                  borderRadius: 0.5,
-                  overflow: 'hidden',
-                  minHeight: 0
-                }}>
-                  <img 
-                    src={`/flags/${flagCode}.png`}
-                    alt={`Flag ${index + 1}`}
-                    style={{ 
-                      width: '100%', 
-                      height: '100%',
-                      objectFit: 'contain',
-                      padding: '2px'
-                    }}
-                    onLoad={() => console.log(`Flag loaded successfully: ${flagCode}.png`)}
-                    onError={(e) => {
-                      console.log(`Flag failed to load: ${flagCode}.png`);
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
-                    }}
-                  />
-                  <Box sx={{ 
-                    display: 'none', 
-                    textAlign: 'center', 
-                    py: 0.5,
-                    color: '#666'
-                  }}>
-                    <FlagIcon sx={{ fontSize: 16, color: '#ccc', mb: 0.25 }} />
-                    <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.6rem' }}>
-                      Flag not available
-                    </Typography>
-                  </Box>
-                </Box>
-                
-                {/* Flag Number Badge */}
-                <Box sx={{
-                  position: 'absolute',
-                  top: 1,
-                  right: 1,
-                  bgcolor: 'rgba(0,0,0,0.7)',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: 12,
-                  height: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '6px',
-                  fontWeight: 'bold'
-                }}>
-                  {index + 1}
-                </Box>
-                
-                {/* Result Indicator */}
-                {isAnswered && (
-                  <Box sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    bgcolor: flagCode === JSON.parse(matchData.question).correctFlagCode ? 'rgba(76, 175, 80, 0.9)' : 'rgba(244, 67, 54, 0.9)',
-                    color: 'white',
-                    borderRadius: '50%',
-                    width: 20,
-                    height: 20,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    zIndex: 2
-                  }}>
-                    {flagCode === JSON.parse(matchData.question).correctFlagCode ? '✓' : '✗'}
-                  </Box>
-                )}
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-        
-        {/* Instructions */}
-        <Typography variant="caption" sx={{ 
-          color: 'rgba(255,255,255,0.6)', 
-          mt: 0.5,
-          fontStyle: 'italic',
-          fontSize: { xs: '0.6rem', sm: '0.7rem' }
-        }}>
-          {isAnswered ? 'Round completed!' : 'Select the flag that matches the country name above'}
-        </Typography>
-      </Box>
+        <CardContent sx={{ p: 2 }}>
+          {/* Round Header */}
+          <Box sx={{ mb: 2, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ 
+              color: '#43cea2', 
+              mb: 0.5, 
+              fontWeight: 'bold',
+              textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+              fontSize: { xs: '1rem', sm: '1.1rem' }
+            }}>
+              Round {currentRound} of 5
+            </Typography>
+            
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              fontStyle: 'italic',
+              fontSize: { xs: '0.8rem', sm: '0.9rem' }
+            }}>
+              Score: {player1Wins} - {player2Wins}
+            </Typography>
+          </Box>
 
-      {/* Game Status */}
-      {isAnswered && (
-        <Box sx={{ mt: 0.5, flexShrink: 0 }}>
-          <Chip
-            icon={<EmojiEventsIcon />}
-            label={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'You got it right!' : 'Better luck next time!'}
-            color={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'}
-            size="small"
-            sx={{ 
-              fontSize: { xs: '0.7rem', sm: '0.8rem' }, 
-              py: 0.5,
-              px: 1,
-              '& .MuiChip-label': { fontSize: { xs: '0.7rem', sm: '0.8rem' } }
-            }}
-          />
-        </Box>
-      )}
+          {/* Game Header */}
+          <Box sx={{ mb: 3, textAlign: 'center' }}>
+            <Typography variant="h5" sx={{ 
+              color: 'white', 
+              mb: 1, 
+              fontWeight: 'bold',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+              fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+              lineHeight: 1.2
+            }}>
+              {question}
+            </Typography>
+            
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              fontStyle: 'italic',
+              fontSize: { xs: '0.8rem', sm: '0.9rem' }
+            }}>
+              Click on the correct flag
+            </Typography>
+          </Box>
+          
+          {message && (
+            <Alert 
+              severity={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'} 
+              sx={{ 
+                mb: 2, 
+                maxWidth: 400, 
+                mx: 'auto',
+                fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                '& .MuiAlert-message': { fontSize: { xs: '0.8rem', sm: '0.9rem' } }
+              }}
+            >
+              {message}
+            </Alert>
+          )}
+
+          {/* Flag Options Grid - 2x2 Layout */}
+          <Box sx={{ 
+            mb: 2,
+            p: 2,
+            bgcolor: 'rgba(255,255,255,0.05)',
+            borderRadius: 2,
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            {/* 2x2 Grid Container */}
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 1fr', 
+              gridTemplateRows: '1fr 1fr',
+              gap: 1.5,
+              height: { xs: '180px', sm: '200px', md: '220px' },
+              width: '100%'
+            }}>
+              {flagCodes.map((flagCode, index) => (
+                <FlagCard 
+                  key={index}
+                  flagCode={flagCode}
+                  index={index}
+                  isAnswered={isAnswered}
+                  selectedAnswer={selectedAnswer}
+                  correctFlagCode={JSON.parse(matchData.question).correctFlagCode}
+                  onAnswerSubmit={handleAnswerSubmit}
+                />
+              ))}
+            </Box>
+            
+            {/* Instructions */}
+            <Typography variant="caption" sx={{ 
+              color: 'rgba(255,255,255,0.6)', 
+              mt: 1,
+              fontStyle: 'italic',
+              fontSize: { xs: '0.7rem', sm: '0.8rem' },
+              display: 'block',
+              textAlign: 'center'
+            }}>
+              {isAnswered ? 'Round completed!' : 'Select the flag that matches the country name above'}
+            </Typography>
+          </Box>
+
+          {/* Game Status */}
+          {isAnswered && (
+            <Box sx={{ mt: 1, textAlign: 'center' }}>
+              <Chip
+                icon={<EmojiEventsIcon />}
+                label={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'You got it right!' : 'Better luck next time!'}
+                color={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'}
+                size="medium"
+                sx={{ 
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' }, 
+                  py: 1,
+                  px: 2,
+                  '& .MuiChip-label': { fontSize: { xs: '0.8rem', sm: '0.9rem' } }
+                }}
+              />
+            </Box>
+          )}
+        </CardContent>
+      </Card>
     </Box>
   );
 
