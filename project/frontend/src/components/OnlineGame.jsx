@@ -29,11 +29,6 @@ const OnlineGame = ({
   matchResult 
 }) => {
   // Game state
-  const [gameState, setGameState] = useState('waiting'); // waiting, countdown, playing, ended
-  const [gameTimer, setGameTimer] = useState(0);
-  const [gameAnswer, setGameAnswer] = useState('');
-  const [gameQuestion, setGameQuestion] = useState('');
-  const [matchResult, setMatchResult] = useState(null);
   const [currentRound, setCurrentRound] = useState(1);
   const [gameComponent, setGameComponent] = useState(null);
   const [gameProps, setGameProps] = useState({});
