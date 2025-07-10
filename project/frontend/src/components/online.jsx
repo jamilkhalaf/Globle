@@ -219,6 +219,27 @@ const Online = () => {
       setGameQuestion(data.question);
     });
 
+    socketInstance.on('playerCorrect', (data) => {
+      console.log('Player got correct answer:', data);
+      console.log('Player correct data details:', {
+        correctPlayer: data.correctPlayer,
+        correctAnswer: data.correctAnswer,
+        timeTaken: data.timeTaken
+      });
+      
+      // Show notification that other player got it right
+      const currentUsername = localStorage.getItem('username') || 'You';
+      if (data.correctPlayer !== currentUsername) {
+        // Show notification that opponent got it right
+        setError(`${data.correctPlayer} found the answer in ${data.timeTaken}s! Moving to next round...`);
+        
+        // Clear the error after 3 seconds
+        setTimeout(() => {
+          setError('');
+        }, 3000);
+      }
+    });
+
     socketInstance.on('gameEnd', (data) => {
       console.log('Game ended:', data);
       console.log('Game end data details:', {

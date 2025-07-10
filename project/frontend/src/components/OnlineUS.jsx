@@ -22,6 +22,45 @@ const OnlineUS = ({
   // Game state
   const [gameStartTime, setGameStartTime] = useState(null);
 
+  // Add notification state for opponent's correct guess
+  const [opponentCorrect, setOpponentCorrect] = useState(false);
+  const [opponentCorrectMessage, setOpponentCorrectMessage] = useState('');
+
+  // Listen for opponent correct notifications
+  useEffect(() => {
+    const handlePlayerCorrect = (event) => {
+      const data = event.detail;
+      const currentUsername = localStorage.getItem('username') || 'You';
+      
+      if (data.correctPlayer !== currentUsername) {
+        setOpponentCorrect(true);
+        setOpponentCorrectMessage(`${data.correctPlayer} found the answer in ${data.timeTaken}s!`);
+        
+        // Clear notification after 3 seconds
+        setTimeout(() => {
+          setOpponentCorrect(false);
+          setOpponentCorrectMessage('');
+        }, 3000);
+      }
+    };
+
+    window.addEventListener('playerCorrect', handlePlayerCorrect);
+    return () => window.removeEventListener('playerCorrect', handlePlayerCorrect);
+  }, []);
+
+  // Dispatch custom event when we get correct answer
+  const dispatchPlayerCorrect = (timeTaken) => {
+    const currentUsername = localStorage.getItem('username') || 'You';
+    const event = new CustomEvent('playerCorrect', {
+      detail: {
+        correctPlayer: currentUsername,
+        correctAnswer: targetState,
+        timeTaken: timeTaken
+      }
+    });
+    window.dispatchEvent(event);
+  };
+
   // Debug logging for props
   useEffect(() => {
     console.log('OnlineUS component props:', { targetState, disabled, currentRoundNumber, playerRoundsWon, opponentRoundsWon });
@@ -57,12 +96,11 @@ const OnlineUS = ({
 
   const handleGuess = () => {
     if (!guess || disabled) {
-      console.log('OnlineUS: handleGuess blocked - guess:', guess, 'disabled:', disabled);
       return;
     }
 
     const guessedState = guess.trim().toLowerCase();
-    const correctState = targetState.toLowerCase();
+    const correctState = targetState.name.toLowerCase();
 
     // Check if the guess is correct (exact match or common variations)
     const isCorrect = correctState === guessedState || 
@@ -70,6 +108,8 @@ const OnlineUS = ({
                      correctState.replace(/ /g, '') === guessedState;
 
     if (isCorrect) {
+      const timeTaken = Math.round((Date.now() - gameStartTime) / 1000);
+      
       // Online mode: just call onAnswerSubmit and let parent handle round logic
       console.log('OnlineUS: Correct answer, calling onAnswerSubmit with:', guessedState);
       
@@ -77,8 +117,11 @@ const OnlineUS = ({
         onAnswerSubmit(guessedState);
       }
       
+      // Dispatch event for opponent notification
+      dispatchPlayerCorrect(timeTaken);
+      
       // Disable the game while waiting for round result
-      setMessage('🎉 Correct! Waiting for round result... 🎉');
+      setMessage(`🎉 Correct! You found it in ${timeTaken}s! Waiting for round result... 🎉`);
     } else {
       // Show feedback
       setMessage('❌ Incorrect! Try again!');
@@ -93,7 +136,7 @@ const OnlineUS = ({
       setGuess(selectedState);
       
       const guessedState = selectedState.trim().toLowerCase();
-      const correctState = targetState.toLowerCase();
+      const correctState = targetState.name.toLowerCase();
 
       // Check if the guess is correct (exact match or common variations)
       const isCorrect = correctState === guessedState || 
@@ -101,6 +144,8 @@ const OnlineUS = ({
                        correctState.replace(/ /g, '') === guessedState;
 
       if (isCorrect) {
+        const timeTaken = Math.round((Date.now() - gameStartTime) / 1000);
+        
         // Online mode: just call onAnswerSubmit and let parent handle round logic
         console.log('OnlineUS: Correct answer via dropdown, calling onAnswerSubmit with:', guessedState);
         
@@ -108,8 +153,11 @@ const OnlineUS = ({
           onAnswerSubmit(guessedState);
         }
         
+        // Dispatch event for opponent notification
+        dispatchPlayerCorrect(timeTaken);
+        
         // Disable the game while waiting for round result
-        setMessage('🎉 Correct! Waiting for round result... 🎉');
+        setMessage(`🎉 Correct! You found it in ${timeTaken}s! Waiting for round result... 🎉`);
       } else {
         // Show feedback
         setMessage('❌ Incorrect! Try again!');
@@ -140,7 +188,14 @@ const OnlineUS = ({
       padding: 0,
       backgroundColor: '#2b2b2b',
       touchAction: 'none',
-      WebkitOverflowScrolling: 'touch'
+      WebkitOverflowScrolling: 'touch',
+      // Add CSS animation for notifications
+      '& @keyframes fadeInOut': {
+        '0%': { opacity: 0, transform: 'translateX(-50%) translateY(-10px)' },
+        '20%': { opacity: 1, transform: 'translateX(-50%) translateY(0)' },
+        '80%': { opacity: 1, transform: 'translateX(-50%) translateY(0)' },
+        '100%': { opacity: 0, transform: 'translateX(-50%) translateY(-10px)' }
+      }
     }}>
       <Header />
       <Toolbar />
@@ -185,6 +240,40 @@ const OnlineUS = ({
           You: {playerRoundsWon} | Opponent: {opponentRoundsWon} | First to 5 wins!
         </Typography>
       </Box>
+
+      {/* Opponent Correct Notification */}
+      {opponentCorrect && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: 150, md: 160 },
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 2001,
+            backgroundColor: 'rgba(255, 193, 7, 0.95)',
+            color: 'black',
+            padding: { xs: '8px 16px', md: '12px 24px' },
+            borderRadius: 2,
+            boxShadow: 3,
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(255,255,255,0.2)',
+            maxWidth: { xs: '90%', md: 'auto' },
+            width: { xs: 'auto', md: 'auto' },
+            animation: 'fadeInOut 3s ease-in-out'
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: { xs: '0.8rem', md: '1rem' }
+            }}
+          >
+            ⚡ {opponentCorrectMessage}
+          </Typography>
+        </Box>
+      )}
       
       {/* Main Game Area */}
       <Box sx={{

@@ -132,7 +132,7 @@ const activeMatches = new Map();
 const userSockets = new Map();
 
 // Track multi-round game state
-const multiRoundGames = new Map(); // matchId -> { player1Rounds: 0, player2Rounds: 0, currentRound: 1 }
+const multiRoundGames = new Map(); // matchId -> { player1Rounds: 0, player2Rounds: 0, currentRound: 1, originalTarget: null }
 
 // Socket.IO middleware for authentication
 io.use(async (socket, next) => {
@@ -261,6 +261,19 @@ io.on('connection', (socket) => {
     console.log(`Player ${socket.username} submitted answer: ${answer} (correct: ${isCorrect})`);
     console.log(`Match answers so far:`, match.answers);
     
+    // If this player got it correct, notify the other player immediately
+    if (isCorrect) {
+      const otherPlayerIndex = playerIndex === 0 ? 1 : 0;
+      const otherPlayer = match.players[otherPlayerIndex];
+      
+      // Notify the other player that someone got it right
+      io.to(matchId).emit('playerCorrect', {
+        correctPlayer: socket.username,
+        correctAnswer: match.sharedTarget.target,
+        timeTaken: timeTaken
+      });
+    }
+    
     // Check if both players have answered
     if (match.answers.length === 2 && match.answers.every(a => a !== undefined)) {
       // Both players have answered, determine winner
@@ -385,9 +398,8 @@ io.on('connection', (socket) => {
           gameOver: false
         });
         
-        // Generate new target for next round
-        const newSharedTarget = generateSharedTarget(match.gameType);
-        match.sharedTarget = newSharedTarget;
+        // Keep the same target for the next round (don't generate new target)
+        // match.sharedTarget stays the same
         match.answers = []; // Reset answers for next round
         
         // Start next round after short delay
@@ -395,7 +407,7 @@ io.on('connection', (socket) => {
           io.to(matchId).emit('nextRound', {
             matchId,
             gameType: match.gameType,
-            sharedTarget: newSharedTarget,
+            sharedTarget: match.sharedTarget, // Same target as before
             startTime: Date.now(),
             currentRound: multiRoundState.currentRound
           });

@@ -285,6 +285,57 @@ const OnlineGloble = ({
     }
   };
 
+  // Handle online game state changes from parent
+  useEffect(() => {
+    if (!disabled) {
+      console.log('OnlineGloble: New round starting, resetting game state');
+      setLastDistance(null);
+      setGuess('');
+      setGuessedCountries([]);
+      setGameStartTime(Date.now());
+      setMessage('Guess the country!');
+    }
+  }, [disabled, targetCountry]); // Reset when target country changes (new round)
+
+  // Add notification state for opponent's correct guess
+  const [opponentCorrect, setOpponentCorrect] = useState(false);
+  const [opponentCorrectMessage, setOpponentCorrectMessage] = useState('');
+
+  // Listen for opponent correct notifications
+  useEffect(() => {
+    const handlePlayerCorrect = (event) => {
+      const data = event.detail;
+      const currentUsername = localStorage.getItem('username') || 'You';
+      
+      if (data.correctPlayer !== currentUsername) {
+        setOpponentCorrect(true);
+        setOpponentCorrectMessage(`${data.correctPlayer} found the answer in ${data.timeTaken}s!`);
+        
+        // Clear notification after 3 seconds
+        setTimeout(() => {
+          setOpponentCorrect(false);
+          setOpponentCorrectMessage('');
+        }, 3000);
+      }
+    };
+
+    window.addEventListener('playerCorrect', handlePlayerCorrect);
+    return () => window.removeEventListener('playerCorrect', handlePlayerCorrect);
+  }, []);
+
+  // Dispatch custom event when we get correct answer
+  const dispatchPlayerCorrect = (timeTaken) => {
+    const currentUsername = localStorage.getItem('username') || 'You';
+    const event = new CustomEvent('playerCorrect', {
+      detail: {
+        correctPlayer: currentUsername,
+        correctAnswer: secretCountry?.properties?.name,
+        timeTaken: timeTaken
+      }
+    });
+    window.dispatchEvent(event);
+  };
+
   const handleGuess = () => {
     if (!guess || disabled) {
       console.log('OnlineGloble: handleGuess blocked - guess:', guess, 'disabled:', disabled);
@@ -312,12 +363,17 @@ const OnlineGloble = ({
       // Online mode: just call onAnswerSubmit and let parent handle round logic
       console.log('OnlineGloble: Correct answer, calling onAnswerSubmit with:', guessedCountry.properties.name);
       
+      const timeTaken = Math.round((Date.now() - gameStartTime) / 1000);
+      
       if (onAnswerSubmit) {
         onAnswerSubmit(guessedCountry.properties.name);
       }
       
+      // Dispatch event for opponent notification
+      dispatchPlayerCorrect(timeTaken);
+      
       // Disable the game while waiting for round result
-      setMessage('🎉 Correct! Waiting for round result... 🎉');
+      setMessage(`🎉 Correct! You found it in ${timeTaken}s! Waiting for round result... 🎉`);
     } else {
       // Calculate distance between guessed country and secret country
       const guessedCenter = getCountryCenter(guessedCountry);
@@ -358,12 +414,17 @@ const OnlineGloble = ({
           // Online mode: just call onAnswerSubmit and let parent handle round logic
           console.log('OnlineGloble: Correct answer via dropdown, calling onAnswerSubmit with:', guessedCountry.properties.name);
           
+          const timeTaken = Math.round((Date.now() - gameStartTime) / 1000);
+          
           if (onAnswerSubmit) {
             onAnswerSubmit(guessedCountry.properties.name);
           }
           
+          // Dispatch event for opponent notification
+          dispatchPlayerCorrect(timeTaken);
+          
           // Disable the game while waiting for round result
-          setMessage('🎉 Correct! Waiting for round result... 🎉');
+          setMessage(`🎉 Correct! You found it in ${timeTaken}s! Waiting for round result... 🎉`);
         } else {
           const guessedCenter = getCountryCenter(guessedCountry);
           const secretCenter = getCountryCenter(secretCountry);
@@ -383,18 +444,6 @@ const OnlineGloble = ({
     }
   };
 
-  // Handle online game state changes from parent
-  useEffect(() => {
-    if (!disabled) {
-      console.log('OnlineGloble: New round starting, resetting game state');
-      setLastDistance(null);
-      setGuess('');
-      setGuessedCountries([]);
-      setGameStartTime(Date.now());
-      setMessage('Guess the country!');
-    }
-  }, [disabled, targetCountry]); // Reset when target country changes (new round)
-
   return (
     <Box sx={{ 
       position: 'relative', 
@@ -405,7 +454,14 @@ const OnlineGloble = ({
       padding: 0,
       backgroundColor: '#2b2b2b',
       touchAction: 'none',
-      WebkitOverflowScrolling: 'touch'
+      WebkitOverflowScrolling: 'touch',
+      // Add CSS animation for notifications
+      '& @keyframes fadeInOut': {
+        '0%': { opacity: 0, transform: 'translateX(-50%) translateY(-10px)' },
+        '20%': { opacity: 1, transform: 'translateX(-50%) translateY(0)' },
+        '80%': { opacity: 1, transform: 'translateX(-50%) translateY(0)' },
+        '100%': { opacity: 0, transform: 'translateX(-50%) translateY(-10px)' }
+      }
     }}>
       <Header />
       <Toolbar />
@@ -450,6 +506,40 @@ const OnlineGloble = ({
           You: {playerRoundsWon} | Opponent: {opponentRoundsWon} | First to 5 wins!
         </Typography>
       </Box>
+
+      {/* Opponent Correct Notification */}
+      {opponentCorrect && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: 150, md: 160 },
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 2001,
+            backgroundColor: 'rgba(255, 193, 7, 0.95)',
+            color: 'black',
+            padding: { xs: '8px 16px', md: '12px 24px' },
+            borderRadius: 2,
+            boxShadow: 3,
+            backdropFilter: 'blur(10px)',
+            border: '2px solid rgba(255,255,255,0.2)',
+            maxWidth: { xs: '90%', md: 'auto' },
+            width: { xs: 'auto', md: 'auto' },
+            animation: 'fadeInOut 3s ease-in-out'
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: 'bold',
+              textAlign: 'center',
+              fontSize: { xs: '0.8rem', md: '1rem' }
+            }}
+          >
+            ⚡ {opponentCorrectMessage}
+          </Typography>
+        </Box>
+      )}
       
       <Box sx={{
         position: 'absolute', 
