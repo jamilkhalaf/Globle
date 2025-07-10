@@ -15,7 +15,7 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
 
-const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false, opponentRoundsWon = 0 }) => {
+const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, disabled = false, opponentRoundsWon = 0, currentRoundNumber = 1, playerRoundsWon = 0 }) => {
   // Early return if targetCountry is null in online mode - this prevents useState from being called
   if (isOnline && (!targetCountry || targetCountry === null || targetCountry === undefined)) {
     console.log('Game component: Early return due to null targetCountry:', targetCountry);
@@ -79,14 +79,6 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   const [bestScore, setBestScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [showStats, setShowStats] = useState(false);
-
-  // Online mode specific state
-  const [onlineRoundsWon, setOnlineRoundsWon] = useState(0);
-  const [onlineRoundsPlayed, setOnlineRoundsPlayed] = useState(0);
-  const [onlineTargetCountries, setOnlineTargetCountries] = useState([]);
-  const [currentRoundNumber, setCurrentRoundNumber] = useState(1);
-  const [onlineGameWon, setOnlineGameWon] = useState(false);
-  const [roundResult, setRoundResult] = useState(null); // 'won', 'lost', null
 
   // Add state for showing more info
   const [showCountryInfo, setShowCountryInfo] = useState(false);
@@ -193,6 +185,25 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       // Don't change the message here - let the parent component handle notifications
     }
   }, [isOnline, disabled]);
+
+  // Handle online game state changes from parent
+  useEffect(() => {
+    if (isOnline) {
+      // Reset game state when parent indicates a new round
+      if (!disabled) {
+        console.log('Game component: New round starting, resetting game state');
+        setGameOver(false);
+        setShowSecret(false);
+        setLastDistance(null);
+        setGuess('');
+        setGuessedCountries([]);
+        setGameStartTime(Date.now());
+        setGameEndTime(null);
+        setScore(0);
+        setMessage('Guess the country!');
+      }
+    }
+  }, [isOnline, disabled, targetCountry]); // Reset when target country changes (new round)
 
   // Initialize online mode
   useEffect(() => {
@@ -503,35 +514,16 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
       updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
       
       if (isOnline) {
-        // Online mode: increment rounds won and check if game is won
-        const newRoundsWon = onlineRoundsWon + 1;
-        setOnlineRoundsWon(newRoundsWon);
-        setRoundResult('won');
+        // Online mode: just call onAnswerSubmit and let parent handle round logic
+        console.log('Game component: Correct answer in online mode, calling onAnswerSubmit with:', guessedCountry.properties.name);
         
-        console.log('Game component: Round won! Rounds won:', newRoundsWon, 'Target:', secretCountry.properties.name);
-        
-        if (newRoundsWon >= 5) {
-          // Player won the online game (first to 5)
-          setOnlineGameWon(true);
-          setMessage(`🎉 You won the online game! First to 5 countries! 🎉`);
-          setGameOver(true);
-          
-          // Call onAnswerSubmit for online games with final result
-          if (onAnswerSubmit) {
-            console.log('Game component: Online game won, calling onAnswerSubmit with:', guessedCountry.properties.name);
-            onAnswerSubmit(guessedCountry.properties.name);
-          }
-        } else {
-          // Round won, but game continues
-          setMessage(`🎉 Correct! Round ${currentRoundNumber} won! (${newRoundsWon}/5) 🎉`);
-          setGameOver(true);
-          
-          // Call onAnswerSubmit for online games
-          if (onAnswerSubmit) {
-            console.log('Game component: Round won, calling onAnswerSubmit with:', guessedCountry.properties.name);
-            onAnswerSubmit(guessedCountry.properties.name);
-          }
+        if (onAnswerSubmit) {
+          onAnswerSubmit(guessedCountry.properties.name);
         }
+        
+        // Disable the game while waiting for round result
+        setGameOver(true);
+        setMessage('🎉 Correct! Waiting for round result... 🎉');
       } else {
         // Offline mode: normal win
         setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
@@ -586,35 +578,16 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
           updateGameStats(finalScore, Math.round(timeTaken / 1000), newGuessedCountries.length);
           
           if (isOnline) {
-            // Online mode: increment rounds won and check if game is won
-            const newRoundsWon = onlineRoundsWon + 1;
-            setOnlineRoundsWon(newRoundsWon);
-            setRoundResult('won');
+            // Online mode: just call onAnswerSubmit and let parent handle round logic
+            console.log('Game component: Correct answer via dropdown in online mode, calling onAnswerSubmit with:', guessedCountry.properties.name);
             
-            console.log('Game component: Round won via dropdown! Rounds won:', newRoundsWon, 'Target:', secretCountry.properties.name);
-            
-            if (newRoundsWon >= 5) {
-              // Player won the online game (first to 5)
-              setOnlineGameWon(true);
-              setMessage(`🎉 You won the online game! First to 5 countries! 🎉`);
-              setGameOver(true);
-              
-              // Call onAnswerSubmit for online games with final result
-              if (onAnswerSubmit) {
-                console.log('Game component: Online game won (dropdown), calling onAnswerSubmit with:', guessedCountry.properties.name);
-                onAnswerSubmit(guessedCountry.properties.name);
-              }
-            } else {
-              // Round won, but game continues
-              setMessage(`🎉 Correct! Round ${currentRoundNumber} won! (${newRoundsWon}/5) 🎉`);
-              setGameOver(true);
-              
-              // Call onAnswerSubmit for online games
-              if (onAnswerSubmit) {
-                console.log('Game component: Round won (dropdown), calling onAnswerSubmit with:', guessedCountry.properties.name);
-                onAnswerSubmit(guessedCountry.properties.name);
-              }
+            if (onAnswerSubmit) {
+              onAnswerSubmit(guessedCountry.properties.name);
             }
+            
+            // Disable the game while waiting for round result
+            setGameOver(true);
+            setMessage('🎉 Correct! Waiting for round result... 🎉');
           } else {
             // Offline mode: normal win
             setMessage(`🎉 Congratulations! You found ${secretCountry.properties.name}! 🎉`);
@@ -641,24 +614,9 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
 
   const resetGame = () => {
     if (isOnline) {
-      // For online mode, start a new round
-      setCurrentRoundNumber(prev => prev + 1);
-      setRoundResult(null);
-      setGameOver(false);
-      setShowSecret(false);
-      setLastDistance(null);
-      setGuess('');
-      setGuessedCountries([]);
-      setGameStartTime(Date.now());
-      setGameEndTime(null);
-      setScore(0);
-      
-      // Get a new target for the next round
-      if (countries.length > 0) {
-        const newTargetCountry = selectRandomCountry(countries);
-        setSecretCountry(newTargetCountry);
-        setMessage(`Round ${currentRoundNumber + 1}: Guess the country!`);
-      }
+      // For online mode, let the parent component handle round transitions
+      console.log('Game component: resetGame called in online mode - this should not happen');
+      return;
     } else {
       // For offline mode, start new game with different country
       let newSecretCountry;
@@ -872,7 +830,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
               opacity: 0.9
             }}
           >
-            You: {onlineRoundsWon} | Opponent: {opponentRoundsWon} | First to 5 wins!
+            You: {playerRoundsWon} | Opponent: {opponentRoundsWon} | First to 5 wins!
           </Typography>
         </Box>
       )}

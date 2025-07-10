@@ -393,6 +393,8 @@ const OnlineGame = ({
               <ComponentToRender 
                 {...gamePropsRef.current}
                 opponentRoundsWon={matchData?.player2Rounds || 0}
+                currentRoundNumber={matchData?.currentRound || 1}
+                playerRoundsWon={matchData?.player1Rounds || 0}
               />
             );
           })()
