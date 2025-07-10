@@ -247,7 +247,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
         const options = validCountries
           .filter(country => countryInfo[country.properties.name])
           .map(country => country.properties.name)
-          .sort();
+          .sort((a, b) => a.localeCompare(b)); // Proper alphabetical sorting
         setCountryOptions(options);
       })
       .catch(error => {
@@ -450,6 +450,16 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
     return center;
   };
 
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (guess.trim()) {
+        handleGuess();
+      }
+    }
+  };
+
   const handleGuess = () => {
     if (!guess || disabled) return;
 
@@ -535,9 +545,11 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
 
   const handleCountrySelect = (event, newValue) => {
     if (newValue && !disabled) {
-      setGuess(newValue.label);
+      const selectedCountry = typeof newValue === 'string' ? newValue : newValue.label;
+      setGuess(selectedCountry);
+      
       const guessedCountry = countries.find(
-        country => country.properties.name.toLowerCase() === newValue.label.toLowerCase()
+        country => country.properties.name.toLowerCase() === selectedCountry.toLowerCase()
       );
       
       if (guessedCountry) {
@@ -1054,12 +1066,7 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
                       fontSize: '16px', // Prevents zoom on iOS
                       transform: 'scale(1)', // Prevents zoom
                     },
-                    onKeyDown: (e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleGuess();
-                      }
-                    }
+                    onKeyDown: handleInputKeyDown
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
@@ -1087,17 +1094,27 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
               sx={{ flexGrow: 1 }}
               open={isDropdownOpen}
               onClose={() => setIsDropdownOpen(false)}
+              onKeyDown={handleInputKeyDown}
               ListboxProps={{
                 style: {
                   maxHeight: isMobile ? '100px' : '150px',
                   fontSize: { xs: '0.7rem', md: '0.9rem' }
                 }
               }}
+              filterOptions={(options, { inputValue }) => {
+                const filtered = options.filter(option => 
+                  option.toLowerCase().includes(inputValue.toLowerCase())
+                );
+                return filtered.slice(0, 10); // Limit to 10 options for better performance
+              }}
+              isOptionEqualToValue={(option, value) => 
+                option.toLowerCase() === value.toLowerCase()
+              }
             />
             <Button
               variant="contained"
               onClick={handleGuess}
-              disabled={gameOver || disabled}
+              disabled={gameOver || disabled || !guess.trim()}
               size="small"
               sx={{
                 minWidth: { xs: '40px', md: '60px' },
@@ -1107,6 +1124,10 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
                 padding: { xs: '4px 8px', md: '8px 16px' },
                 '&:hover': {
                   backgroundColor: '#1565c0',
+                },
+                '&:disabled': {
+                  backgroundColor: '#666',
+                  color: '#999',
                 },
               }}
             >
