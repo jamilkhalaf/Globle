@@ -13,7 +13,7 @@ import {
 import FlagIcon from '@mui/icons-material/Flag';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
-const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNewOpponent, matchResult }) => {
+const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeaveGame, onNewOpponent, matchResult }) => {
   const [selectedAnswer, setSelectedAnswer] = useState('');
   const [isAnswered, setIsAnswered] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState('');
@@ -52,52 +52,71 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
     });
   };
 
-  const renderGameEnd = () => (
-    <Box sx={{ textAlign: 'center' }}>
-      <Typography variant="h3" sx={{ mb: 3, color: '#43cea2' }}>
-        Game Over!
-      </Typography>
-      
-      {matchResult && (
-        <>
-          <Typography variant="h5" sx={{ mb: 2 }}>
-            Winner: {matchResult.winner}
-          </Typography>
-          
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            Correct Answer: {matchResult.correctAnswer}
-          </Typography>
-
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" sx={{ color: '#43cea2' }}>
-              Points: {matchResult.points ? Object.values(matchResult.points)[0] : 0}
+  const renderGameEnd = () => {
+    // Get current user's points from the match result
+    const userPoints = matchResult?.userPoints || 0;
+    const isWinner = matchResult?.isWinner || false;
+    
+    console.log('Game End Debug:', {
+      userPoints,
+      isWinner,
+      matchResult
+    });
+    
+    return (
+      <Box sx={{ textAlign: 'center' }}>
+        <Typography variant="h3" sx={{ mb: 3, color: isWinner ? '#43cea2' : '#f44336' }}>
+          {isWinner ? '🎉 You Won!' : '😔 You Lost'}
+        </Typography>
+        
+        {matchResult && (
+          <>
+            <Typography variant="h5" sx={{ mb: 2, color: 'white' }}>
+              {isWinner ? 'Congratulations!' : 'Better luck next time!'}
             </Typography>
-          </Box>
-        </>
-      )}
+            
+            <Typography variant="body1" sx={{ mb: 3, color: 'rgba(255,255,255,0.8)' }}>
+              Correct Answer: {matchResult.correctAnswer}
+            </Typography>
 
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-        <Button
-          variant="outlined"
-          onClick={onLeaveGame}
-          sx={{ 
-            color: 'white', 
-            borderColor: 'rgba(255,255,255,0.3)',
-            '&:hover': { borderColor: 'white' }
-          }}
-        >
-          Leave Game
-        </Button>
-        <Button
-          variant="contained"
-          onClick={onNewOpponent}
-          sx={{ bgcolor: '#43cea2' }}
-        >
-          Find New Opponent
-        </Button>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h4" sx={{ 
+                color: isWinner ? '#43cea2' : '#f44336', 
+                fontWeight: 'bold',
+                mb: 1
+              }}>
+                {isWinner ? `+${userPoints} Points` : `${userPoints} Points`}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                {isWinner ? 'Great job! You earned points!' : 'You lost some points this round.'}
+              </Typography>
+            </Box>
+          </>
+        )}
+
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          <Button
+            variant="outlined"
+            onClick={onLeaveGame}
+            sx={{ 
+              color: 'white', 
+              borderColor: 'rgba(255,255,255,0.3)',
+              '&:hover': { borderColor: 'white' }
+            }}
+          >
+            Leave Game
+          </Button>
+          <Button
+            variant="contained"
+            onClick={onNewOpponent}
+            sx={{ bgcolor: '#43cea2' }}
+          >
+            Find New Opponent
+          </Button>
+        </Box>
       </Box>
-    </Box>
-  );
+    );
+  };
 
   const renderGameInterface = () => (
     <Box sx={{ textAlign: 'center' }}>
@@ -113,19 +132,27 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
 
       {/* Flag Options Grid */}
       <Box sx={{ mb: 4 }}>
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 3, maxWidth: 600, mx: 'auto' }}>
           {flagCodes.map((flagCode, index) => (
             <Grid item xs={6} sm={3} key={index}>
-              <Card sx={{ 
-                bgcolor: 'white', 
-                p: 1,
-                cursor: 'pointer',
-                border: isAnswered && flagCode === JSON.parse(matchData.question).correctFlagCode ? '3px solid #4caf50' : '1px solid #ddd',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                  transition: 'transform 0.2s'
-                }
-              }}>
+              <Card 
+                sx={{ 
+                  bgcolor: 'white', 
+                  p: 2,
+                  cursor: 'pointer',
+                  border: isAnswered && flagCode === JSON.parse(matchData.question).correctFlagCode ? '3px solid #4caf50' : 
+                          isAnswered && selectedAnswer === flagCode && flagCode !== JSON.parse(matchData.question).correctFlagCode ? '3px solid #f44336' : '1px solid #ddd',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    transition: 'transform 0.2s',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                  },
+                  '&:active': {
+                    transform: 'scale(0.95)'
+                  }
+                }}
+                onClick={() => handleAnswerSubmit(flagCode)}
+              >
                 <img 
                   src={`/flags/${flagCode}.png`}
                   alt={`Flag ${index + 1}`}
@@ -170,9 +197,35 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, onLeaveGame, onNe
 
   const renderCountdown = () => (
     <Box sx={{ textAlign: 'center' }}>
-      <CircularProgress sx={{ color: '#43cea2', mb: 2 }} />
-      <Typography variant="h6" sx={{ color: 'white' }}>
-        Game starting in 3 seconds...
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h2" sx={{ color: '#43cea2', fontWeight: 'bold', mb: 2 }}>
+          {gameTimer}
+        </Typography>
+        <Typography variant="h5" sx={{ color: 'white', mb: 3 }}>
+          Game starting in...
+        </Typography>
+      </Box>
+      
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: 2, 
+        mb: 4,
+        '& .countdown-dot': {
+          width: 20,
+          height: 20,
+          borderRadius: '50%',
+          bgcolor: gameTimer <= 3 ? '#43cea2' : 'rgba(255,255,255,0.3)',
+          transition: 'all 0.3s ease'
+        }
+      }}>
+        <Box className="countdown-dot" />
+        <Box className="countdown-dot" />
+        <Box className="countdown-dot" />
+      </Box>
+      
+      <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+        Get ready to play!
       </Typography>
     </Box>
   );

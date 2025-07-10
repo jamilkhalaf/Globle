@@ -930,6 +930,30 @@ io.on('connection', (socket) => {
           }
         });
         
+        // Send individual points to each player
+        const winnerSocket = userSockets.get(socket.userId);
+        const loserSocket = userSockets.get(match.players.find(p => p.userId !== socket.userId).userId);
+        
+        if (winnerSocket) {
+          winnerSocket.emit('gameEnd', {
+            winner: socket.username,
+            winnerTime: timeTaken,
+            correctAnswer: questionData.correctAnswer,
+            userPoints: 100,
+            isWinner: true
+          });
+        }
+        
+        if (loserSocket) {
+          loserSocket.emit('gameEnd', {
+            winner: socket.username,
+            winnerTime: timeTaken,
+            correctAnswer: questionData.correctAnswer,
+            userPoints: -100,
+            isWinner: false
+          });
+        }
+        
         // Clean up match after delay
         setTimeout(() => {
           activeMatches.delete(matchId);
@@ -955,6 +979,30 @@ io.on('connection', (socket) => {
             [otherPlayer.userId]: 100
           }
         });
+        
+        // Send individual points to each player
+        const winnerSocket = userSockets.get(otherPlayer.userId);
+        const loserSocket = userSockets.get(socket.userId);
+        
+        if (winnerSocket) {
+          winnerSocket.emit('gameEnd', {
+            winner: otherPlayer.username,
+            loserTime: timeTaken,
+            correctAnswer: questionData.correctAnswer,
+            userPoints: 100,
+            isWinner: true
+          });
+        }
+        
+        if (loserSocket) {
+          loserSocket.emit('gameEnd', {
+            winner: otherPlayer.username,
+            loserTime: timeTaken,
+            correctAnswer: questionData.correctAnswer,
+            userPoints: -100,
+            isWinner: false
+          });
+        }
         
         // Clean up match after delay
         setTimeout(() => {
@@ -986,6 +1034,30 @@ io.on('connection', (socket) => {
           }
         });
         
+        // Send individual points to each player
+        const winnerSocket = userSockets.get(socket.userId);
+        const loserSocket = userSockets.get(match.players.find(p => p.userId !== socket.userId).userId);
+        
+        if (winnerSocket) {
+          winnerSocket.emit('gameEnd', {
+            winner: socket.username,
+            winnerTime: timeTaken,
+            correctAnswer: match.correctAnswer,
+            userPoints: 100,
+            isWinner: true
+          });
+        }
+        
+        if (loserSocket) {
+          loserSocket.emit('gameEnd', {
+            winner: socket.username,
+            winnerTime: timeTaken,
+            correctAnswer: match.correctAnswer,
+            userPoints: -100,
+            isWinner: false
+          });
+        }
+        
         // Clean up match after delay
         setTimeout(() => {
           activeMatches.delete(matchId);
@@ -1010,6 +1082,30 @@ io.on('connection', (socket) => {
             [match.players.find(p => p.userId !== socket.userId).userId]: 100
           }
         });
+        
+        // Send individual points to each player
+        const winnerSocket = userSockets.get(match.players.find(p => p.userId !== socket.userId).userId);
+        const loserSocket = userSockets.get(socket.userId);
+        
+        if (winnerSocket) {
+          winnerSocket.emit('gameEnd', {
+            winner: match.players.find(p => p.userId !== socket.userId).username,
+            loserTime: timeTaken,
+            correctAnswer: match.correctAnswer,
+            userPoints: 100,
+            isWinner: true
+          });
+        }
+        
+        if (loserSocket) {
+          loserSocket.emit('gameEnd', {
+            winner: match.players.find(p => p.userId !== socket.userId).username,
+            loserTime: timeTaken,
+            correctAnswer: match.correctAnswer,
+            userPoints: -100,
+            isWinner: false
+          });
+        }
         
         // Clean up match after delay
         setTimeout(() => {
