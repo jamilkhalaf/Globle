@@ -339,7 +339,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
               fontStyle: 'italic'
             }}>
               {userWonRound ? '🎉 You won this round!' : 
-               roundWinner ? `${roundWinner} won this round!` : 'No one got it right this round.'}
+               roundWinner ? `${roundWinner} won this round!` : '🤝 Round draw - both players answered incorrectly!'}
             </Typography>
           </Box>
         </Box>
@@ -379,12 +379,34 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     const userPoints = matchResult?.userPoints || 0;
     const isWinner = matchResult?.isWinner || false;
     const finalScore = matchResult?.finalScore || '0-0';
+    const scoreDifference = matchResult?.scoreDifference || 0;
     
     console.log('Game End Debug:', {
       userPoints,
       isWinner,
-      matchResult
+      matchResult,
+      scoreDifference
     });
+    
+    // Determine the result message based on points and score difference
+    let resultMessage, resultColor, pointsMessage;
+    
+    if (userPoints === 0) {
+      // Draw
+      resultMessage = '🤝 Game Draw!';
+      resultColor = '#ff9800'; // Orange for draw
+      pointsMessage = 'No points awarded - it was a tie!';
+    } else if (scoreDifference === 5) {
+      // Complete victory/defeat
+      resultMessage = isWinner ? '🎉 Complete Victory!' : '😔 Complete Defeat';
+      resultColor = isWinner ? '#43cea2' : '#f44336';
+      pointsMessage = isWinner ? `+${userPoints} Points (Perfect Victory!)` : `${userPoints} Points (Complete Loss)`;
+    } else {
+      // Partial victory/defeat
+      resultMessage = isWinner ? '🎉 You Won!' : '😔 You Lost';
+      resultColor = isWinner ? '#43cea2' : '#f44336';
+      pointsMessage = isWinner ? `+${userPoints} Points` : `${userPoints} Points`;
+    }
     
     return (
       <Box sx={{ 
@@ -399,12 +421,12 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         <Box sx={{ mb: 4 }}>
           <Typography variant="h1" sx={{ 
             mb: 3, 
-            color: isWinner ? '#43cea2' : '#f44336',
+            color: resultColor,
             fontWeight: 'bold',
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
             fontSize: { xs: '3rem', sm: '4rem' }
           }}>
-            {isWinner ? '🎉 You Won!' : '😔 You Lost'}
+            {resultMessage}
           </Typography>
           
           <Typography variant="h4" sx={{ 
@@ -413,7 +435,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             fontWeight: '300',
             textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
           }}>
-            {isWinner ? 'Congratulations!' : 'Better luck next time!'}
+            {userPoints === 0 ? 'Great game, both players were evenly matched!' : 
+             isWinner ? 'Congratulations on your victory!' : 'Better luck next time!'}
           </Typography>
         </Box>
         
@@ -437,20 +460,41 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
 
             <Box sx={{ mb: 2 }}>
               <Typography variant="h3" sx={{ 
-                color: isWinner ? '#43cea2' : '#f44336', 
+                color: resultColor, 
                 fontWeight: 'bold',
                 mb: 1,
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
               }}>
-                {isWinner ? `+${userPoints} Points` : `${userPoints} Points`}
+                {pointsMessage}
               </Typography>
               <Typography variant="body1" sx={{ 
                 color: 'rgba(255,255,255,0.7)',
                 fontStyle: 'italic'
               }}>
-                {isWinner ? 'Great job! You earned points!' : 'You lost some points this round.'}
+                {userPoints === 0 ? 'Neither player gained or lost points' :
+                 isWinner ? 'You earned points for your victory!' : 'You lost points this round.'}
               </Typography>
             </Box>
+            
+            {/* Score difference explanation */}
+            {scoreDifference > 0 && (
+              <Box sx={{ 
+                mt: 2, 
+                p: 2, 
+                bgcolor: 'rgba(255,255,255,0.05)', 
+                borderRadius: 2,
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.8)',
+                  fontStyle: 'italic'
+                }}>
+                  {scoreDifference === 5 ? 
+                   'Perfect victory! Maximum points awarded.' :
+                   `Score difference: ${scoreDifference} rounds. Points awarded proportionally.`}
+                </Typography>
+              </Box>
+            )}
           </Box>
         )}
 

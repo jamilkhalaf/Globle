@@ -1005,21 +1005,36 @@ io.on('connection', (socket) => {
         match.player2Wins = 0;
       }
       
-      // End round immediately when one player answers (no waiting for second player)
-      const shouldEndRound = match.answers.length === 1;
+      // Check if both players have answered OR if first player was correct
+      const shouldEndRound = match.answers.length === 2 || 
+        (match.answers.length === 1 && match.answers[0].isCorrect);
       
       if (shouldEndRound) {
-        // One player answered - determine winner based on correctness
-        const playerAnswer = match.answers[0];
+        // Both players answered OR first player was correct - determine winner
+        const correctAnswers = match.answers.filter(a => a.isCorrect);
         let roundWinner = null;
         
-        if (playerAnswer.isCorrect) {
-          // Player answered correctly - they win the round
-          roundWinner = playerAnswer;
+        if (correctAnswers.length === 1) {
+          // Only one player answered correctly - they win
+          roundWinner = correctAnswers[0];
+        } else if (correctAnswers.length > 1) {
+          // Multiple correct answers - determine fastest
+          const sortedAnswers = correctAnswers.sort((a, b) => {
+            // First priority: server timestamp (more precise)
+            if (a.serverTimestamp !== b.serverTimestamp) {
+              return a.serverTimestamp - b.serverTimestamp;
+            }
+            // Second priority: client timestamp
+            if (a.clientTimestamp !== b.clientTimestamp) {
+              return a.clientTimestamp - b.clientTimestamp;
+            }
+            // Third priority: player order (player1 wins ties)
+            return a.isPlayer1 ? -1 : 1;
+          });
+          roundWinner = sortedAnswers[0];
         } else {
-          // Player answered incorrectly - they lose, but we still need to determine if other player gets a chance
-          // For now, the player who answered incorrectly loses the round
-          roundWinner = null; // No winner this round
+          // No correct answers - it's a draw
+          roundWinner = null;
         }
         
         if (roundWinner) {
@@ -1032,7 +1047,7 @@ io.on('connection', (socket) => {
           
           console.log(`🎮 FlagGuess - Round winner: ${roundWinner.username} (answered correctly)`);
         } else {
-          console.log(`🎮 FlagGuess - No round winner (player answered incorrectly)`);
+          console.log(`🎮 FlagGuess - Round draw (both players answered incorrectly)`);
         }
         
         // Send round result to both players with correct information
@@ -1067,17 +1082,41 @@ io.on('connection', (socket) => {
         // Check if we've reached 5 rounds
         if (match.currentRound >= 5) {
           console.log('🎮 FlagGuess - Game ending after 5 rounds');
-          // Game is over - determine final winner
+          // Game is over - determine final winner and calculate points
+          const finalScore = `${match.player1Wins}-${match.player2Wins}`;
+          const scoreDifference = Math.abs(match.player1Wins - match.player2Wins);
+          
+          // Calculate points based on score difference
+          let winnerPoints, loserPoints;
+          
+          if (scoreDifference === 0) {
+            // Draw - no points awarded
+            winnerPoints = 0;
+            loserPoints = 0;
+            console.log('🎮 FlagGuess - Game ended in draw, no points awarded');
+          } else if (scoreDifference === 5) {
+            // Complete victory (5-0) - maximum points
+            winnerPoints = 100;
+            loserPoints = -100;
+            console.log('🎮 FlagGuess - Complete victory, maximum points awarded');
+          } else {
+            // Partial victory - proportional points
+            // Base points: 20 per round difference
+            const basePoints = scoreDifference * 20;
+            winnerPoints = basePoints;
+            loserPoints = -basePoints;
+            console.log(`🎮 FlagGuess - Partial victory, ${basePoints} points awarded`);
+          }
+          
           const finalWinner = match.player1Wins > match.player2Wins ? match.players[0] : match.players[1];
           const finalLoser = match.player1Wins > match.player2Wins ? match.players[1] : match.players[0];
-          const finalScore = `${match.player1Wins}-${match.player2Wins}`;
           
           match.winner = finalWinner.userId;
           match.endTime = Date.now();
           
-          // Update points - winner gets +100, loser gets -100
-          await updatePlayerPoints(finalWinner.userId, 100, true);
-          await updatePlayerPoints(finalLoser.userId, -100, false);
+          // Update points based on calculated values
+          await updatePlayerPoints(finalWinner.userId, winnerPoints, winnerPoints > 0);
+          await updatePlayerPoints(finalLoser.userId, loserPoints, loserPoints > 0);
           
           // Send individual game end to each player
           const winnerSocket = userSockets.get(finalWinner.userId);
@@ -1088,8 +1127,9 @@ io.on('connection', (socket) => {
               winner: finalWinner.username,
               finalScore: finalScore,
               correctAnswer: questionData.correctAnswer,
-              userPoints: 100,
-              isWinner: true
+              userPoints: winnerPoints,
+              isWinner: winnerPoints > 0,
+              scoreDifference: scoreDifference
             });
           }
           
@@ -1098,8 +1138,9 @@ io.on('connection', (socket) => {
               winner: finalWinner.username,
               finalScore: finalScore,
               correctAnswer: questionData.correctAnswer,
-              userPoints: -100,
-              isWinner: false
+              userPoints: loserPoints,
+              isWinner: loserPoints > 0,
+              scoreDifference: scoreDifference
             });
           }
           
@@ -1138,8 +1179,8 @@ io.on('connection', (socket) => {
           }, 3000);
         }
       } else {
-        // This should not happen anymore since we end round immediately
-        console.log(`🎮 FlagGuess - Unexpected state: ${match.answers.length} answers`);
+        // Only one player has answered and they got it wrong - wait for the other player
+        console.log(`🎮 FlagGuess - Waiting for other player. First player answered incorrectly.`);
       }
     }
   });
