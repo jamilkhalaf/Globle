@@ -280,6 +280,10 @@ router.post('/update', auth, async (req, res) => {
       const score = req.body.score || 0; // Score based on guesses used (5 = perfect, 1 = barely won)
       const attempts = req.body.attempts || 0; // Number of guesses used
       
+      console.log('Satle badge check - gameStats:', gameStats);
+      console.log('Satle badge check - score:', score);
+      console.log('Satle badge check - attempts:', attempts);
+      
       badgesToCheck.push(
         { id: 'satle_first_win', category: 'satle', condition: gameStats.gamesPlayed >= 1 },
         { id: 'satle_10_games', category: 'satle', condition: gameStats.gamesPlayed >= 10 },
@@ -291,6 +295,8 @@ router.post('/update', auth, async (req, res) => {
         { id: 'satle_streak_5', category: 'satle', condition: gameStats.currentStreak >= 5 },
         { id: 'satle_streak_10', category: 'satle', condition: gameStats.currentStreak >= 10 }
       );
+      
+      console.log('Satle badges to check:', badgesToCheck.filter(b => b.category === 'satle'));
     }
 
     // Check and create/update badges
