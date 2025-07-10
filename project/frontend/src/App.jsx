@@ -19,6 +19,7 @@ import Shaple from './components/shaple'
 import US from './components/US'
 import Namle from './components/Namle'
 import Online from './components/online'
+import Satle from './components/satle'
 import './App.css'
 
 const theme = createTheme({
@@ -63,6 +64,7 @@ function App() {
           <Route path="/shaple" element={<Shaple />} />
           <Route path="/us" element={<US />} />
           <Route path="/namle" element={<Namle />} />
+          <Route path="/satle" element={<Satle />} />
         </Routes>
       </Router>
     </ThemeProvider>

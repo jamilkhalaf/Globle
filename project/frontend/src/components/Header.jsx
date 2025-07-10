@@ -123,6 +123,11 @@ const Header = forwardRef((props, ref) => {
       label: 'Namle',
       path: '/namle',
       icon: <PublicIcon sx={{ fontSize: 20, color: '#9c27b0' }} />
+    },
+    {
+      label: 'Satle',
+      path: '/satle',
+      icon: <PublicIcon sx={{ fontSize: 20, color: '#ff5722' }} />
     }
   ];
 
