@@ -14,7 +14,7 @@ import {
   Divider,
   Paper
 } from '@mui/material';
-import TextFieldsIcon from '@mui/icons-material/TextFields';
+import TextFields from '@mui/icons-material/TextFields';
 import TimerIcon from '@mui/icons-material/Timer';
 import PersonIcon from '@mui/icons-material/Person';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -193,7 +193,7 @@ const NamleOnline = ({ matchData, onAnswerSubmit, gameState, gameTimer }) => {
       
       <Box sx={{ p: 3, maxWidth: 800, mx: 'auto', width: '100%' }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white', mb: 3, textAlign: 'center' }}>
-          <TextFieldsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          <TextFields sx={{ mr: 1, verticalAlign: 'middle' }} />
           Namle Online
         </Typography>
 

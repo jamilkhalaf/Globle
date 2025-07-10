@@ -14,7 +14,7 @@ import {
   Divider,
   Paper
 } from '@mui/material';
-import FlagIcon from '@mui/icons-material/Flag';
+import Flag from '@mui/icons-material/Flag';
 import TimerIcon from '@mui/icons-material/Timer';
 import PersonIcon from '@mui/icons-material/Person';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -193,7 +193,7 @@ const FlagleOnline = ({ matchData, onAnswerSubmit, gameState, gameTimer }) => {
       
       <Box sx={{ p: 3, maxWidth: 800, mx: 'auto', width: '100%' }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white', mb: 3, textAlign: 'center' }}>
-          <FlagIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          <Flag sx={{ mr: 1, verticalAlign: 'middle' }} />
           Flagle Online
         </Typography>
 

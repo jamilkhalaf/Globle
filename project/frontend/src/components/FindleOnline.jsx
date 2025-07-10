@@ -14,7 +14,7 @@ import {
   Divider,
   Paper
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import Search from '@mui/icons-material/Search';
 import TimerIcon from '@mui/icons-material/Timer';
 import PersonIcon from '@mui/icons-material/Person';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -193,7 +193,7 @@ const FindleOnline = ({ matchData, onAnswerSubmit, gameState, gameTimer }) => {
       
       <Box sx={{ p: 3, maxWidth: 800, mx: 'auto', width: '100%' }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white', mb: 3, textAlign: 'center' }}>
-          <SearchIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          <Search sx={{ mr: 1, verticalAlign: 'middle' }} />
           Findle Online
         </Typography>
 
