@@ -86,7 +86,6 @@ const Game = ({ targetCountry = null, isOnline = false, onAnswerSubmit = null, d
   const [onlineTargetCountries, setOnlineTargetCountries] = useState([]);
   const [currentRoundNumber, setCurrentRoundNumber] = useState(1);
   const [onlineGameWon, setOnlineGameWon] = useState(false);
-  const [opponentRoundsWon, setOpponentRoundsWon] = useState(0);
   const [roundResult, setRoundResult] = useState(null); // 'won', 'lost', null
 
   // Add state for showing more info
