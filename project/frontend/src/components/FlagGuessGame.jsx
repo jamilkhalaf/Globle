@@ -244,7 +244,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     const questionData = JSON.parse(matchData.question);
     const isCorrect = flagCode === questionData.correctFlagCode;
     
-    console.log('�� Answer result:', { 
+    console.log('🎮 Answer result:', { 
       isCorrect, 
       correctFlagCode: questionData.correctFlagCode, 
       selectedFlagCode: flagCode,
@@ -259,11 +259,16 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
       distance: 0 // Add distance field for compatibility with backend
     });
     
-    // Update UI state after server submission - but don't show immediate feedback
+    // Update UI state after server submission
     setIsAnswered(true);
     setSelectedAnswer(flagCode);
-    // Don't set message here - wait for server response
-    setMessage('Answer submitted! Waiting for other player...');
+    
+    // Show appropriate message based on correctness
+    if (isCorrect) {
+      setMessage('Correct! Waiting for other player...');
+    } else {
+      setMessage('Incorrect! Waiting for other player...');
+    }
   }, [isAnswered, matchData, onAnswerSubmit]);
 
   const renderRoundResult = () => {
@@ -276,6 +281,24 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     const roundWinner = roundResult.roundWinner;
     const score = roundResult.score;
     const correctAnswer = roundResult.correctAnswer;
+    const isDraw = roundResult.isDraw;
+    
+    // Determine the main message based on the scenario
+    let mainMessage, messageColor;
+    
+    if (isDraw) {
+      mainMessage = '🤝 Draw!';
+      messageColor = '#ff9800'; // Orange for draw
+    } else if (userWonRound) {
+      mainMessage = '🎉 You Won!';
+      messageColor = '#43cea2'; // Green for win
+    } else if (userIsCorrect && !userWonRound) {
+      mainMessage = '⚡ Too Slow!';
+      messageColor = '#ff9800'; // Orange for correct but slow
+    } else {
+      mainMessage = '❌ Incorrect!';
+      messageColor = '#f44336'; // Red for incorrect
+    }
     
     return (
       <Box sx={{ 
@@ -290,12 +313,12 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         <Box sx={{ mb: 4 }}>
           <Typography variant="h2" sx={{ 
             mb: 3, 
-            color: userIsCorrect ? '#43cea2' : '#f44336',
+            color: messageColor,
             fontWeight: 'bold',
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
             fontSize: { xs: '2.5rem', sm: '3rem' }
           }}>
-            {roundResult.isDraw ? '🤝 Draw!' : (userIsCorrect ? '✅ Correct!' : '❌ Incorrect!')}
+            {mainMessage}
           </Typography>
           
           <Typography variant="h4" sx={{ 
@@ -346,9 +369,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
               color: 'rgba(255,255,255,0.7)',
               fontStyle: 'italic'
             }}>
-              {userWonRound ? '🎉 You won this round!' : 
+              {isDraw ? '🤝 Both players answered simultaneously! Round will restart.' :
+               userWonRound ? '🎉 You won this round!' : 
                roundWinner ? `${roundWinner} won this round!` : 
-               roundResult.isDraw ? '🤝 Round draw - both players answered simultaneously! Round will restart.' :
                '🤝 Round draw - both players answered incorrectly!'}
             </Typography>
           </Box>
@@ -378,7 +401,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
           fontStyle: 'italic',
           textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
         }}>
-          Next round starting...
+          {isDraw ? 'Restarting round...' : 'Next round starting...'}
         </Typography>
       </Box>
     );
