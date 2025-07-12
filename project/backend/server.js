@@ -866,6 +866,14 @@ io.on('connection', (socket) => {
       }
 
       if (isCorrect) {
+        // Add protection against double processing when both players submit simultaneously
+        if (match.roundProcessing) {
+          console.log(`🎮 Globle - Round already being processed, skipping duplicate submission from ${socket.username}`);
+          return;
+        }
+        
+        match.roundProcessing = true; // Set flag to prevent double processing
+        
         // Determine which player won this round based on timing
         const correctAnswers = match.answers.filter(a => a.isCorrect);
         let roundWinner;
@@ -953,6 +961,7 @@ io.on('connection', (socket) => {
             
             // Clear answers for next round
             match.answers = [];
+            match.roundProcessing = false; // Reset flag for next round
             
             // Notify players about round result
             io.to(matchId).emit('roundEnd', {
@@ -974,6 +983,9 @@ io.on('connection', (socket) => {
               });
             }, 3000);
           }
+        } else {
+          // No round winner determined, reset flag
+          match.roundProcessing = false;
         }
       } else {
         // Incorrect guess - continue playing
@@ -1009,7 +1021,10 @@ io.on('connection', (socket) => {
       const shouldEndRound = match.answers.length === 2 || 
         (match.answers.length === 1 && match.answers[0].isCorrect);
       
-      if (shouldEndRound) {
+      // Add flag to prevent double processing when both players submit simultaneously
+      if (shouldEndRound && !match.roundProcessing) {
+        match.roundProcessing = true; // Set flag to prevent double processing
+        
         // Both players answered OR first player was correct - determine winner
         const correctAnswers = match.answers.filter(a => a.isCorrect);
         let roundWinner = null;
@@ -1178,6 +1193,9 @@ io.on('connection', (socket) => {
             });
           }, 3000);
         }
+        
+        // Reset round processing flag
+        match.roundProcessing = false;
       } else {
         // Only one player has answered and they got it wrong - wait for the other player
         console.log(`🎮 FlagGuess - Waiting for other player. First player answered incorrectly.`);
@@ -1247,7 +1265,8 @@ async function tryMatchPlayers(gameType) {
       currentRound: 1,
       player1Wins: 0,
       player2Wins: 0,
-      answers: [] // Initialize answers array for new matches
+      answers: [], // Initialize answers array for new matches
+      roundProcessing: false // Initialize round processing flag
     };
     
     activeMatches.set(matchId, match);
