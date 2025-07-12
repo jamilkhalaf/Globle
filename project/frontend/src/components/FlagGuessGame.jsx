@@ -321,7 +321,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             fontWeight: '300',
             textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
           }}>
-            Round {roundResult.roundNumber} Complete
+            {isDraw ? 'Round Repeating' : 'Round Complete'}
           </Typography>
         </Box>
         
