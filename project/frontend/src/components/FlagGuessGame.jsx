@@ -298,78 +298,82 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     return (
       <Box sx={{ 
         textAlign: 'center', 
-        p: 4,
-        bgcolor: '#000000', // Added black background
+        p: { xs: 2, sm: 4 }, // Reduced padding for mobile
+        bgcolor: '#000000',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center'
       }}>
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: { xs: 2, sm: 4 } }}>
           <Typography variant="h2" sx={{ 
-            mb: 3, 
+            mb: { xs: 2, sm: 3 }, 
             color: messageColor,
             fontWeight: 'bold',
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-            fontSize: { xs: '2.5rem', sm: '3rem' }
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } // Smaller for mobile
           }}>
+            {mainMessage}
           </Typography>
           
           <Typography variant="h4" sx={{ 
-            mb: 3, 
+            mb: { xs: 2, sm: 3 }, 
             color: 'white',
             fontWeight: '300',
-            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+            textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+            fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } // Smaller for mobile
           }}>
-            {isDraw ? 'Round Repeating' : 'Round Complete'}
           </Typography>
         </Box>
         
         <Box sx={{ 
-          mb: 4, 
-          p: 3,
-          bgcolor: 'transparent', // Changed from 'rgba(255,255,255,0.05)' to transparent
+          mb: { xs: 2, sm: 4 }, 
+          p: { xs: 2, sm: 3 }, // Reduced padding for mobile
+          bgcolor: 'transparent',
           borderRadius: 3,
           border: '1px solid rgba(255,255,255,0.1)',
-          maxWidth: 500,
+          maxWidth: { xs: '95%', sm: 500 }, // Wider on mobile
           mx: 'auto'
         }}>
           <Typography variant="h6" sx={{ 
-            mb: 2, 
+            mb: { xs: 1, sm: 2 }, 
             color: 'rgba(255,255,255,0.9)',
-            fontWeight: '500'
+            fontWeight: '500',
+            fontSize: { xs: '0.9rem', sm: '1rem' } // Smaller for mobile
           }}>
-            Your Answer: {userAnswer || 'No answer'}
           </Typography>
           
           <Typography variant="h6" sx={{ 
-            mb: 2, 
+            mb: { xs: 1, sm: 2 }, 
             color: 'rgba(255,255,255,0.9)',
-            fontWeight: '500'
+            fontWeight: '500',
+            fontSize: { xs: '0.9rem', sm: '1rem' } // Smaller for mobile
           }}>
             Correct Answer: {correctAnswer}
           </Typography>
 
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: { xs: 1, sm: 2 } }}>
             <Typography variant="h4" sx={{ 
               color: '#43cea2', 
               fontWeight: 'bold',
               mb: 1,
-              textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+              fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } // Smaller for mobile
             }}>
-              {isDraw ? 'Repeating Round' : 'Round Complete'}
             </Typography>
             <Typography variant="h4" sx={{ 
               color: '#43cea2', 
               fontWeight: 'bold',
               mb: 1,
-              textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+              fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } // Smaller for mobile
             }}>
               Score: {score}
             </Typography>
             <Typography variant="body1" sx={{ 
               color: 'rgba(255,255,255,0.7)',
-              fontStyle: 'italic'
+              fontStyle: 'italic',
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } // Smaller for mobile
             }}>
               {isDraw ? '🤝 Both players answered simultaneously! Round will restart.' :
                userWonRound ? '🎉 You won this round!' : 
@@ -382,11 +386,11 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'center', 
-          gap: 3, 
-          mb: 4,
+          gap: { xs: 2, sm: 3 }, 
+          mb: { xs: 2, sm: 4 },
           '& .countdown-dot': {
-            width: 20,
-            height: 20,
+            width: { xs: 16, sm: 20 }, // Smaller dots for mobile
+            height: { xs: 16, sm: 20 },
             borderRadius: '50%',
             bgcolor: '#43cea2',
             transition: 'all 0.3s ease',
@@ -401,7 +405,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         <Typography variant="h6" sx={{ 
           color: 'rgba(255,255,255,0.8)',
           fontStyle: 'italic',
-          textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+          textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+          fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' } // Smaller for mobile
         }}>
           {isDraw ? 'Repeating round...' : 'Next round starting...'}
         </Typography>
@@ -446,29 +451,30 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     return (
       <Box sx={{ 
         textAlign: 'center', 
-        p: 4,
-        bgcolor: '#000000', // Added black background
+        p: { xs: 2, sm: 4 }, // Reduced padding for mobile
+        bgcolor: '#000000',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center'
       }}>
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: { xs: 2, sm: 4 } }}>
           <Typography variant="h1" sx={{ 
-            mb: 3, 
+            mb: { xs: 2, sm: 3 }, 
             color: resultColor,
             fontWeight: 'bold',
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-            fontSize: { xs: '3rem', sm: '4rem' }
+            fontSize: { xs: '2.5rem', sm: '3rem', md: '4rem' } // Smaller for mobile
           }}>
             {resultMessage}
           </Typography>
           
           <Typography variant="h4" sx={{ 
-            mb: 3, 
+            mb: { xs: 2, sm: 3 }, 
             color: 'white',
             fontWeight: '300',
-            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+            textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+            fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } // Smaller for mobile
           }}>
             {userPoints === 0 ? 'Great game, both players were evenly matched!' : 
              isWinner ? 'Congratulations on your victory!' : 'Better luck next time!'}
@@ -477,34 +483,37 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
         
         {matchResult && (
           <Box sx={{ 
-            mb: 4, 
-            p: 3,
-            bgcolor: 'transparent', // Changed from 'rgba(255,255,255,0.05)' to transparent
+            mb: { xs: 2, sm: 4 }, 
+            p: { xs: 2, sm: 3 }, // Reduced padding for mobile
+            bgcolor: 'transparent',
             borderRadius: 3,
             border: '1px solid rgba(255,255,255,0.1)',
-            maxWidth: 500,
+            maxWidth: { xs: '95%', sm: 500 }, // Wider on mobile
             mx: 'auto'
           }}>
             <Typography variant="h6" sx={{ 
-              mb: 2, 
+              mb: { xs: 1, sm: 2 }, 
               color: 'rgba(255,255,255,0.9)',
-              fontWeight: '500'
+              fontWeight: '500',
+              fontSize: { xs: '0.9rem', sm: '1rem' } // Smaller for mobile
             }}>
               Final Score: {finalScore}
             </Typography>
 
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: { xs: 1, sm: 2 } }}>
               <Typography variant="h3" sx={{ 
                 color: resultColor, 
                 fontWeight: 'bold',
                 mb: 1,
-                textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+                textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' } // Smaller for mobile
               }}>
                 {pointsMessage}
               </Typography>
               <Typography variant="body1" sx={{ 
                 color: 'rgba(255,255,255,0.7)',
-                fontStyle: 'italic'
+                fontStyle: 'italic',
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' } // Smaller for mobile
               }}>
                 {userPoints === 0 ? 'Neither player gained or lost points' :
                  isWinner ? 'You earned points for your victory!' : 'You lost points this round.'}
@@ -514,15 +523,16 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             {/* Score difference explanation */}
             {scoreDifference > 0 && (
               <Box sx={{ 
-                mt: 2, 
-                p: 2, 
+                mt: { xs: 1, sm: 2 }, 
+                p: { xs: 1, sm: 2 }, // Reduced padding for mobile
                 bgcolor: 'rgba(255,255,255,0.05)', 
                 borderRadius: 2,
                 border: '1px solid rgba(255,255,255,0.1)'
               }}>
                 <Typography variant="body2" sx={{ 
                   color: 'rgba(255,255,255,0.8)',
-                  fontStyle: 'italic'
+                  fontStyle: 'italic',
+                  fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' } // Smaller for mobile
                 }}>
                   {scoreDifference === 5 ? 
                    'Perfect victory! Maximum points awarded.' :
@@ -533,7 +543,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: { xs: 2, sm: 3 }, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Button
             variant="outlined"
             onClick={onLeaveGame}
@@ -542,9 +552,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
               color: 'white', 
               borderColor: 'rgba(255,255,255,0.3)',
               borderWidth: 2,
-              px: 4,
-              py: 1.5,
-              fontSize: '1.1rem',
+              px: { xs: 3, sm: 4 }, // Reduced padding for mobile
+              py: { xs: 1, sm: 1.5 }, // Reduced padding for mobile
+              fontSize: { xs: '0.9rem', sm: '1.1rem' }, // Smaller font for mobile
               '&:hover': { 
                 borderColor: 'white',
                 borderWidth: 2,
@@ -560,9 +570,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             size="large"
             sx={{ 
               bgcolor: '#43cea2',
-              px: 4,
-              py: 1.5,
-              fontSize: '1.1rem',
+              px: { xs: 3, sm: 4 }, // Reduced padding for mobile
+              py: { xs: 1, sm: 1.5 }, // Reduced padding for mobile
+              fontSize: { xs: '0.9rem', sm: '1.1rem' }, // Smaller font for mobile
               fontWeight: 'bold',
               '&:hover': {
                 bgcolor: '#3bb08f',
@@ -580,35 +590,35 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
   const renderGameInterface = () => (
     <Box sx={{ 
       textAlign: 'center', 
-      p: 3, 
+      p: { xs: 1, sm: 3 }, // Reduced padding for mobile
       height: '100vh', 
       display: 'flex', 
       flexDirection: 'column', 
       justifyContent: 'center',
       overflow: 'hidden',
-      bgcolor: '#000000' // Completely black background
+      bgcolor: '#000000'
     }}>
       {/* Main Game Container */}
       <Card sx={{ 
-        bgcolor: '#000000', // Changed from 'rgba(30,30,30,0.95)' to black
+        bgcolor: '#000000',
         color: 'white', 
-        p: 3, 
-        maxWidth: 600, 
+        p: { xs: 2, sm: 3 }, // Reduced padding for mobile
+        maxWidth: { xs: '98%', sm: 600 }, // Wider on mobile
         mx: 'auto',
         borderRadius: 3,
         border: '1px solid rgba(255,255,255,0.1)',
         backdropFilter: 'blur(20px)',
         boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
       }}>
-        <CardContent sx={{ p: 2 }}>
+        <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
           {/* Round Header */}
-          <Box sx={{ mb: 2, textAlign: 'center' }}>
+          <Box sx={{ mb: { xs: 1, sm: 2 }, textAlign: 'center' }}>
             <Typography variant="h6" sx={{ 
               color: '#43cea2', 
               mb: 0.5, 
               fontWeight: 'bold',
               textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-              fontSize: { xs: '1rem', sm: '1.1rem' }
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
             }}>
               Round {currentRound} of 5
             </Typography>
@@ -616,20 +626,20 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             <Typography variant="body2" sx={{ 
               color: 'rgba(255,255,255,0.8)', 
               fontStyle: 'italic',
-              fontSize: { xs: '0.8rem', sm: '0.9rem' }
+              fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
             }}>
               Score: {player1Wins} - {player2Wins}
             </Typography>
           </Box>
 
           {/* Game Header */}
-          <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Box sx={{ mb: { xs: 2, sm: 3 }, textAlign: 'center' }}>
             <Typography variant="h5" sx={{ 
               color: 'white', 
               mb: 1, 
               fontWeight: 'bold',
               textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
-              fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+              fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
               lineHeight: 1.2
             }}>
               {question}
@@ -638,7 +648,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             <Typography variant="body2" sx={{ 
               color: 'rgba(255,255,255,0.8)', 
               fontStyle: 'italic',
-              fontSize: { xs: '0.8rem', sm: '0.9rem' }
+              fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
             }}>
               Click on the correct flag
             </Typography>
@@ -648,11 +658,11 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             <Alert 
               severity="info"
               sx={{ 
-                mb: 2, 
-                maxWidth: 400, 
+                mb: { xs: 1, sm: 2 }, 
+                maxWidth: { xs: '95%', sm: 400 }, 
                 mx: 'auto',
-                fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                '& .MuiAlert-message': { fontSize: { xs: '0.8rem', sm: '0.9rem' } }
+                fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' },
+                '& .MuiAlert-message': { fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' } }
               }}
             >
               {message}
@@ -661,9 +671,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
 
           {/* Flag Options Grid - 2x2 Layout */}
           <Box sx={{ 
-            mb: 2,
-            p: 2,
-            bgcolor: 'transparent', // Changed from 'rgba(255,255,255,0.05)' to transparent
+            mb: { xs: 1, sm: 2 },
+            p: { xs: 1, sm: 2 }, // Reduced padding for mobile
+            bgcolor: 'transparent',
             borderRadius: 2,
             border: '1px solid rgba(255,255,255,0.1)'
           }}>
@@ -672,8 +682,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
               display: 'grid', 
               gridTemplateColumns: '1fr 1fr', 
               gridTemplateRows: '1fr 1fr',
-              gap: 1.5,
-              height: { xs: '180px', sm: '200px', md: '220px' },
+              gap: { xs: 1, sm: 1.5 }, // Reduced gap for mobile
+              height: { xs: '220px', sm: '240px', md: '260px' }, // Bigger height for mobile
               width: '100%'
             }}>
               {flagCodes.map((flagCode, index) => (
@@ -692,9 +702,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             {/* Instructions */}
             <Typography variant="caption" sx={{ 
               color: 'rgba(255,255,255,0.6)', 
-              mt: 1,
+              mt: { xs: 0.5, sm: 1 },
               fontStyle: 'italic',
-              fontSize: { xs: '0.7rem', sm: '0.8rem' },
+              fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' },
               display: 'block',
               textAlign: 'center'
             }}>
@@ -704,17 +714,17 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
 
           {/* Game Status */}
           {isAnswered && (
-            <Box sx={{ mt: 1, textAlign: 'center' }}>
+            <Box sx={{ mt: { xs: 0.5, sm: 1 }, textAlign: 'center' }}>
               <Chip
                 icon={<EmojiEventsIcon />}
                 label="Waiting for round result..."
                 color="info"
                 size="medium"
                 sx={{ 
-                  fontSize: { xs: '0.8rem', sm: '0.9rem' }, 
-                  py: 1,
-                  px: 2,
-                  '& .MuiChip-label': { fontSize: { xs: '0.8rem', sm: '0.9rem' } }
+                  fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }, 
+                  py: { xs: 0.5, sm: 1 },
+                  px: { xs: 1, sm: 2 },
+                  '& .MuiChip-label': { fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' } }
                 }}
               />
             </Box>
