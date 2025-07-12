@@ -66,11 +66,12 @@ const Online = () => {
   // WebSocket and game state
   const [isConnected, setIsConnected] = useState(false);
   const [currentMatch, setCurrentMatch] = useState(null);
-  const [gameState, setGameState] = useState('waiting'); // waiting, countdown, playing, ended
+  const [gameState, setGameState] = useState('waiting'); // waiting, matchFound, countdown, playing, ended
   const [gameTimer, setGameTimer] = useState(0);
   const [gameAnswer, setGameAnswer] = useState('');
   const [gameQuestion, setGameQuestion] = useState('');
   const [matchResult, setMatchResult] = useState(null);
+  const [matchFoundData, setMatchFoundData] = useState(null);
 
   // Socket management
   const socketRef = useRef(null);
@@ -113,7 +114,19 @@ const Online = () => {
   useEffect(() => {
     let interval;
     
-    if (gameState === 'countdown') {
+    if (gameState === 'matchFound') {
+      interval = setInterval(() => {
+        setGameTimer(prev => {
+          if (prev <= 1) {
+            setGameState('countdown');
+            setCurrentMatch(matchFoundData);
+            setGameQuestion(matchFoundData?.question || 'Game starting...');
+            return 3; // Start 3 second game countdown
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (gameState === 'countdown') {
       interval = setInterval(() => {
         setGameTimer(prev => {
           if (prev <= 1) {
@@ -138,7 +151,7 @@ const Online = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [gameState]);
+  }, [gameState, matchFoundData]);
 
   // Timer effect for waiting
   useEffect(() => {
@@ -233,15 +246,14 @@ const Online = () => {
 
       socket.on('matchFound', (data) => {
         console.log('🎮 Match found:', data);
-        console.log('🎮 Setting currentMatch to:', data);
-        console.log('🎮 Setting gameState to countdown');
+        console.log('🎮 Setting matchFoundData to:', data);
+        console.log('🎮 Setting gameState to matchFound');
         console.log('🎮 Setting isWaitingForPlayer to false');
-        setCurrentMatch(data);
-        setGameState('countdown');
-        setGameQuestion(data.question || 'Game starting...');
+        setMatchFoundData(data);
+        setGameState('matchFound');
         setIsWaitingForPlayer(false);
         setWaitingTime(0);
-        setGameTimer(3);
+        setGameTimer(3); // Start 3 second countdown
         console.log('🎮 Match found event handlers completed');
       });
 
@@ -391,12 +403,14 @@ const Online = () => {
     setGameState('waiting');
     setCurrentMatch(null);
     setMatchResult(null);
+    setMatchFoundData(null);
     setGameAnswer('');
     setGameQuestion('');
     setGameTimer(0);
     setIsWaitingForPlayer(false);
     setWaitingTime(0);
     
+    // Leave queue if connected
     if (socketRef.current) {
       socketRef.current.emit('leaveQueue', { gameType: 'FlagGuess' });
     }
@@ -863,76 +877,48 @@ const Online = () => {
               position: 'relative'
             }}>
               <Box sx={{
-                width: `${Math.min((waitingTime / 60) * 100, 100)}%`,
+                width: `${Math.min((waitingTime / 30) * 100, 100)}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, #43cea2 0%, #185a9d 100%)',
                 borderRadius: 4,
-                transition: 'width 1s ease-in-out',
+                transition: 'width 0.3s ease',
                 animation: 'progressGlow 2s ease-in-out infinite alternate',
                 '@keyframes progressGlow': {
-                  '0%': { boxShadow: '0 0 10px rgba(67, 206, 162, 0.5)' },
-                  '100%': { boxShadow: '0 0 20px rgba(67, 206, 162, 0.8)' }
+                  '0%': { boxShadow: '0 0 5px rgba(67, 206, 162, 0.3)' },
+                  '100%': { boxShadow: '0 0 15px rgba(67, 206, 162, 0.6)' }
                 }
               }} />
             </Box>
             <Typography variant="caption" sx={{ 
               color: 'rgba(255,255,255,0.6)',
-              display: 'block',
-              mt: 1,
-              fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.8rem' }
+              fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
             }}>
               Search progress
             </Typography>
           </Box>
 
-          {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button
-              variant="outlined"
-              onClick={handleLeaveGame}
-              size="large"
-              sx={{ 
-                color: 'white', 
-                borderColor: 'rgba(255,255,255,0.3)',
+          {/* Cancel Button */}
+          <Button
+            variant="outlined"
+            onClick={handleLeaveGame}
+            sx={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              borderColor: 'rgba(255,255,255,0.3)',
+              borderWidth: 2,
+              px: 4,
+              py: 1.5,
+              fontSize: '1.1rem',
+              '&:hover': { 
+                borderColor: 'white',
                 borderWidth: 2,
-                px: { xs: 2, sm: 3, md: 4 },
-                py: { xs: 1, sm: 1.2, md: 1.5 },
-                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 'bold',
-                '&:hover': { 
-                  borderColor: 'white',
-                  borderWidth: 2,
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  transform: 'translateY(-2px)',
-                  transition: 'all 0.2s ease'
-                }
-              }}
-            >
-              ❌ Cancel Search
-            </Button>
-            <Button
-              variant="contained"
-              size="large"
-              disabled
-              sx={{ 
-                background: 'linear-gradient(135deg, rgba(67, 206, 162, 0.3) 0%, rgba(24, 90, 157, 0.3) 100%)',
-                px: { xs: 2, sm: 3, md: 4 },
-                py: { xs: 1, sm: 1.2, md: 1.5 },
-                fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 'bold',
-                cursor: 'not-allowed',
-                border: '1px solid rgba(67, 206, 162, 0.5)'
-              }}
-            >
-              🔄 Connecting...
-            </Button>
-          </Box>
+                bgcolor: 'rgba(255,255,255,0.1)'
+              }
+            }}
+          >
+            Cancel Search
+          </Button>
 
-          {/* Enhanced Tips */}
+          {/* Tips Box */}
           <Box sx={{ 
             mt: 4, 
             p: { xs: 2, sm: 2.5, md: 3 }, 
@@ -949,6 +935,247 @@ const Online = () => {
               💡 <strong>Tip:</strong> Make sure you're ready to play! The game starts immediately when an opponent is found.
               <br />
               🎯 <strong>Game:</strong> First player to correctly identify the flag wins 100 points!
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+
+  const renderMatchFound = () => (
+    <Box
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        bgcolor: 'rgba(0,0,0,0.95)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10001,
+        backdropFilter: 'blur(10px)'
+      }}
+    >
+      <Card sx={{ 
+        bgcolor: 'rgba(30,30,30,0.95)', 
+        color: 'white', 
+        p: 4, 
+        maxWidth: 600, 
+        textAlign: 'center',
+        borderRadius: 3,
+        border: '1px solid rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(20px)',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+      }}>
+        <CardContent>
+          {/* Success Animation */}
+          <Box sx={{ mb: 4, position: 'relative', display: 'flex', justifyContent: 'center' }}>
+            {/* Main Success Icon */}
+            <Box sx={{
+              position: 'relative',
+              width: { xs: 80, sm: 100, md: 120 },
+              height: { xs: 80, sm: 100, md: 120 },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.4)',
+              animation: 'successPulse 2s ease-in-out infinite',
+              '@keyframes successPulse': {
+                '0%, 100%': { 
+                  transform: 'scale(1)',
+                  boxShadow: '0 8px 32px rgba(76, 175, 80, 0.4)'
+                },
+                '50%': { 
+                  transform: 'scale(1.1)',
+                  boxShadow: '0 12px 40px rgba(76, 175, 80, 0.6)'
+                }
+              }
+            }}>
+              <CheckCircleIcon sx={{ fontSize: { xs: 40, sm: 50, md: 60 }, color: 'white' }} />
+            </Box>
+
+            {/* Celebration Particles */}
+            {[0, 1, 2, 3, 4, 5].map((index) => (
+              <Box
+                key={index}
+                sx={{
+                  position: 'absolute',
+                  width: { xs: 6, sm: 8, md: 10 },
+                  height: { xs: 6, sm: 8, md: 10 },
+                  borderRadius: '50%',
+                  bgcolor: '#4caf50',
+                  animation: `celebrate ${1.5 + index * 0.2}s ease-out infinite`,
+                  animationDelay: `${index * 0.1}s`,
+                  '@keyframes celebrate': {
+                    '0%': {
+                      transform: `translate(0, 0) scale(0)`,
+                      opacity: 1
+                    },
+                    '50%': {
+                      opacity: 1
+                    },
+                    '100%': {
+                      transform: `translate(${Math.cos(index * 60) * 100}px, ${Math.sin(index * 60) * 100}px) scale(0)`,
+                      opacity: 0
+                    }
+                  }
+                }}
+              />
+            ))}
+          </Box>
+
+          {/* Match Found Text */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h2" sx={{ 
+              mb: 2, 
+              fontWeight: 'bold',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+              background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              animation: 'successGlow 2s ease-in-out infinite alternate',
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+              '@keyframes successGlow': {
+                '0%': { filter: 'brightness(1)' },
+                '100%': { filter: 'brightness(1.3)' }
+              }
+            }}>
+              🎉 Match Found!
+            </Typography>
+            
+            <Typography variant="h5" sx={{ 
+              color: '#4caf50', 
+              mb: 2,
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              letterSpacing: 2,
+              fontSize: { xs: '1rem', sm: '1.2rem', md: '1.5rem' }
+            }}>
+              Opponent Ready
+            </Typography>
+            
+            <Typography variant="body1" sx={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              mb: 3,
+              fontStyle: 'italic',
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
+            }}>
+              Game starting in {gameTimer} seconds...
+            </Typography>
+          </Box>
+
+          {/* Countdown Display */}
+          <Box sx={{ 
+            mb: 4, 
+            p: { xs: 2, sm: 2.5, md: 3 },
+            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(69, 160, 73, 0.1) 100%)',
+            borderRadius: 3,
+            border: '1px solid rgba(76, 175, 80, 0.3)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Animated Background */}
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(90deg, transparent 0%, rgba(76, 175, 80, 0.1) 50%, transparent 100%)',
+              animation: 'shimmer 1.5s infinite',
+              '@keyframes shimmer': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' }
+              }
+            }} />
+            
+            <Typography variant="h1" sx={{ 
+              color: '#4caf50', 
+              fontWeight: 'bold',
+              fontFamily: 'monospace',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+              fontSize: { xs: '3rem', sm: '4rem', md: '5rem' },
+              animation: 'countdownPulse 1s ease-in-out infinite',
+              '@keyframes countdownPulse': {
+                '0%, 100%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.1)' }
+              }
+            }}>
+              {gameTimer}
+            </Typography>
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255,255,255,0.7)',
+              fontStyle: 'italic',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.9rem' }
+            }}>
+              Get Ready!
+            </Typography>
+          </Box>
+
+          {/* Game Info */}
+          {matchFoundData && (
+            <Box sx={{ 
+              mb: 4, 
+              p: { xs: 2, sm: 2.5, md: 3 }, 
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', 
+              borderRadius: 3,
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}>
+              <Typography variant="h6" sx={{ 
+                color: '#4caf50',
+                mb: 2,
+                fontWeight: 'bold'
+              }}>
+                Game Details
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                color: 'rgba(255,255,255,0.8)',
+                mb: 1,
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+              }}>
+                🎮 <strong>Game:</strong> {matchFoundData.gameType || 'FlagGuess'}
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                color: 'rgba(255,255,255,0.8)',
+                mb: 1,
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+              }}>
+                👥 <strong>Players:</strong> {matchFoundData.players?.length || 2} players
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                color: 'rgba(255,255,255,0.8)',
+                fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+              }}>
+                ⏱️ <strong>Duration:</strong> 60 seconds per round
+              </Typography>
+            </Box>
+          )}
+
+          {/* Tips Box */}
+          <Box sx={{ 
+            mt: 4, 
+            p: { xs: 2, sm: 2.5, md: 3 }, 
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', 
+            borderRadius: 3,
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255,255,255,0.8)',
+              fontStyle: 'italic',
+              lineHeight: 1.6,
+              fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' }
+            }}>
+              🚀 <strong>Ready to play!</strong> The game will start automatically.
+              <br />
+              🎯 <strong>Objective:</strong> Click the correct flag that matches the country name.
+              <br />
+              ⚡ <strong>Speed matters!</strong> First correct answer wins the round.
             </Typography>
           </Box>
         </CardContent>
@@ -1106,6 +1333,14 @@ const Online = () => {
           <>
             {console.log('⏳ Rendering waiting page:', { isWaitingForPlayer, gameState, currentMatch, matchResult })}
             {renderWaitingPage()}
+          </>
+        )}
+
+        {/* Match Found Page */}
+        {gameState === 'matchFound' && (
+          <>
+            {console.log('🎮 Rendering match found page:', { gameState, matchFoundData, gameTimer })}
+            {renderMatchFound()}
           </>
         )}
 

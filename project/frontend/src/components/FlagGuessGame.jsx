@@ -32,8 +32,7 @@ const FlagCard = React.memo(({
         bgcolor: 'white', 
         p: 0.5,
         cursor: 'pointer',
-        border: isAnswered && flagCode === correctFlagCode ? '3px solid #4caf50' : 
-                isAnswered && selectedAnswer === flagCode && flagCode !== correctFlagCode ? '3px solid #f44336' : '2px solid #e0e0e0',
+        border: isAnswered && selectedAnswer === flagCode ? '3px solid #43cea2' : '2px solid #e0e0e0',
         borderRadius: 1.5,
         boxShadow: isAnswered ? '0 6px 12px rgba(0,0,0,0.3)' : '0 3px 6px rgba(0,0,0,0.2)',
         '&:hover': {
@@ -116,14 +115,14 @@ const FlagCard = React.memo(({
         {index + 1}
       </Box>
       
-      {/* Result Indicator */}
-      {isAnswered && (
+      {/* Selected Indicator */}
+      {isAnswered && selectedAnswer === flagCode && (
         <Box sx={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          bgcolor: flagCode === correctFlagCode ? 'rgba(76, 175, 80, 0.95)' : 'rgba(244, 67, 54, 0.95)',
+          bgcolor: 'rgba(67, 206, 162, 0.95)',
           color: 'white',
           borderRadius: '50%',
           width: 32,
@@ -136,7 +135,7 @@ const FlagCard = React.memo(({
           zIndex: 2,
           boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
         }}>
-          {flagCode === correctFlagCode ? '✓' : '✗'}
+          ✓
         </Box>
       )}
     </Card>
@@ -240,7 +239,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     
     console.log('🎮 Submitting answer:', flagCode);
     
-    // Check if the selected flag code matches the correct flag code
+    // Check if the selected flag code matches the correct flag code for immediate UI feedback
     const questionData = JSON.parse(matchData.question);
     const isCorrect = flagCode === questionData.correctFlagCode;
     
@@ -263,12 +262,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     setIsAnswered(true);
     setSelectedAnswer(flagCode);
     
-    // Show appropriate message based on correctness
-    if (isCorrect) {
-      setMessage('Correct! Waiting for other player...');
-    } else {
-      setMessage('Incorrect! Waiting for other player...');
-    }
+    // Show generic waiting message - the actual result will come from server
+    setMessage('Answer submitted! Waiting for other player...');
   }, [isAnswered, matchData, onAnswerSubmit]);
 
   const renderRoundResult = () => {
@@ -644,7 +639,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
           
           {message && (
             <Alert 
-              severity={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'} 
+              severity="info"
               sx={{ 
                 mb: 2, 
                 maxWidth: 400, 
@@ -705,8 +700,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             <Box sx={{ mt: 1, textAlign: 'center' }}>
               <Chip
                 icon={<EmojiEventsIcon />}
-                label={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'You got it right!' : 'Better luck next time!'}
-                color={selectedAnswer === JSON.parse(matchData.question).correctFlagCode ? 'success' : 'error'}
+                label="Waiting for round result..."
+                color="info"
                 size="medium"
                 sx={{ 
                   fontSize: { xs: '0.8rem', sm: '0.9rem' }, 
@@ -808,4 +803,4 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
   );
 };
 
-export default FlagGuessGame; 
+export default FlagGuessGame;

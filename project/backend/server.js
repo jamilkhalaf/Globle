@@ -1104,7 +1104,6 @@ io.on('connection', (socket) => {
             roundNumber: match.currentRound,
             score: `${match.player1Wins}-${match.player2Wins}`,
             correctAnswer: questionData.correctAnswer,
-            isCorrect: isCorrect,
             isDraw: isDraw,
             playerAnswers: match.answers.map(a => ({
               username: a.username,
@@ -1119,10 +1118,13 @@ io.on('connection', (socket) => {
             const playerSocket = userSockets.get(player.userId);
             
             if (playerSocket) {
+              // Determine if this player's answer was correct by comparing with the correct flag code
+              const playerIsCorrect = playerAnswer ? playerAnswer.answer === questionData.correctFlagCode : false;
+              
               playerSocket.emit('roundResult', {
                 ...roundResult,
                 userAnswer: playerAnswer ? playerAnswer.answer : null,
-                userIsCorrect: playerAnswer ? playerAnswer.isCorrect : false,
+                userIsCorrect: playerIsCorrect,
                 userWonRound: roundWinner && roundWinner.userId === player.userId
               });
             }
