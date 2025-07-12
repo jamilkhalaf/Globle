@@ -501,6 +501,62 @@ const flagGameData = {
 // Available flag codes (only those that actually exist in the flags directory)
 const availableFlagCodes = Object.keys(flagGameData);
 
+// Similar flags mapping - countries that are commonly confused
+const similarFlags = {
+  // Croatia, Slovakia, Slovenia, Serbia - similar red-white-blue tricolors
+  'hr': ['si', 'sk', 'rs'], // Croatia - similar to Slovenia, Slovakia, Serbia
+  'si': ['hr', 'sk', 'rs'], // Slovenia - similar to Croatia, Slovakia, Serbia
+  'sk': ['hr', 'si', 'rs'], // Slovakia - similar to Croatia, Slovenia, Serbia
+  'rs': ['hr', 'si', 'sk'], // Serbia - similar to Croatia, Slovenia, Slovakia
+  
+  // Chad, Romania - similar blue-yellow-red tricolors
+  'td': ['ro'], // Chad - similar to Romania
+  'ro': ['td'], // Romania - similar to Chad
+  
+  // Egypt, Iraq, Palestine, Yemen - similar red-white-black patterns
+  'eg': ['iq', 'ps', 'ye'], // Egypt - similar to Iraq, Palestine, Yemen
+  'iq': ['eg', 'ps', 'ye'], // Iraq - similar to Egypt, Palestine, Yemen
+  'ps': ['eg', 'iq', 'ye'], // Palestine - similar to Egypt, Iraq, Yemen
+  'ye': ['eg', 'iq', 'ps'], // Yemen - similar to Egypt, Iraq, Palestine
+  
+  // Moldova, Andorra - similar blue-yellow-red patterns
+  'md': ['ad'], // Moldova - similar to Andorra
+  'ad': ['md'], // Andorra - similar to Moldova
+  
+  // Senegal, Ghana - similar red-yellow-green patterns
+  'sn': ['gh'], // Senegal - similar to Ghana
+  'gh': ['sn'], // Ghana - similar to Senegal
+  
+  // Malaysia, Liberia - similar red-white-blue patterns
+  'my': ['lr'], // Malaysia - similar to Liberia
+  'lr': ['my'], // Liberia - similar to Malaysia
+  
+  // Poland, Indonesia - similar red-white patterns
+  'pl': ['id'], // Poland - similar to Indonesia
+  'id': ['pl'], // Indonesia - similar to Poland
+  
+  // Ivory Coast, Ireland - similar orange-white-green patterns
+  'ci': ['ie'], // Ivory Coast - similar to Ireland
+  'ie': ['ci'], // Ireland - similar to Ivory Coast
+  
+  // England, Georgia - similar red-white patterns
+  'gb': ['ge'], // England - similar to Georgia
+  'ge': ['gb'], // Georgia - similar to England
+  
+  // Australia, New Zealand - similar blue with Union Jack patterns
+  'au': ['nz'], // Australia - similar to New Zealand
+  'nz': ['au'], // New Zealand - similar to Australia
+  
+  // Netherlands, Paraguay - similar red-white-blue patterns
+  'nl': ['py'], // Netherlands - similar to Paraguay
+  'py': ['nl'], // Paraguay - similar to Netherlands
+  
+  // Honduras, El Salvador, Guatemala - similar blue-white-blue patterns
+  'hn': ['sv', 'gt'], // Honduras - similar to El Salvador, Guatemala
+  'sv': ['hn', 'gt'], // El Salvador - similar to Honduras, Guatemala
+  'gt': ['hn', 'sv'] // Guatemala - similar to Honduras, El Salvador
+};
+
 function generateQuestion(gameType) {
   // For flag guessing games
   if (gameType === 'FlagGuess') {
@@ -510,10 +566,25 @@ function generateQuestion(gameType) {
     
     console.log('Generating FlagGuess question - correct flag code:', correctFlagCode, 'country:', correctCountry);
     
-    // Generate 3 wrong flag options
+    // Generate wrong flag options - prioritize similar flags
     const wrongFlagCodes = [];
     const usedCodes = [correctFlagCode];
     
+    // First, try to include similar flags if available
+    const similarFlagsForCountry = similarFlags[correctFlagCode] || [];
+    let similarFlagsAdded = 0;
+    
+    // Add up to 2 similar flags (if available)
+    for (const similarFlag of similarFlagsForCountry) {
+      if (similarFlagsAdded < 2 && !usedCodes.includes(similarFlag) && availableFlagCodes.includes(similarFlag)) {
+        usedCodes.push(similarFlag);
+        wrongFlagCodes.push(similarFlag);
+        similarFlagsAdded++;
+        console.log(`Added similar flag: ${similarFlag} (${flagGameData[similarFlag]}) for ${correctCountry}`);
+      }
+    }
+    
+    // Fill remaining slots with random flags
     while (wrongFlagCodes.length < 3) {
       const randomCode = availableFlagCodes[Math.floor(Math.random() * availableFlagCodes.length)];
       if (!usedCodes.includes(randomCode)) {
@@ -539,6 +610,7 @@ function generateQuestion(gameType) {
     };
     
     console.log('Generated FlagGuess question data:', questionData);
+    console.log(`Similar flags included: ${similarFlagsAdded}/${Math.min(2, similarFlagsForCountry.length)}`);
     
     return Promise.resolve({
       question: JSON.stringify(questionData),

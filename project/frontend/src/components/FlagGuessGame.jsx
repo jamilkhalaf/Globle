@@ -278,23 +278,6 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     const correctAnswer = roundResult.correctAnswer;
     const isDraw = roundResult.isDraw;
     
-    // Determine the main message based on the scenario
-    let mainMessage, messageColor;
-    
-    if (isDraw) {
-      mainMessage = '🤝 Draw!';
-      messageColor = '#ff9800'; // Orange for draw
-    } else if (userWonRound) {
-      mainMessage = '🎉 You Won!';
-      messageColor = '#43cea2'; // Green for win
-    } else if (userIsCorrect && !userWonRound) {
-      mainMessage = '⚡ Too Slow!';
-      messageColor = '#ff9800'; // Orange for correct but slow
-    } else {
-      mainMessage = '❌ Incorrect!';
-      messageColor = '#f44336'; // Red for incorrect
-    }
-    
     return (
       <Box sx={{ 
         textAlign: 'center', 
@@ -313,7 +296,6 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
             fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } // Smaller for mobile
           }}>
-            {mainMessage}
           </Typography>
           
           <Typography variant="h4" sx={{ 
