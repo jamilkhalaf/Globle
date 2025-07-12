@@ -313,7 +313,6 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
             fontSize: { xs: '2.5rem', sm: '3rem' }
           }}>
-            {mainMessage}
           </Typography>
           
           <Typography variant="h4" sx={{ 
