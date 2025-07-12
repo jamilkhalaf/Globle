@@ -846,6 +846,18 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // For FlagGuess games, check if round is already being processed
+    if (match.gameType === 'FlagGuess' && match.roundProcessing) {
+      console.log(`🎮 FlagGuess - Round already being processed, rejecting submission from ${socket.username}`);
+      return;
+    }
+
+    // For Globle games, check if round is already being processed
+    if (match.gameType === 'Globle' && match.roundProcessing) {
+      console.log(`🎮 Globle - Round already being processed, rejecting submission from ${socket.username}`);
+      return;
+    }
+
     // Add answer to tracking
     match.answers.push(answerData);
     console.log(`🎮 Answer submitted by ${socket.username}:`, {
@@ -882,30 +894,23 @@ io.on('connection', (socket) => {
           // Only one player answered correctly
           roundWinner = correctAnswers[0];
         } else if (correctAnswers.length > 1) {
-          // Multiple correct answers - determine fastest
+          // Multiple correct answers - determine fastest by server timestamp only
+          // This ensures only the first to reach the server gets the point
           const sortedAnswers = correctAnswers.sort((a, b) => {
-            // First priority: server timestamp (more precise)
-            if (a.serverTimestamp !== b.serverTimestamp) {
-              return a.serverTimestamp - b.serverTimestamp;
-            }
-            // Second priority: client timestamp
-            if (a.clientTimestamp !== b.clientTimestamp) {
-              return a.clientTimestamp - b.clientTimestamp;
-            }
-            // Third priority: player order (player1 wins ties)
-            return a.isPlayer1 ? -1 : 1;
+            // Use only server timestamp for tie-breaking to ensure first-to-server wins
+            return a.serverTimestamp - b.serverTimestamp;
           });
           roundWinner = sortedAnswers[0];
           
-          console.log(`🎮 Tie-breaking details:`, {
+          console.log(`🎮 Globle - Tie-breaking by server timestamp:`, {
             totalCorrectAnswers: correctAnswers.length,
             sortedAnswers: sortedAnswers.map(a => ({
               username: a.username,
               serverTimestamp: a.serverTimestamp,
-              clientTimestamp: a.clientTimestamp,
               isPlayer1: a.isPlayer1
             })),
-            winner: roundWinner.username
+            winner: roundWinner.username,
+            winnerTimestamp: roundWinner.serverTimestamp
           });
         }
 
@@ -1033,20 +1038,24 @@ io.on('connection', (socket) => {
           // Only one player answered correctly - they win
           roundWinner = correctAnswers[0];
         } else if (correctAnswers.length > 1) {
-          // Multiple correct answers - determine fastest
+          // Multiple correct answers - determine fastest by server timestamp only
+          // This ensures only the first to reach the server gets the point
           const sortedAnswers = correctAnswers.sort((a, b) => {
-            // First priority: server timestamp (more precise)
-            if (a.serverTimestamp !== b.serverTimestamp) {
-              return a.serverTimestamp - b.serverTimestamp;
-            }
-            // Second priority: client timestamp
-            if (a.clientTimestamp !== b.clientTimestamp) {
-              return a.clientTimestamp - b.clientTimestamp;
-            }
-            // Third priority: player order (player1 wins ties)
-            return a.isPlayer1 ? -1 : 1;
+            // Use only server timestamp for tie-breaking to ensure first-to-server wins
+            return a.serverTimestamp - b.serverTimestamp;
           });
           roundWinner = sortedAnswers[0];
+          
+          console.log(`🎮 FlagGuess - Tie-breaking by server timestamp:`, {
+            totalCorrectAnswers: correctAnswers.length,
+            sortedAnswers: sortedAnswers.map(a => ({
+              username: a.username,
+              serverTimestamp: a.serverTimestamp,
+              isPlayer1: a.isPlayer1
+            })),
+            winner: roundWinner.username,
+            winnerTimestamp: roundWinner.serverTimestamp
+          });
         } else {
           // No correct answers - it's a draw
           roundWinner = null;
