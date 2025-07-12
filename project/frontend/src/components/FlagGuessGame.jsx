@@ -288,6 +288,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
             textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
             fontSize: { xs: '2.5rem', sm: '3rem' }
           }}>
+            {roundResult.isDraw ? '🤝 Draw!' : (userIsCorrect ? '✅ Correct!' : '❌ Incorrect!')}
           </Typography>
           
           <Typography variant="h4" sx={{ 
@@ -339,7 +340,9 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
               fontStyle: 'italic'
             }}>
               {userWonRound ? '🎉 You won this round!' : 
-               roundWinner ? `${roundWinner} won this round!` : '🤝 Round draw - both players answered incorrectly!'}
+               roundWinner ? `${roundWinner} won this round!` : 
+               roundResult.isDraw ? '🤝 Round draw - both players answered simultaneously! Round will restart.' :
+               '🤝 Round draw - both players answered incorrectly!'}
             </Typography>
           </Box>
         </Box>

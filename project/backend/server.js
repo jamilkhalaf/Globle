@@ -894,24 +894,22 @@ io.on('connection', (socket) => {
           // Only one player answered correctly
           roundWinner = correctAnswers[0];
         } else if (correctAnswers.length > 1) {
-          // Multiple correct answers - determine fastest by server timestamp only
-          // This ensures only the first to reach the server gets the point
-          const sortedAnswers = correctAnswers.sort((a, b) => {
-            // Use only server timestamp for tie-breaking to ensure first-to-server wins
-            return a.serverTimestamp - b.serverTimestamp;
-          });
-          roundWinner = sortedAnswers[0];
+          // Multiple correct answers - check if they were submitted at the same time
+          const timestamps = correctAnswers.map(a => a.serverTimestamp);
+          const timeDifference = Math.max(...timestamps) - Math.min(...timestamps);
           
-          console.log(`🎮 Globle - Tie-breaking by server timestamp:`, {
-            totalCorrectAnswers: correctAnswers.length,
-            sortedAnswers: sortedAnswers.map(a => ({
-              username: a.username,
-              serverTimestamp: a.serverTimestamp,
-              isPlayer1: a.isPlayer1
-            })),
-            winner: roundWinner.username,
-            winnerTimestamp: roundWinner.serverTimestamp
-          });
+          // If answers are within 100ms of each other, consider it a simultaneous submission
+          if (timeDifference <= 100) {
+            console.log(`🎮 Globle - Simultaneous correct answers detected (${timeDifference}ms difference), declaring draw and restarting round`);
+            roundWinner = null; // No winner - it's a draw
+          } else {
+            // Answers were not simultaneous, determine fastest
+            const sortedAnswers = correctAnswers.sort((a, b) => {
+              return a.serverTimestamp - b.serverTimestamp;
+            });
+            roundWinner = sortedAnswers[0];
+            console.log(`🎮 Globle - Non-simultaneous correct answers, fastest wins: ${roundWinner.username}`);
+          }
         }
 
         if (roundWinner) {
@@ -956,37 +954,73 @@ io.on('connection', (socket) => {
               globleRoundResults.delete(matchId);
             }, 5000);
           } else {
-            // Continue to next round
-            roundResults.currentRound++;
-            
-            // Generate new secret country for next round
-            const nextRoundQuestion = await generateQuestion('Globle');
-            match.correctAnswer = nextRoundQuestion;
-            roundResults.secretCountry = nextRoundQuestion.country;
-            
-            // Clear answers for next round
-            match.answers = [];
-            match.roundProcessing = false; // Reset flag for next round
-            
-            // Notify players about round result
-            io.to(matchId).emit('roundEnd', {
-              roundWinner: roundWinner.username,
-              roundNumber: roundResults.currentRound - 1,
-              score: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
-              nextRound: roundResults.currentRound
-            });
-            
-            // Start next round after 3 seconds
-            setTimeout(() => {
-              io.to(matchId).emit('gameStart', {
-                matchId,
-                gameType: 'Globle',
-                question: nextRoundQuestion.question,
-                startTime: Date.now(),
-                secretCountry: nextRoundQuestion.country,
-                roundNumber: roundResults.currentRound
+            // Continue to next round OR restart current round if it was a draw
+            if (roundWinner) {
+              // There was a winner - advance to next round
+              roundResults.currentRound++;
+              
+              // Generate new secret country for next round
+              const nextRoundQuestion = await generateQuestion('Globle');
+              match.correctAnswer = nextRoundQuestion;
+              roundResults.secretCountry = nextRoundQuestion.country;
+              
+              // Clear answers for next round
+              match.answers = [];
+              match.roundProcessing = false; // Reset flag for next round
+              
+              // Notify players about round result
+              io.to(matchId).emit('roundEnd', {
+                roundWinner: roundWinner.username,
+                roundNumber: roundResults.currentRound - 1,
+                score: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
+                nextRound: roundResults.currentRound
               });
-            }, 3000);
+              
+              // Start next round after 3 seconds
+              setTimeout(() => {
+                io.to(matchId).emit('gameStart', {
+                  matchId,
+                  gameType: 'Globle',
+                  question: nextRoundQuestion.question,
+                  startTime: Date.now(),
+                  secretCountry: nextRoundQuestion.country,
+                  roundNumber: roundResults.currentRound
+                });
+              }, 3000);
+            } else {
+              // It was a draw - restart the same round
+              console.log(`🎮 Globle - Restarting round ${roundResults.currentRound} due to draw`);
+              
+              // Generate new secret country for the same round
+              const newRoundQuestion = await generateQuestion('Globle');
+              match.correctAnswer = newRoundQuestion;
+              roundResults.secretCountry = newRoundQuestion.country;
+              
+              // Clear answers for restart
+              match.answers = [];
+              match.roundProcessing = false; // Reset flag for restart
+              
+              // Notify players about draw and restart
+              io.to(matchId).emit('roundEnd', {
+                roundWinner: null,
+                roundNumber: roundResults.currentRound,
+                score: `${roundResults.player1Wins}-${roundResults.player2Wins}`,
+                nextRound: roundResults.currentRound,
+                isDraw: true
+              });
+              
+              // Restart the same round after 3 seconds
+              setTimeout(() => {
+                io.to(matchId).emit('gameStart', {
+                  matchId,
+                  gameType: 'Globle',
+                  question: newRoundQuestion.question,
+                  startTime: Date.now(),
+                  secretCountry: newRoundQuestion.country,
+                  roundNumber: roundResults.currentRound
+                });
+              }, 3000);
+            }
           }
         } else {
           // No round winner determined, reset flag
@@ -1038,24 +1072,22 @@ io.on('connection', (socket) => {
           // Only one player answered correctly - they win
           roundWinner = correctAnswers[0];
         } else if (correctAnswers.length > 1) {
-          // Multiple correct answers - determine fastest by server timestamp only
-          // This ensures only the first to reach the server gets the point
-          const sortedAnswers = correctAnswers.sort((a, b) => {
-            // Use only server timestamp for tie-breaking to ensure first-to-server wins
-            return a.serverTimestamp - b.serverTimestamp;
-          });
-          roundWinner = sortedAnswers[0];
+          // Multiple correct answers - check if they were submitted at the same time
+          const timestamps = correctAnswers.map(a => a.serverTimestamp);
+          const timeDifference = Math.max(...timestamps) - Math.min(...timestamps);
           
-          console.log(`🎮 FlagGuess - Tie-breaking by server timestamp:`, {
-            totalCorrectAnswers: correctAnswers.length,
-            sortedAnswers: sortedAnswers.map(a => ({
-              username: a.username,
-              serverTimestamp: a.serverTimestamp,
-              isPlayer1: a.isPlayer1
-            })),
-            winner: roundWinner.username,
-            winnerTimestamp: roundWinner.serverTimestamp
-          });
+          // If answers are within 100ms of each other, consider it a simultaneous submission
+          if (timeDifference <= 100) {
+            console.log(`🎮 FlagGuess - Simultaneous correct answers detected (${timeDifference}ms difference), declaring draw and restarting round`);
+            roundWinner = null; // No winner - it's a draw
+          } else {
+            // Answers were not simultaneous, determine fastest
+            const sortedAnswers = correctAnswers.sort((a, b) => {
+              return a.serverTimestamp - b.serverTimestamp;
+            });
+            roundWinner = sortedAnswers[0];
+            console.log(`🎮 FlagGuess - Non-simultaneous correct answers, fastest wins: ${roundWinner.username}`);
+          }
         } else {
           // No correct answers - it's a draw
           roundWinner = null;
@@ -1173,34 +1205,67 @@ io.on('connection', (socket) => {
             activeMatches.delete(matchId);
           }, 5000);
         } else {
-          // Continue to next round
-          match.currentRound++;
-          
-          // Generate new question for next round
-          const nextQuestion = await generateQuestion('FlagGuess');
-          match.correctAnswer = nextQuestion;
-          
-          // Clear answers for next round
-          match.answers = [];
-          
-          // Notify players about round result and start next round
-          io.to(matchId).emit('roundEnd', {
-            roundWinner: roundWinner ? roundWinner.username : null,
-            roundNumber: match.currentRound - 1,
-            score: `${match.player1Wins}-${match.player2Wins}`,
-            nextRound: match.currentRound
-          });
-          
-          // Start next round after 3 seconds
-          setTimeout(() => {
-            io.to(matchId).emit('gameStart', {
-              matchId,
-              gameType: 'FlagGuess',
-              question: nextQuestion.question,
-              startTime: Date.now(),
-              roundNumber: match.currentRound
+          // Continue to next round OR restart current round if it was a draw
+          if (roundWinner) {
+            // There was a winner - advance to next round
+            match.currentRound++;
+            
+            // Generate new question for next round
+            const nextQuestion = await generateQuestion('FlagGuess');
+            match.correctAnswer = nextQuestion;
+            
+            // Clear answers for next round
+            match.answers = [];
+            
+            // Notify players about round result and start next round
+            io.to(matchId).emit('roundEnd', {
+              roundWinner: roundWinner.username,
+              roundNumber: match.currentRound - 1,
+              score: `${match.player1Wins}-${match.player2Wins}`,
+              nextRound: match.currentRound
             });
-          }, 3000);
+            
+            // Start next round after 3 seconds
+            setTimeout(() => {
+              io.to(matchId).emit('gameStart', {
+                matchId,
+                gameType: 'FlagGuess',
+                question: nextQuestion.question,
+                startTime: Date.now(),
+                roundNumber: match.currentRound
+              });
+            }, 3000);
+          } else {
+            // It was a draw - restart the same round
+            console.log(`🎮 FlagGuess - Restarting round ${match.currentRound} due to draw`);
+            
+            // Generate new question for the same round
+            const newQuestion = await generateQuestion('FlagGuess');
+            match.correctAnswer = newQuestion;
+            
+            // Clear answers for restart
+            match.answers = [];
+            
+            // Notify players about draw and restart
+            io.to(matchId).emit('roundEnd', {
+              roundWinner: null,
+              roundNumber: match.currentRound,
+              score: `${match.player1Wins}-${match.player2Wins}`,
+              nextRound: match.currentRound,
+              isDraw: true
+            });
+            
+            // Restart the same round after 3 seconds
+            setTimeout(() => {
+              io.to(matchId).emit('gameStart', {
+                matchId,
+                gameType: 'FlagGuess',
+                question: newQuestion.question,
+                startTime: Date.now(),
+                roundNumber: match.currentRound
+              });
+            }, 3000);
+          }
         }
         
         // Reset round processing flag

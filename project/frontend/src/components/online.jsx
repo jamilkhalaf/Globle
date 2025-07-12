@@ -276,7 +276,8 @@ const Online = () => {
             score: data.score,
             nextRound: data.nextRound,
             isCorrect: data.isCorrect,
-            correctAnswer: data.correctAnswer
+            correctAnswer: data.correctAnswer,
+            isDraw: data.isDraw // Add draw flag from backend
           };
           console.log('🎮 Setting matchResult to:', roundResult);
           setMatchResult(roundResult);
@@ -300,7 +301,8 @@ const Online = () => {
           userAnswer: data.userAnswer,
           userIsCorrect: data.userIsCorrect,
           userWonRound: data.userWonRound,
-          playerAnswers: data.playerAnswers
+          playerAnswers: data.playerAnswers,
+          isDraw: data.isDraw // Add draw flag from backend
         };
         console.log('🎮 Setting matchResult to:', roundResult);
         setMatchResult(roundResult);
@@ -421,6 +423,8 @@ const Online = () => {
       matchResult
     };
 
+    // For now, all games use FlagGuessGame component
+    // In the future, we can create specific components for each game type
     return <FlagGuessGame {...gameProps} />;
   };
 
