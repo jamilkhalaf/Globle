@@ -1067,6 +1067,7 @@ io.on('connection', (socket) => {
         // Both players answered OR first player was correct - determine winner
         const correctAnswers = match.answers.filter(a => a.isCorrect);
         let roundWinner = null;
+        let isDraw = false;
         
         if (correctAnswers.length === 1) {
           // Only one player answered correctly - they win
@@ -1080,6 +1081,7 @@ io.on('connection', (socket) => {
           if (timeDifference <= 100) {
             console.log(`🎮 FlagGuess - Simultaneous correct answers detected (${timeDifference}ms difference), declaring draw and restarting round`);
             roundWinner = null; // No winner - it's a draw
+            isDraw = true;
           } else {
             // Answers were not simultaneous, determine fastest
             const sortedAnswers = correctAnswers.sort((a, b) => {
@@ -1103,7 +1105,7 @@ io.on('connection', (socket) => {
           
           console.log(`🎮 FlagGuess - Round winner: ${roundWinner.username} (answered correctly)`);
         } else {
-          console.log(`🎮 FlagGuess - Round draw (both players answered incorrectly)`);
+          console.log(`🎮 FlagGuess - Round draw (both players answered incorrectly or simultaneously)`);
         }
         
         // Send round result to both players with correct information
@@ -1113,6 +1115,7 @@ io.on('connection', (socket) => {
           score: `${match.player1Wins}-${match.player2Wins}`,
           correctAnswer: questionData.correctAnswer,
           isCorrect: isCorrect,
+          isDraw: isDraw, // Add draw flag
           playerAnswers: match.answers.map(a => ({
             username: a.username,
             isCorrect: a.isCorrect,
@@ -1222,7 +1225,8 @@ io.on('connection', (socket) => {
               roundWinner: roundWinner.username,
               roundNumber: match.currentRound - 1,
               score: `${match.player1Wins}-${match.player2Wins}`,
-              nextRound: match.currentRound
+              nextRound: match.currentRound,
+              isDraw: false
             });
             
             // Start next round after 3 seconds

@@ -162,6 +162,8 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
       // Parse the question data
       const questionData = JSON.parse(matchData.question);
       console.log('FlagGuessGame - Received question data:', questionData);
+      console.log('FlagGuessGame - Correct flag code:', questionData.correctFlagCode);
+      console.log('FlagGuessGame - All flag codes:', questionData.flagCodes);
       setCorrectAnswer(questionData.correctAnswer);
       setFlagCodes(questionData.flagCodes || []);
       setQuestion(questionData.question || 'Which flag belongs to this country?');
@@ -242,7 +244,12 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     const questionData = JSON.parse(matchData.question);
     const isCorrect = flagCode === questionData.correctFlagCode;
     
-    console.log('🎮 Answer result:', { isCorrect, correctFlagCode: questionData.correctFlagCode });
+    console.log('�� Answer result:', { 
+      isCorrect, 
+      correctFlagCode: questionData.correctFlagCode, 
+      selectedFlagCode: flagCode,
+      questionData: questionData
+    });
     
     // Submit answer to server immediately
     onAnswerSubmit({
@@ -257,7 +264,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
     setSelectedAnswer(flagCode);
     // Don't set message here - wait for server response
     setMessage('Answer submitted! Waiting for other player...');
-  }, [isAnswered, matchData, onAnswerSubmit, correctAnswer]);
+  }, [isAnswered, matchData, onAnswerSubmit]);
 
   const renderRoundResult = () => {
     if (!roundResult) return null;
