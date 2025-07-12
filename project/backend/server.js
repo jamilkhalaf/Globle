@@ -1144,8 +1144,8 @@ io.on('connection', (socket) => {
           }
           
           // Check if we've reached 5 rounds
-          if (match.currentRound >= 5) {
-            console.log('🎮 FlagGuess - Game ending after 5 rounds');
+          if (match.currentRound >= 5 && roundWinner) {
+            console.log('🎮 FlagGuess - Game ending after 5 rounds with a winner');
             // Game is over - determine final winner and calculate points
             const finalScore = `${match.player1Wins}-${match.player2Wins}`;
             const scoreDifference = Math.abs(match.player1Wins - match.player2Wins);

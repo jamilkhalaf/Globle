@@ -357,6 +357,14 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
               mb: 1,
               textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
             }}>
+              {isDraw ? 'Repeating Round' : 'Round Complete'}
+            </Typography>
+            <Typography variant="h4" sx={{ 
+              color: '#43cea2', 
+              fontWeight: 'bold',
+              mb: 1,
+              textShadow: '1px 1px 2px rgba(0,0,0,0.3)'
+            }}>
               Score: {score}
             </Typography>
             <Typography variant="body1" sx={{ 
@@ -395,7 +403,7 @@ const FlagGuessGame = ({ matchData, onAnswerSubmit, gameState, gameTimer, onLeav
           fontStyle: 'italic',
           textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
         }}>
-          {isDraw ? 'Restarting round...' : 'Next round starting...'}
+          {isDraw ? 'Repeating round...' : 'Next round starting...'}
         </Typography>
       </Box>
     );
