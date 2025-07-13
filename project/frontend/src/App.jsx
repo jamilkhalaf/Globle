@@ -20,6 +20,8 @@ import US from './components/US'
 import Namle from './components/Namle'
 import Online from './components/online'
 import Satle from './components/satle'
+import EducationalContent from './components/EducationalContent'
+import PrivacyPolicy from './components/PrivacyPolicy'
 import './App.css'
 
 const theme = createTheme({
@@ -54,6 +56,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/online" element={<Online />} />
+          <Route path="/educational-content" element={<EducationalContent />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/game" element={<Game />} />
           <Route path="/population" element={<Population />} />
           <Route path="/name" element={<Name />} />

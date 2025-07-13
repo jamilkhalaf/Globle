@@ -134,6 +134,7 @@ const Header = forwardRef((props, ref) => {
   const mainMenuItems = [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
+    { path: '/educational-content', label: 'Learning Resources' },
     { path: '/badges', label: 'Badges' },
     { path: '/contact', label: 'Contact' },
     { path: '/online', label: 'Online', icon: <WifiIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
