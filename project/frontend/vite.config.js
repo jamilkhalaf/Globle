@@ -53,8 +53,8 @@ export default defineConfig({
   // Performance optimizations
   esbuild: {
     target: 'esnext',
-    // Aggressive minification
-    minifyIdentifiers: true,
+    // Less aggressive minification to prevent CSS issues
+    minifyIdentifiers: false,
     minifySyntax: true,
     minifyWhitespace: true,
     // Remove console and debugger
@@ -74,5 +74,11 @@ export default defineConfig({
     },
     // Disable CSS modules to prevent conflicts
     modules: false,
+    // Ensure consistent CSS processing
+    preprocessorOptions: {
+      css: {
+        charset: false,
+      },
+    },
   },
 })

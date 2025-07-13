@@ -11,6 +11,44 @@ body {
   overflow-x: hidden;
 }
 
+/* Force consistent sizing across environments */
+html {
+  font-size: 16px !important;
+}
+
+/* Ensure consistent MUI theme application */
+.MuiThemeProvider-root {
+  font-size: 16px !important;
+}
+
+/* Force consistent header sizing */
+.MuiAppBar-root {
+  min-height: 64px !important;
+  height: 64px !important;
+}
+
+.MuiToolbar-root {
+  min-height: 64px !important;
+  height: 64px !important;
+}
+
+/* Force consistent button sizing */
+.MuiButton-root {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Force consistent icon sizing */
+.MuiSvgIcon-root {
+  font-size: inherit !important;
+}
+
+/* Force consistent typography */
+.MuiTypography-root {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
 /* Optimized CSS for better mobile performance and Core Web Vitals */
 
 /* Critical CSS - Load first */
