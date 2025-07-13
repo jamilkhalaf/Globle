@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback, memo } from 'react';
 import { 
   AppBar, 
   Toolbar, 
@@ -35,6 +35,11 @@ import CropSquareIcon from '@mui/icons-material/CropSquare';
 import MapIcon from '@mui/icons-material/Map';
 import WifiIcon from '@mui/icons-material/Wifi';
 import ComingSoon from './ComingSoon';
+
+// Memoized components for better performance
+const MemoizedListItem = memo(ListItem);
+const MemoizedButton = memo(Button);
+const MemoizedIconButton = memo(IconButton);
 
 const Header = forwardRef((props, ref) => {
   const location = useLocation();
@@ -106,7 +111,8 @@ const Header = forwardRef((props, ref) => {
     }
   }), [handleGamesMenuOpen]);
 
-  const games = [
+  // Memoize static data
+  const games = React.useMemo(() => [
     { path: '/game', label: 'Globle', icon: <PublicIcon sx={{ fontSize: 20, color: '#1976d2' }} /> },
     { path: '/population', label: 'Population', icon: <GroupsIcon sx={{ fontSize: 20, color: '#4caf50' }} /> },
     { path: '/name', label: 'Findle', icon: <SportsEsportsIcon sx={{ fontSize: 20, color: '#9c27b0' }} /> },
@@ -118,9 +124,9 @@ const Header = forwardRef((props, ref) => {
     { path: '/us', label: 'US', icon: <MapIcon sx={{ fontSize: 22, color: '#1976d2' }} /> },
     { path: '/namle', label: 'Namle', icon: <PublicIcon sx={{ fontSize: 20, color: '#9c27b0' }} /> },
     { path: '/satle', label: 'Satle', icon: <PublicIcon sx={{ fontSize: 20, color: '#ff5722' }} /> }
-  ];
+  ], []);
 
-  const mainMenuItems = [
+  const mainMenuItems = React.useMemo(() => [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
     { path: '/badges', label: 'Badges' },
@@ -131,7 +137,7 @@ const Header = forwardRef((props, ref) => {
       action: () => handleComingSoon('1v1 Multiplayer & Leaderboards'),
       isComingSoon: true 
     },
-  ];
+  ], [handleComingSoon]);
 
   const drawer = (
     <Box sx={{ 
@@ -246,7 +252,7 @@ const Header = forwardRef((props, ref) => {
       }}>
         <List>
           {mainMenuItems.map((item) => (
-            <ListItem 
+            <MemoizedListItem 
               key={item.label} 
               component={item.isComingSoon ? 'div' : RouterLink} 
               to={item.isComingSoon ? undefined : item.path}
@@ -274,9 +280,9 @@ const Header = forwardRef((props, ref) => {
                   }
                 }}
               />
-            </ListItem>
+            </MemoizedListItem>
           ))}
-          <ListItem 
+          <MemoizedListItem 
             sx={{
               color: 'white',
               borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -296,9 +302,9 @@ const Header = forwardRef((props, ref) => {
                 }
               }}
             />
-          </ListItem>
+          </MemoizedListItem>
           {games.map((game) => (
-            <ListItem 
+            <MemoizedListItem 
               key={game.path} 
               component={RouterLink} 
               to={game.path}
@@ -326,14 +332,14 @@ const Header = forwardRef((props, ref) => {
                   }
                 }}
               />
-            </ListItem>
+            </MemoizedListItem>
           ))}
           
           {/* Logout option in mobile drawer */}
           {user && (
             <>
               <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 1 }} />
-              <ListItem 
+              <MemoizedListItem 
                 onClick={() => {
                   handleLogout();
                   handleDrawerToggle();
@@ -358,7 +364,7 @@ const Header = forwardRef((props, ref) => {
                     }
                   }}
                 />
-              </ListItem>
+              </MemoizedListItem>
             </>
           )}
         </List>
@@ -399,7 +405,7 @@ const Header = forwardRef((props, ref) => {
           </Box>
           
           {isMobile ? (
-            <IconButton
+            <MemoizedIconButton
               color="inherit"
               aria-label="open drawer"
               edge="start"
@@ -407,7 +413,7 @@ const Header = forwardRef((props, ref) => {
               sx={{ color: 'white' }}
             >
               <MenuIcon />
-            </IconButton>
+            </MemoizedIconButton>
           ) : (
             <Box sx={{ 
               display: 'flex', 
@@ -424,7 +430,7 @@ const Header = forwardRef((props, ref) => {
                 mr: { xs: 1, md: 2 }
               }}>
                 {mainMenuItems.slice(0, 4).map((item) => (
-                <Button 
+                <MemoizedButton 
                   key={item.label}
                   color="inherit" 
                   component={item.isComingSoon ? 'button' : RouterLink} 
@@ -449,7 +455,7 @@ const Header = forwardRef((props, ref) => {
                   }}
                 >
                   {item.label}
-                </Button>
+                </MemoizedButton>
               ))}
               </Box>
 
@@ -468,7 +474,7 @@ const Header = forwardRef((props, ref) => {
                 alignItems: 'center'
               }}>
                 {mainMenuItems.slice(4).map((item) => (
-                  <Button 
+                  <MemoizedButton 
                     key={item.label}
                     color="inherit" 
                     component={item.isComingSoon ? 'button' : RouterLink} 
@@ -494,7 +500,7 @@ const Header = forwardRef((props, ref) => {
                   }}
                 >
                   {item.label}
-                </Button>
+                </MemoizedButton>
               ))}
               </Box>
 
@@ -507,7 +513,7 @@ const Header = forwardRef((props, ref) => {
               }} />
 
               {/* Games Menu */}
-              <Button 
+              <MemoizedButton 
                 color="inherit"
                 onClick={handleGamesMenuOpen}
                 endIcon={<ExpandMoreIcon />}
@@ -531,7 +537,7 @@ const Header = forwardRef((props, ref) => {
                 }}
               >
                 Games
-              </Button>
+              </MemoizedButton>
 
               {/* Separator */}
               <Box sx={{ 
@@ -543,7 +549,7 @@ const Header = forwardRef((props, ref) => {
 
               {/* Authentication buttons */}
               {user ? (
-                <IconButton
+                <MemoizedIconButton
                   onClick={handleUserMenuOpen}
                   sx={{ 
                     color: 'white', 
@@ -557,7 +563,7 @@ const Header = forwardRef((props, ref) => {
                   <Avatar sx={{ bgcolor: '#43cea2', width: 32, height: 32 }}>
                     <PersonIcon />
                   </Avatar>
-                </IconButton>
+                </MemoizedIconButton>
               ) : (
                 <Box sx={{ 
                   display: 'flex', 
@@ -565,7 +571,7 @@ const Header = forwardRef((props, ref) => {
                   ml: 1,
                   alignItems: 'center'
                 }}>
-                  <Button
+                  <MemoizedButton
                     component={RouterLink}
                     to="/login"
                     variant="outlined"
@@ -589,8 +595,8 @@ const Header = forwardRef((props, ref) => {
                     }}
                   >
                     Login
-                  </Button>
-                  <Button
+                  </MemoizedButton>
+                  <MemoizedButton
                     component={RouterLink}
                     to="/signup"
                     variant="contained"
@@ -613,7 +619,7 @@ const Header = forwardRef((props, ref) => {
                     }}
                   >
                     Sign Up
-                  </Button>
+                  </MemoizedButton>
                 </Box>
               )}
             </Box>

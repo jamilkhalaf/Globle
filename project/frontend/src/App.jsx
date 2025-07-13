@@ -1,32 +1,32 @@
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense, lazy, memo } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ThemeProvider, createTheme, CircularProgress, Box } from '@mui/material'
 import './App.css'
 
-// Lazy load components for better performance
-const Home = lazy(() => import('./components/Home'))
-const Game = lazy(() => import('./components/Game'))
-const Population = lazy(() => import('./components/population'))
-const Name = lazy(() => import('./components/name'))
-const Flagle = lazy(() => import('./components/Flagle'))
-const Worldle = lazy(() => import('./components/Worldle'))
-const Capitals = lazy(() => import('./components/capitals'))
-const Hangman = lazy(() => import('./components/hangman'))
-const About = lazy(() => import('./components/About'))
-const Contact = lazy(() => import('./components/Contact'))
-const Badges = lazy(() => import('./components/badges'))
-const Maintenance = lazy(() => import('./components/Maintenance'))
-const Login = lazy(() => import('./components/Login'))
-const Signup = lazy(() => import('./components/Signup'))
-const Shaple = lazy(() => import('./components/shaple'))
-const US = lazy(() => import('./components/US'))
-const Namle = lazy(() => import('./components/Namle'))
-const Online = lazy(() => import('./components/online'))
-const Satle = lazy(() => import('./components/satle'))
-const EducationalContent = lazy(() => import('./components/EducationalContent'))
-const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'))
+// Optimized lazy loading with chunk names for better caching
+const Home = lazy(() => import(/* webpackChunkName: "home" */ './components/Home'))
+const Game = lazy(() => import(/* webpackChunkName: "game" */ './components/Game'))
+const Population = lazy(() => import(/* webpackChunkName: "population" */ './components/population'))
+const Name = lazy(() => import(/* webpackChunkName: "name" */ './components/name'))
+const Flagle = lazy(() => import(/* webpackChunkName: "flagle" */ './components/Flagle'))
+const Worldle = lazy(() => import(/* webpackChunkName: "worldle" */ './components/Worldle'))
+const Capitals = lazy(() => import(/* webpackChunkName: "capitals" */ './components/capitals'))
+const Hangman = lazy(() => import(/* webpackChunkName: "hangman" */ './components/hangman'))
+const About = lazy(() => import(/* webpackChunkName: "about" */ './components/About'))
+const Contact = lazy(() => import(/* webpackChunkName: "contact" */ './components/Contact'))
+const Badges = lazy(() => import(/* webpackChunkName: "badges" */ './components/badges'))
+const Maintenance = lazy(() => import(/* webpackChunkName: "maintenance" */ './components/Maintenance'))
+const Login = lazy(() => import(/* webpackChunkName: "auth" */ './components/Login'))
+const Signup = lazy(() => import(/* webpackChunkName: "auth" */ './components/Signup'))
+const Shaple = lazy(() => import(/* webpackChunkName: "shaple" */ './components/shaple'))
+const US = lazy(() => import(/* webpackChunkName: "us" */ './components/US'))
+const Namle = lazy(() => import(/* webpackChunkName: "namle" */ './components/Namle'))
+const Online = lazy(() => import(/* webpackChunkName: "online" */ './components/online'))
+const Satle = lazy(() => import(/* webpackChunkName: "satle" */ './components/satle'))
+const EducationalContent = lazy(() => import(/* webpackChunkName: "educational" */ './components/EducationalContent'))
+const PrivacyPolicy = lazy(() => import(/* webpackChunkName: "privacy" */ './components/PrivacyPolicy'))
 
-// Optimized theme for mobile performance
+// Optimized theme for mobile performance - reduced complexity
 const theme = createTheme({
   palette: {
     primary: {
@@ -39,59 +39,36 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    // Simplified typography for better performance
     h1: {
-      fontSize: '2.5rem',
+      fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
       fontWeight: 700,
-      '@media (max-width: 768px)': {
-        fontSize: '2rem',
-      },
     },
     h2: {
-      fontSize: '2rem',
+      fontSize: 'clamp(1.25rem, 3.5vw, 2rem)',
       fontWeight: 600,
-      '@media (max-width: 768px)': {
-        fontSize: '1.75rem',
-      },
     },
     h3: {
-      fontSize: '1.75rem',
+      fontSize: 'clamp(1.1rem, 3vw, 1.75rem)',
       fontWeight: 600,
-      '@media (max-width: 768px)': {
-        fontSize: '1.5rem',
-      },
     },
     h4: {
-      fontSize: '1.5rem',
+      fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
       fontWeight: 600,
-      '@media (max-width: 768px)': {
-        fontSize: '1.25rem',
-      },
     },
     h5: {
-      fontSize: '1.25rem',
+      fontSize: 'clamp(0.9rem, 2vw, 1.25rem)',
       fontWeight: 600,
-      '@media (max-width: 768px)': {
-        fontSize: '1.1rem',
-      },
     },
     h6: {
-      fontSize: '1.1rem',
+      fontSize: 'clamp(0.85rem, 1.8vw, 1.1rem)',
       fontWeight: 600,
-      '@media (max-width: 768px)': {
-        fontSize: '1rem',
-      },
     },
     body1: {
-      fontSize: '1rem',
-      '@media (max-width: 768px)': {
-        fontSize: '0.95rem',
-      },
+      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
     },
     body2: {
-      fontSize: '0.875rem',
-      '@media (max-width: 768px)': {
-        fontSize: '0.8rem',
-      },
+      fontSize: 'clamp(0.8rem, 1.8vw, 0.875rem)',
     },
   },
   components: {
@@ -101,10 +78,8 @@ const theme = createTheme({
           textTransform: 'none',
           borderRadius: 8,
           fontWeight: 600,
-          '@media (max-width: 768px)': {
-            fontSize: '0.9rem',
-            padding: '8px 16px',
-          },
+          fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+          padding: 'clamp(6px, 1.5vw, 8px) clamp(12px, 3vw, 16px)',
         },
       },
     },
@@ -112,9 +87,6 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          '@media (max-width: 768px)': {
-            borderRadius: 8,
-          },
         },
       },
     },
@@ -122,17 +94,14 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          '@media (max-width: 768px)': {
-            borderRadius: 8,
-          },
         },
       },
     },
   },
 })
 
-// Loading component for better UX
-const LoadingFallback = () => (
+// Optimized loading component
+const LoadingFallback = memo(() => (
   <Box
     sx={{
       display: 'flex',
@@ -144,7 +113,7 @@ const LoadingFallback = () => (
   >
     <CircularProgress size={60} sx={{ color: '#43cea2' }} />
   </Box>
-)
+))
 
 // Set this to true to enable maintenance mode
 const MAINTENANCE_MODE = false;

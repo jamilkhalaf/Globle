@@ -1,16 +1,49 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      '@shared': path.resolve(__dirname, '../shared')
-    }
+  build: {
+    // Optimize for mobile performance
+    target: 'esnext',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        // Optimize chunk splitting
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          mui: ['@mui/material', '@mui/icons-material'],
+          leaflet: ['leaflet'],
+        },
+        // Optimize chunk names
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+      },
+    },
+    // Optimize bundle size
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
   },
+  // Optimize dev server
   server: {
-    host: true, // 👈 THIS LINE ALLOWS connections from your phone
-    port: 5173  // (optional, default is 5173 anyway)
-  }
+    host: true,
+    port: 3000,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  },
+  // Performance optimizations
+  esbuild: {
+    target: 'esnext',
+  },
 })
