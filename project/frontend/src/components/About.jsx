@@ -109,7 +109,7 @@ const About = () => {
                   textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                 }}
               >
-                About Globle - Educational Geography Games
+                About MapZap - Educational Geography Games
               </Typography>
               
               <Typography

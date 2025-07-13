@@ -4,27 +4,38 @@ import { ThemeProvider, createTheme, CircularProgress, Box } from '@mui/material
 import './App.css'
 
 // Optimized lazy loading with chunk names for better caching
-const Home = lazy(() => import(/* webpackChunkName: "home" */ './components/Home'))
-const Game = lazy(() => import(/* webpackChunkName: "game" */ './components/Game'))
-const Population = lazy(() => import(/* webpackChunkName: "population" */ './components/population'))
-const Name = lazy(() => import(/* webpackChunkName: "name" */ './components/name'))
-const Flagle = lazy(() => import(/* webpackChunkName: "flagle" */ './components/Flagle'))
-const Worldle = lazy(() => import(/* webpackChunkName: "worldle" */ './components/Worldle'))
-const Capitals = lazy(() => import(/* webpackChunkName: "capitals" */ './components/capitals'))
-const Hangman = lazy(() => import(/* webpackChunkName: "hangman" */ './components/hangman'))
-const About = lazy(() => import(/* webpackChunkName: "about" */ './components/About'))
-const Contact = lazy(() => import(/* webpackChunkName: "contact" */ './components/Contact'))
-const Badges = lazy(() => import(/* webpackChunkName: "badges" */ './components/badges'))
-const Maintenance = lazy(() => import(/* webpackChunkName: "maintenance" */ './components/Maintenance'))
+// Core pages - load immediately
+const Home = lazy(() => import(/* webpackChunkName: "core" */ './components/Home'))
+
+// Game pages - load on demand
+const Game = lazy(() => import(/* webpackChunkName: "games" */ './components/Game'))
+const Population = lazy(() => import(/* webpackChunkName: "games" */ './components/population'))
+const Name = lazy(() => import(/* webpackChunkName: "games" */ './components/name'))
+const Flagle = lazy(() => import(/* webpackChunkName: "games" */ './components/Flagle'))
+const Worldle = lazy(() => import(/* webpackChunkName: "games" */ './components/Worldle'))
+const Capitals = lazy(() => import(/* webpackChunkName: "games" */ './components/capitals'))
+const Hangman = lazy(() => import(/* webpackChunkName: "games" */ './components/hangman'))
+const Shaple = lazy(() => import(/* webpackChunkName: "games" */ './components/shaple'))
+const US = lazy(() => import(/* webpackChunkName: "games" */ './components/US'))
+const Namle = lazy(() => import(/* webpackChunkName: "games" */ './components/Namle'))
+const Satle = lazy(() => import(/* webpackChunkName: "games" */ './components/satle'))
+
+// Info pages - load on demand
+const About = lazy(() => import(/* webpackChunkName: "info" */ './components/About'))
+const Contact = lazy(() => import(/* webpackChunkName: "info" */ './components/Contact'))
+const Badges = lazy(() => import(/* webpackChunkName: "info" */ './components/badges'))
+const EducationalContent = lazy(() => import(/* webpackChunkName: "info" */ './components/EducationalContent'))
+const PrivacyPolicy = lazy(() => import(/* webpackChunkName: "info" */ './components/PrivacyPolicy'))
+
+// Auth pages - load on demand
 const Login = lazy(() => import(/* webpackChunkName: "auth" */ './components/Login'))
 const Signup = lazy(() => import(/* webpackChunkName: "auth" */ './components/Signup'))
-const Shaple = lazy(() => import(/* webpackChunkName: "shaple" */ './components/shaple'))
-const US = lazy(() => import(/* webpackChunkName: "us" */ './components/US'))
-const Namle = lazy(() => import(/* webpackChunkName: "namle" */ './components/Namle'))
+
+// Online features - load on demand
 const Online = lazy(() => import(/* webpackChunkName: "online" */ './components/online'))
-const Satle = lazy(() => import(/* webpackChunkName: "satle" */ './components/satle'))
-const EducationalContent = lazy(() => import(/* webpackChunkName: "educational" */ './components/EducationalContent'))
-const PrivacyPolicy = lazy(() => import(/* webpackChunkName: "privacy" */ './components/PrivacyPolicy'))
+
+// Maintenance - load on demand
+const Maintenance = lazy(() => import(/* webpackChunkName: "maintenance" */ './components/Maintenance'))
 
 // Optimized theme for mobile performance - reduced complexity
 const theme = createTheme({
