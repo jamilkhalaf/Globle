@@ -11,47 +11,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Force consistent sizing across environments */
-html {
-  font-size: 16px !important;
-}
-
-/* Ensure consistent MUI theme application */
-.MuiThemeProvider-root {
-  font-size: 16px !important;
-}
-
-/* Force consistent header sizing */
-.MuiAppBar-root {
-  min-height: 64px !important;
-  height: 64px !important;
-}
-
-.MuiToolbar-root {
-  min-height: 64px !important;
-  height: 64px !important;
-}
-
-/* Force consistent button sizing */
-.MuiButton-root {
-  font-size: inherit !important;
-  line-height: inherit !important;
-}
-
-/* Force consistent icon sizing */
-.MuiSvgIcon-root {
-  font-size: inherit !important;
-}
-
-/* Force consistent typography */
-.MuiTypography-root {
-  font-size: inherit !important;
-  line-height: inherit !important;
-}
-
-/* Optimized CSS for better mobile performance and Core Web Vitals */
-
-/* Critical CSS - Load first */
+/* Basic app styles */
 #root {
   max-width: none;
   width: 100vw;
@@ -63,9 +23,6 @@ html {
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Performance optimizations */
-  contain: layout style paint;
-  will-change: auto;
 }
 
 .app {
@@ -76,57 +33,39 @@ html {
   margin: 0;
   padding: 0;
   background-color: #121213;
-  /* Performance optimizations */
-  contain: layout style paint;
 }
 
-/* Optimize for mobile first */
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Prevent layout shifts */
+/* Basic image styles */
 img, video, canvas, audio, iframe, embed, object {
   max-width: 100%;
   height: auto;
   display: block;
-  /* Performance optimizations */
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 5000px;
 }
 
-/* Optimize Leaflet for mobile */
+/* Leaflet container styles */
 .leaflet-container {
   width: 100vw !important;
   height: 100vh !important;
   margin: 0 !important;
   padding: 0 !important;
   background-color: #121213 !important;
-  touch-action: manipulation !important;
-  will-change: transform;
-  /* Performance optimizations */
-  contain: layout style paint;
 }
 
 .leaflet-map-pane {
   width: 100vw !important;
   height: 100vh !important;
   background-color: #121213 !important;
-  contain: layout style paint;
 }
 
 .leaflet-pane {
   background-color: #121213 !important;
-  contain: layout style paint;
 }
 
 .leaflet-overlay-pane {
   background-color: #121213 !important;
-  contain: layout style paint;
 }
 
-/* Mobile-optimized Leaflet controls */
+/* Mobile optimizations */
 @media (max-width: 768px) {
   .leaflet-control-zoom {
     display: none !important;
@@ -145,160 +84,54 @@ img, video, canvas, audio, iframe, embed, object {
     -webkit-overflow-scrolling: touch !important;
   }
 
-  /* Optimize touch interactions */
   .leaflet-interactive {
     touch-action: manipulation !important;
   }
-}
-
-/* Mobile viewport optimizations */
-@media (max-width: 768px) {
+  
   body {
     touch-action: manipulation;
     -webkit-overflow-scrolling: touch;
-    font-size: 16px; /* Prevent zoom on iOS */
-    /* Performance optimizations */
-    contain: layout style paint;
+    font-size: 16px;
   }
   
-  /* Prevent zoom on input focus */
   input, textarea, select {
     font-size: 16px !important;
-    transform: scale(1) !important;
-    -webkit-transform: scale(1) !important;
-    -webkit-appearance: none;
-    border-radius: 0;
   }
   
-  /* Optimize autocomplete dropdowns */
   .MuiAutocomplete-popper {
     font-size: 16px !important;
     max-height: 200px !important;
   }
   
-  /* Prevent zoom on any focused element */
-  *:focus {
-    font-size: 16px !important;
-    transform: scale(1) !important;
-    -webkit-transform: scale(1) !important;
-  }
-  
-  /* Optimize scrolling */
   .MuiDrawer-paper {
     -webkit-overflow-scrolling: touch !important;
   }
-  
-  /* Reduce motion for better performance */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
 }
 
-/* Performance optimizations */
-@media (max-width: 480px) {
-  /* Reduce animations on very small screens */
-  .MuiFade-root {
-    transition-duration: 0.2s !important;
-  }
-  
-  /* Optimize paper shadows */
-  .MuiPaper-root {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-  }
-  
-  /* Reduce padding on mobile */
-  .MuiContainer-root {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-  }
-}
-
-/* Optimize for Core Web Vitals */
-@media (max-width: 768px) {
-  /* Reduce layout shifts */
-  .MuiBox-root {
-    contain: layout style paint;
-  }
-  
-  /* Optimize text rendering */
-  h1, h2, h3, h4, h5, h6, p, span, div {
-    text-rendering: optimizeSpeed;
-    font-feature-settings: "liga" 0;
-  }
-}
-
-/* High DPI optimizations */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .leaflet-container {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
-}
-
-/* Reduce unused CSS */
-h1 {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  color: #213547;
-  margin: 0;
-  padding: 0;
-}
-
-.card {
-  padding: clamp(1rem, 3vw, 2rem);
-  border-radius: 8px;
-  background-color: rgba(30,34,44,0.95);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  min-width: 300px;
-}
-
-p {
-  font-size: clamp(0.875rem, 2vw, 1.2rem);
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  line-height: 1.6;
-}
-
-/* Remove unused styles */
-.logo,
-.logo:hover,
-.logo.react:hover,
-@keyframes logo-spin,
-@media (prefers-reduced-motion: no-preference),
-.read-the-docs {
-  display: none;
-}
-
-/* Optimize for accessibility */
+/* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
-/* Focus indicators for accessibility */
 *:focus-visible {
-  outline: 2px solid #43cea2 !important;
-  outline-offset: 2px !important;
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
 }
 
-/* High contrast mode support */
 @media (prefers-contrast: high) {
   .MuiPaper-root {
-    border: 2px solid currentColor !important;
+    border: 2px solid #000 !important;
   }
   
   .MuiButton-root {
-    border: 2px solid currentColor !important;
+    border: 2px solid #000 !important;
   }
 }
 
-/* Print styles */
 @media print {
   .leaflet-container {
     display: none !important;
