@@ -1,0 +1,34 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://jamilweb.click/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+
+# Allow all game pages
+Allow: /game
+Allow: /population
+Allow: /name
+Allow: /flagle
+Allow: /worldle
+Allow: /capitals
+Allow: /hangman
+Allow: /shaple
+Allow: /us
+Allow: /namle
+Allow: /satle
+
+# Allow informational pages
+Allow: /about
+Allow: /contact
+Allow: /educational-content
+Allow: /privacy-policy
+Allow: /badges
+Allow: /online 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { 
   AppBar, 
   Toolbar, 
@@ -16,7 +16,8 @@ import {
   MenuItem,
   ListItemIcon,
   Avatar,
-  Divider
+  Divider,
+  Fade
 } from '@mui/material';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -47,59 +48,63 @@ const Header = forwardRef((props, ref) => {
   const [comingSoonOpen, setComingSoonOpen] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('New Feature');
 
+  // Memoize user data to prevent unnecessary re-renders
   useEffect(() => {
-    // Check if user is logged in
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
-  // Expose functions to parent component
-  useImperativeHandle(ref, () => ({
-    openGamesMenu: () => {
-      // Create a synthetic event to open the games menu
-      const event = {
-        currentTarget: document.querySelector('[data-games-button]') || document.body
-      };
-      handleGamesMenuOpen(event);
-    }
-  }));
-
-  const handleDrawerToggle = () => {
+  const handleDrawerToggle = useCallback(() => {
     setMobileOpen(!mobileOpen);
-  };
+  }, [mobileOpen]);
 
-  const handleGamesMenuOpen = (event) => {
+  const handleGamesMenuOpen = useCallback((event) => {
     setGamesAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleGamesMenuClose = () => {
+  const handleGamesMenuClose = useCallback(() => {
     setGamesAnchorEl(null);
-  };
+  }, []);
 
-  const handleUserMenuOpen = (event) => {
+  const handleUserMenuOpen = useCallback((event) => {
     setUserMenuAnchorEl(event.currentTarget);
-  };
+  }, []);
 
-  const handleUserMenuClose = () => {
+  const handleUserMenuClose = useCallback(() => {
     setUserMenuAnchorEl(null);
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setUserMenuAnchorEl(null);
     navigate('/');
-  };
+  }, [navigate]);
 
-  const handleComingSoon = (feature = 'New Feature') => {
+  const handleComingSoon = useCallback((feature = 'New Feature') => {
     setComingSoonFeature(feature);
     setComingSoonOpen(true);
-  };
+  }, []);
+
+  // Expose functions to parent component
+  useImperativeHandle(ref, () => ({
+    openGamesMenu: () => {
+      const event = {
+        currentTarget: document.querySelector('[data-games-button]') || document.body
+      };
+      handleGamesMenuOpen(event);
+    }
+  }), [handleGamesMenuOpen]);
 
   const games = [
     { path: '/game', label: 'Globle', icon: <PublicIcon sx={{ fontSize: 20, color: '#1976d2' }} /> },
@@ -109,31 +114,16 @@ const Header = forwardRef((props, ref) => {
     { path: '/worldle', label: 'Worldle', icon: <PublicIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
     { path: '/capitals', label: 'Capitals', icon: <SchoolIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
     { path: '/hangman', label: 'Hangman', icon: <HelpIcon sx={{ fontSize: 20, color: '#f44336' }} /> },
-    {
-      label: 'Shaple',
-      path: '/shaple',
-      icon: <CropSquareIcon sx={{ fontSize: 22, color: '#43cea2' }} />
-    },
-    {
-      label: 'US',
-      path: '/us',
-      icon: <MapIcon sx={{ fontSize: 22, color: '#1976d2' }} />
-    },
-    {
-      label: 'Namle',
-      path: '/namle',
-      icon: <PublicIcon sx={{ fontSize: 20, color: '#9c27b0' }} />
-    },
-    {
-      label: 'Satle',
-      path: '/satle',
-      icon: <PublicIcon sx={{ fontSize: 20, color: '#ff5722' }} />
-    }
+    { path: '/shaple', label: 'Shaple', icon: <CropSquareIcon sx={{ fontSize: 22, color: '#43cea2' }} /> },
+    { path: '/us', label: 'US', icon: <MapIcon sx={{ fontSize: 22, color: '#1976d2' }} /> },
+    { path: '/namle', label: 'Namle', icon: <PublicIcon sx={{ fontSize: 20, color: '#9c27b0' }} /> },
+    { path: '/satle', label: 'Satle', icon: <PublicIcon sx={{ fontSize: 20, color: '#ff5722' }} /> }
   ];
 
   const mainMenuItems = [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
+    { path: '/educational-content', label: 'Learning Resources' },
     { path: '/badges', label: 'Badges' },
     { path: '/contact', label: 'Contact' },
     { path: '/online', label: 'Online', icon: <WifiIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
@@ -142,11 +132,6 @@ const Header = forwardRef((props, ref) => {
       action: () => handleComingSoon('1v1 Multiplayer & Leaderboards'),
       isComingSoon: true 
     },
-  ];
-
-  const allMenuItems = [
-    ...mainMenuItems,
-    ...games.map(game => ({ ...game, isGame: true }))
   ];
 
   const drawer = (
@@ -359,13 +344,21 @@ const Header = forwardRef((props, ref) => {
 
   return (
     <>
-      <AppBar position="fixed" sx={{ bgcolor: '#121213', zIndex: theme.zIndex.drawer + 1 }}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
+      <AppBar 
+        position="fixed" 
+        sx={{ 
+          bgcolor: '#121213', 
+          zIndex: theme.zIndex.drawer + 1,
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(255,255,255,0.1)'
+        }}
+      >
+        <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 56, md: 64 } }}>
           <Box
             sx={{
               color: 'white',
               fontWeight: 'bold',
-              fontSize: { xs: '1rem', sm: '1.25rem' },
+              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
               textDecoration: 'none',
               letterSpacing: 1.5,
               transition: 'color 0.2s',
@@ -393,7 +386,7 @@ const Header = forwardRef((props, ref) => {
           ) : (
             <Box sx={{ 
               display: 'flex', 
-              gap: { xs: 2, md: 3, lg: 4 }, 
+              gap: { xs: 1, md: 2, lg: 3 }, 
               alignItems: 'center',
               flexWrap: 'wrap',
               justifyContent: 'center'
@@ -401,38 +394,38 @@ const Header = forwardRef((props, ref) => {
               {/* Main Navigation Items */}
               <Box sx={{ 
                 display: 'flex', 
-                gap: { xs: 1.5, md: 2, lg: 3 }, 
+                gap: { xs: 1, md: 2, lg: 3 }, 
                 alignItems: 'center',
                 mr: { xs: 1, md: 2 }
               }}>
                 {mainMenuItems.slice(0, 4).map((item) => (
-                  <Button 
-                    key={item.label}
-                    color="inherit" 
-                    component={item.isComingSoon ? 'button' : RouterLink} 
-                    to={item.isComingSoon ? undefined : item.path}
-                    onClick={item.isComingSoon ? item.action : undefined}
-                    sx={{ 
-                      color: item.isComingSoon ? '#ff9800' : 'white',
-                      fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
-                      borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
-                      fontSize: { xs: '0.85rem', md: '0.95rem', lg: '1rem' },
-                      px: { xs: 1.5, md: 2, lg: 2.5 },
-                      py: { xs: 0.75, md: 1 },
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      letterSpacing: 0.5,
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        color: item.isComingSoon ? '#f57c00' : 'white',
-                        backgroundColor: 'rgba(255,255,255,0.08)',
-                        transform: 'translateY(-1px)',
-                      }
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
+                <Button 
+                  key={item.label}
+                  color="inherit" 
+                  component={item.isComingSoon ? 'button' : RouterLink} 
+                  to={item.isComingSoon ? undefined : item.path}
+                  onClick={item.isComingSoon ? item.action : undefined}
+                  sx={{ 
+                    color: item.isComingSoon ? '#ff9800' : 'white',
+                    fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
+                    borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
+                    fontSize: { xs: '0.8rem', md: '0.9rem', lg: '1rem' },
+                    px: { xs: 1, md: 1.5, lg: 2 },
+                    py: { xs: 0.5, md: 0.75, lg: 1 },
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    letterSpacing: 0.5,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      color: item.isComingSoon ? '#f57c00' : 'white',
+                      backgroundColor: 'rgba(255,255,255,0.08)',
+                      transform: 'translateY(-1px)',
+                    }
+                  }}
+                >
+                  {item.label}
+                </Button>
+              ))}
               </Box>
 
               {/* Separator */}
@@ -440,13 +433,13 @@ const Header = forwardRef((props, ref) => {
                 width: '1px', 
                 height: '24px', 
                 bgcolor: 'rgba(255,255,255,0.2)',
-                mx: { xs: 1, md: 2 }
+                mx: { xs: 0.5, md: 1 }
               }} />
 
               {/* Online and Coming Soon */}
               <Box sx={{ 
                 display: 'flex', 
-                gap: { xs: 1.5, md: 2 }, 
+                gap: { xs: 1, md: 2 }, 
                 alignItems: 'center'
               }}>
                 {mainMenuItems.slice(4).map((item) => (
@@ -461,23 +454,23 @@ const Header = forwardRef((props, ref) => {
                       color: item.isComingSoon ? '#ff9800' : 'white',
                       fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
                       borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
-                      fontSize: { xs: '0.85rem', md: '0.95rem', lg: '1rem' },
-                      px: { xs: 1.5, md: 2, lg: 2.5 },
-                      py: { xs: 0.75, md: 1 },
+                      fontSize: { xs: '0.8rem', md: '0.9rem', lg: '1rem' },
+                      px: { xs: 1, md: 1.5, lg: 2 },
+                      py: { xs: 0.5, md: 0.75, lg: 1 },
                       borderRadius: 2,
                       textTransform: 'none',
                       letterSpacing: 0.5,
                       transition: 'all 0.2s ease',
-                      '&:hover': {
-                        color: item.isComingSoon ? '#f57c00' : 'white',
+                    '&:hover': {
+                      color: item.isComingSoon ? '#f57c00' : 'white',
                         backgroundColor: 'rgba(255,255,255,0.08)',
                         transform: 'translateY(-1px)',
-                      }
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
+                    }
+                  }}
+                >
+                  {item.label}
+                </Button>
+              ))}
               </Box>
 
               {/* Separator */}
@@ -485,7 +478,7 @@ const Header = forwardRef((props, ref) => {
                 width: '1px', 
                 height: '24px', 
                 bgcolor: 'rgba(255,255,255,0.2)',
-                mx: { xs: 1, md: 2 }
+                mx: { xs: 0.5, md: 1 }
               }} />
 
               {/* Games Menu */}
@@ -498,9 +491,9 @@ const Header = forwardRef((props, ref) => {
                   color: games.some(game => location.pathname === game.path) ? '#43cea2' : 'white',
                   fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
                   borderBottom: games.some(game => location.pathname === game.path) ? '2px solid #43cea2' : 'none',
-                  fontSize: { xs: '0.85rem', md: '0.95rem', lg: '1rem' },
-                  px: { xs: 1.5, md: 2, lg: 2.5 },
-                  py: { xs: 0.75, md: 1 },
+                  fontSize: { xs: '0.8rem', md: '0.9rem', lg: '1rem' },
+                  px: { xs: 1, md: 1.5, lg: 2 },
+                  py: { xs: 0.5, md: 0.75, lg: 1 },
                   borderRadius: 2,
                   textTransform: 'none',
                   letterSpacing: 0.5,
@@ -520,7 +513,7 @@ const Header = forwardRef((props, ref) => {
                 width: '1px', 
                 height: '24px', 
                 bgcolor: 'rgba(255,255,255,0.2)',
-                mx: { xs: 1, md: 2 }
+                mx: { xs: 0.5, md: 1 }
               }} />
 
               {/* Authentication buttons */}
@@ -543,8 +536,8 @@ const Header = forwardRef((props, ref) => {
               ) : (
                 <Box sx={{ 
                   display: 'flex', 
-                  gap: 1.5, 
-                  ml: 2,
+                  gap: 1, 
+                  ml: 1,
                   alignItems: 'center'
                 }}>
                   <Button
@@ -559,9 +552,9 @@ const Header = forwardRef((props, ref) => {
                       borderRadius: 2,
                       textTransform: 'none',
                       letterSpacing: 0.5,
-                      fontSize: { xs: '0.8rem', md: '0.85rem' },
-                      py: { xs: 0.5, md: 0.75 },
-                      px: { xs: 1.5, md: 2 },
+                      fontSize: { xs: '0.75rem', md: '0.8rem' },
+                      py: { xs: 0.4, md: 0.6 },
+                      px: { xs: 1, md: 1.5 },
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         borderColor: 'white',
@@ -583,9 +576,9 @@ const Header = forwardRef((props, ref) => {
                       borderRadius: 2,
                       textTransform: 'none',
                       letterSpacing: 0.5,
-                      fontSize: { xs: '0.8rem', md: '0.85rem' },
-                      py: { xs: 0.5, md: 0.75 },
-                      px: { xs: 1.5, md: 2 },
+                      fontSize: { xs: '0.75rem', md: '0.8rem' },
+                      py: { xs: 0.4, md: 0.6 },
+                      px: { xs: 1, md: 1.5 },
                       transition: 'all 0.2s ease',
                       '&:hover': {
                         backgroundColor: '#3bb08f',

@@ -1,0 +1,29 @@
+{
+  "name": "Globle - Educational Geography Games",
+  "short_name": "Globle Games",
+  "description": "Interactive geography games designed to enhance your geographical knowledge through engaging gameplay and educational content.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121213",
+  "theme_color": "#121213",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/world.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/world.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "games", "geography"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+} 
