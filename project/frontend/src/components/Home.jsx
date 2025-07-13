@@ -565,7 +565,7 @@ const Home = () => {
                 minHeight: '600px',
                 marginTop: '20px',
                 borderRadius: '8px',
-                marginLeft: '60px',
+                marginLeft: '40px',
                 overflow: 'hidden'
               }}
             />
