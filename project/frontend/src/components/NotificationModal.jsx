@@ -2,7 +2,15 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button } from '@mui/material';
 
 const NotificationModal = ({ open, onClose, title, description, buttonText = 'Ready', color = 'primary' }) => (
-  <Dialog open={open} disableEscapeKeyDown disableBackdropClick>
+  <Dialog 
+    open={open} 
+    disableEscapeKeyDown 
+    onClose={(event, reason) => {
+      if (reason !== 'backdropClick') {
+        onClose();
+      }
+    }}
+  >
     <DialogTitle sx={{ fontWeight: 800, fontSize: 28, color, textAlign: 'center' }}>{title}</DialogTitle>
     <DialogContent>
       <Typography sx={{ mb: 2, color: 'yellow', fontSize: 18, textAlign: 'center' }}>

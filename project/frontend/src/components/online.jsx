@@ -205,31 +205,48 @@ const Online = () => {
         throw new Error('Token verification failed');
       }
 
-      // Create socket connection
-      const socket = io('https://api.jamilweb.click', {
+      // Create socket connection with explicit configuration
+      const socketUrl = 'https://api.jamilweb.click';
+      console.log('🔌 Connecting to socket URL:', socketUrl);
+      
+      const socket = io(socketUrl, {
         auth: { token },
         transports: ['websocket', 'polling'],
         upgrade: true,
         rememberUpgrade: true,
-        timeout: 20000
+        timeout: 20000,
+        forceNew: true, // Force new connection
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
       });
+
+      console.log('🔌 Socket instance created:', socket);
 
       // Socket event handlers
       socket.on('connect', () => {
         console.log('🔌 Socket connected successfully');
+        console.log('🔌 Socket ID:', socket.id);
+        console.log('🔌 Socket URL:', socketUrl);
         setIsConnected(true);
         setError('');
         isConnectingRef.current = false;
       });
 
-      socket.on('disconnect', () => {
-        console.log('🔌 Socket disconnected');
+      socket.on('disconnect', (reason) => {
+        console.log('🔌 Socket disconnected, reason:', reason);
         setIsConnected(false);
         isConnectingRef.current = false;
       });
 
       socket.on('connect_error', (error) => {
         console.error('🔌 Socket connection error:', error);
+        console.error('🔌 Error details:', {
+          message: error.message,
+          description: error.description,
+          context: error.context,
+          type: error.type
+        });
         setError('Failed to connect to game server: ' + error.message);
         setIsConnected(false);
         isConnectingRef.current = false;

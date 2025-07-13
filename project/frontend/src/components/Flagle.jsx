@@ -45,7 +45,7 @@ const nameToCode = {
   'Tonga': 'to', 'Trinidad and Tobago': 'tt', 'Tunisia': 'tn', 'Turkey': 'tr', 'Turkmenistan': 'tm',
   'Tuvalu': 'tv', 'Uganda': 'ug', 'Ukraine': 'ua', 'United Arab Emirates': 'ae', 'United Kingdom': 'gb',
   'United States': 'us', 'United States of America': 'us', 'Uruguay': 'uy', 'Uzbekistan': 'uz', 'Vanuatu': 'vu',
-  'Venezuela, RB': 've', 'Viet Nam': 'vn', 'Vietnam': 'vn', 'Yemen, Rep.': 'ye', 'Zambia': 'zm', 'Zimbabwe': 'zw',
+  'Venezuela': 've', 'Venezuela, RB': 've', 'Viet Nam': 'vn', 'Vietnam': 'vn', 'Yemen': 'ye', 'Zambia': 'zm', 'Zimbabwe': 'zw',
 };
 
 const allCountries = Object.keys(countryInfo).filter(
@@ -70,7 +70,6 @@ const Flagle = () => {
   const [streak, setStreak] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [round, setRound] = useState(0); // Used to force remount flag box
-  const [inputError, setInputError] = useState('');
   const [showIntro, setShowIntro] = useState(true);
   const [bestScore, setBestScore] = useState(0);
 
@@ -138,18 +137,24 @@ const Flagle = () => {
 
   // For guess checking, always use the selected country from autocomplete if available
   const handleGuess = () => {
-    let guessToCheck = guess;
-    if (!guessToCheck.trim()) return;
-    // Validate guess is a real country
-    const validCountry = countryOptions.some(opt => opt.label.toLowerCase() === guessToCheck.trim().toLowerCase());
+    let guessToCheck = guess.trim();
+    if (!guessToCheck) return;
+    
+    // Check if the guess exists in the country options (case-insensitive)
+    const validCountry = countryOptions.find(opt => 
+      opt.label.toLowerCase() === guessToCheck.toLowerCase()
+    );
+    
     if (!validCountry) {
-      setInputError('Invalid country name. Please select a valid country.');
+      // Silently ignore invalid countries without showing error
       return;
-    } else {
-      setInputError('');
     }
-    setGuesses(g => [...g, guessToCheck]);
-    if (guessToCheck.trim().toLowerCase() === target.toLowerCase()) {
+    
+    // Use the exact country name from the options to ensure consistency
+    const exactCountryName = validCountry.label;
+    setGuesses(g => [...g, exactCountryName]);
+    
+    if (exactCountryName.toLowerCase() === target.toLowerCase()) {
       setMessage('🎉 Correct!');
       setGameOver(true);
       const newStreak = streak + 1;
@@ -195,7 +200,6 @@ const Flagle = () => {
       setGuesses([]);
       setGameOver(false);
       setMessage('Guess the country!');
-      setInputError('');
     }, 0);
   };
 
@@ -281,26 +285,44 @@ const Flagle = () => {
                 setGuess(newInputValue);
               }}
               onChange={(event, newValue, reason) => {
-                if (typeof newValue === 'string') {
-                  setGuess(newValue);
-                  setInputValue(newValue);
-                  // If user selects from menu, submit immediately
-                  handleGuess();
-                } else if (newValue && newValue.label) {
+                // Only handle actual selections, not navigation
+                if (reason === 'selectOption' && newValue && newValue.label) {
                   setGuess(newValue.label);
                   setInputValue(newValue.label);
-                  // If user selects from menu, submit immediately
-                  handleGuess();
+                  // Auto-submit when user selects from dropdown
+                  setTimeout(() => {
+                    // Use the selected value directly instead of relying on state
+                    const selectedCountry = newValue.label;
+                    if (selectedCountry) {
+                      handleGuess();
+                    }
+                  }, 0);
+                } else if (typeof newValue === 'string') {
+                  setGuess(newValue);
+                  setInputValue(newValue);
+                  // Don't auto-submit for string input, let user press Enter or click Guess
                 }
               }}
-              PopperProps={{
-                placement: 'bottom-start',
-                modifiers: [
-                  {
-                    name: 'flip',
-                    enabled: false,
-                  },
-                ],
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (!gameOver) {
+                    handleGuess();
+                  } else {
+                    handleNext();
+                  }
+                }
+              }}
+              slotProps={{
+                popper: {
+                  placement: 'bottom-start',
+                  modifiers: [
+                    {
+                      name: 'flip',
+                      enabled: false,
+                    },
+                  ],
+                },
               }}
               renderInput={(params) => (
                 <TextField
@@ -320,8 +342,6 @@ const Flagle = () => {
                       }
                     }
                   }}
-                  error={!!inputError}
-                  helperText={inputError}
                 />
               )}
               sx={{ flex: 1 }}

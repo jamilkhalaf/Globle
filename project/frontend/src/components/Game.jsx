@@ -334,6 +334,47 @@ const Game = () => {
     return 'About the same distance.';
   };
 
+  // Enhanced function to get directional hint with more accuracy
+  const getDirectionalHint = (guessedLat, guessedLon, secretLat, secretLon) => {
+    const latDiff = secretLat - guessedLat;
+    const lonDiff = secretLon - guessedLon;
+    
+    // Calculate the angle for more precise direction
+    const angle = Math.atan2(latDiff, lonDiff) * 180 / Math.PI;
+    
+    // Normalize angle to 0-360 degrees
+    const normalizedAngle = angle < 0 ? angle + 360 : angle;
+    
+    // Determine direction based on angle ranges
+    if (normalizedAngle >= 337.5 || normalizedAngle < 22.5) {
+      return '→'; // East
+    } else if (normalizedAngle >= 22.5 && normalizedAngle < 67.5) {
+      return '↗'; // Northeast
+    } else if (normalizedAngle >= 67.5 && normalizedAngle < 112.5) {
+      return '↑'; // North
+    } else if (normalizedAngle >= 112.5 && normalizedAngle < 157.5) {
+      return '↖'; // Northwest
+    } else if (normalizedAngle >= 157.5 && normalizedAngle < 202.5) {
+      return '←'; // West
+    } else if (normalizedAngle >= 202.5 && normalizedAngle < 247.5) {
+      return '↙'; // Southwest
+    } else if (normalizedAngle >= 247.5 && normalizedAngle < 292.5) {
+      return '↓'; // South
+    } else if (normalizedAngle >= 292.5 && normalizedAngle < 337.5) {
+      return '↘'; // Southeast
+    }
+    
+    return '→'; // Default to East
+  };
+
+  // Enhanced distance message with directional hint
+  const getEnhancedDistanceMessage = (distance, lastDistance, guessedLat, guessedLon, secretLat, secretLon) => {
+    const distanceMessage = getDistanceMessage(distance, lastDistance);
+    const direction = getDirectionalHint(guessedLat, guessedLon, secretLat, secretLon);
+    
+    return `${distanceMessage} (${Math.round(distance)} km away, ${direction})`;
+  };
+
   const getCountryCenter = (country) => {
     // Handle different GeoJSON coordinate structures
     let coordinates = [];
@@ -449,10 +490,10 @@ const Game = () => {
         secretCenter.lat, secretCenter.lon
       );
       
-      const distanceMessage = getDistanceMessage(distance, lastDistance);
+      const distanceMessage = getEnhancedDistanceMessage(distance, lastDistance, guessedCenter.lat, guessedCenter.lon, secretCenter.lat, secretCenter.lon);
       setLastDistance(distance);
       
-      setMessage(`${distanceMessage} (${Math.round(distance)} km away)`);
+      setMessage(distanceMessage);
     }
 
     setGuess('');
@@ -496,10 +537,10 @@ const Game = () => {
             secretCenter.lat, secretCenter.lon
           );
           
-          const distanceMessage = getDistanceMessage(distance, lastDistance);
+          const distanceMessage = getEnhancedDistanceMessage(distance, lastDistance, guessedCenter.lat, guessedCenter.lon, secretCenter.lat, secretCenter.lon);
           setLastDistance(distance);
           
-          setMessage(`${distanceMessage} (${Math.round(distance)} km away)`);
+          setMessage(distanceMessage);
         }
       }
       setGuess('');
@@ -889,11 +930,17 @@ const Game = () => {
                   }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      backgroundColor: 'white',
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
                       fontSize: { xs: '0.7rem', md: '0.9rem' },
                       height: { xs: '32px', md: '40px' },
+                      borderRadius: '8px',
                       '&:hover fieldset': {
                         borderColor: '#1976d2',
+                        borderWidth: '2px',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#1976d2',
+                        borderWidth: '2px',
                       },
                       '& input': {
                         padding: { xs: '6px 8px', md: '8px 12px' },
@@ -910,7 +957,63 @@ const Game = () => {
               )}
               disabled={gameOver}
               fullWidth
-              sx={{ flexGrow: 1 }}
+              sx={{ 
+                flexGrow: 1,
+                '& .MuiAutocomplete-popper': {
+                  zIndex: 9999,
+                },
+                '& .MuiAutocomplete-paper': {
+                  backgroundColor: 'rgba(30, 34, 44, 0.98) !important',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                },
+                '& .MuiAutocomplete-option': {
+                  color: 'white !important',
+                  fontSize: { xs: '0.7rem', md: '0.9rem' },
+                  padding: { xs: '8px 12px', md: '10px 16px' },
+                  '&:hover': {
+                    backgroundColor: 'rgba(25, 118, 210, 0.2) !important',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: 'rgba(25, 118, 210, 0.3) !important',
+                  },
+                  '&.Mui-selected': {
+                    backgroundColor: 'rgba(25, 118, 210, 0.4) !important',
+                    '&:hover': {
+                      backgroundColor: 'rgba(25, 118, 210, 0.5) !important',
+                    },
+                  },
+                },
+                '& .MuiAutocomplete-listbox': {
+                  padding: '4px 0',
+                  backgroundColor: 'rgba(30, 34, 44, 0.98) !important',
+                  '&::-webkit-scrollbar': {
+                    width: '8px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: '4px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: 'rgba(25, 118, 210, 0.5)',
+                    borderRadius: '4px',
+                    '&:hover': {
+                      backgroundColor: 'rgba(25, 118, 210, 0.7)',
+                    },
+                  },
+                },
+                '& .MuiAutocomplete-noOptions': {
+                  color: 'rgba(255, 255, 255, 0.7) !important',
+                  fontSize: { xs: '0.7rem', md: '0.9rem' },
+                  padding: '12px 16px',
+                  backgroundColor: 'rgba(30, 34, 44, 0.98) !important',
+                },
+                '& .MuiAutocomplete-loading': {
+                  color: '#1976d2',
+                },
+              }}
               open={isDropdownOpen}
               onClose={() => setIsDropdownOpen(false)}
               ListboxProps={{

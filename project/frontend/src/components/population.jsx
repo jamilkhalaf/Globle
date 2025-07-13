@@ -20,6 +20,18 @@ const getCountryCapital = (countryName) => {
   return countryInfo[countryName]?.capital || 'Unknown';
 };
 
+// Helper function to format population numbers
+const formatPopulation = (population) => {
+  if (population >= 1000000000) {
+    return `${(population / 1000000000).toFixed(1)}B`;
+  } else if (population >= 1000000) {
+    return `${(population / 1000000).toFixed(1)}M`;
+  } else if (population >= 1000) {
+    return `${(population / 1000).toFixed(1)}K`;
+  }
+  return population.toString();
+};
+
 const Population = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -37,6 +49,10 @@ const Population = () => {
 
   // Add state for notification modal
   const [showIntro, setShowIntro] = useState(true);
+
+  // Add state for showing population results
+  const [showPopulationResult, setShowPopulationResult] = useState(false);
+  const [lastGuessResult, setLastGuessResult] = useState(null);
 
   const updateGameStats = async (finalScore, gameTime, currentStreak) => {
     try {
@@ -120,6 +136,21 @@ const Population = () => {
     const popRight = getPopulation(right);
     const correct = (guessIdx === 0 && popLeft >= popRight) || (guessIdx === 1 && popRight > popLeft);
     
+    // Store the result for display
+    const result = {
+      leftCountry: left,
+      rightCountry: right,
+      leftPopulation: popLeft,
+      rightPopulation: popRight,
+      guessedIndex: guessIdx,
+      correct: correct,
+      winner: popLeft >= popRight ? left : right,
+      winnerPopulation: Math.max(popLeft, popRight)
+    };
+    
+    setLastGuessResult(result);
+    setShowPopulationResult(true);
+    
     if (correct) {
       const newScore = score + 1;
       const newStreak = streak + 1;
@@ -131,14 +162,6 @@ const Population = () => {
       // Update stats after each correct answer
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
       updateGameStats(newScore, gameTime, newStreak);
-      
-      // Faster transition for correct answers
-      setTimeout(() => {
-        setCountries(generateNewCountries());
-        setMessage('Which country has a higher population?');
-        setFadeKey(prev => prev + 1);
-        setIsLoading(false);
-      }, 600);
     } else {
       setScore(0);
       setStreak(0); // Reset streak on wrong answer
@@ -147,16 +170,35 @@ const Population = () => {
       // Update stats when game ends (wrong answer)
       const gameTime = gameStartTime ? Math.round((Date.now() - gameStartTime) / 1000) : 0;
       updateGameStats(0, gameTime, 0);
-      
-      setTimeout(() => {
-        setCountries(generateNewCountries());
-        setMessage('Which country has a higher population?');
-        setFadeKey(prev => prev + 1);
-        setIsLoading(false);
-        setGameStartTime(Date.now()); // Reset timer for new game
-      }, 1000);
     }
+    
+    setIsLoading(false);
   }, [countries, isLoading, generateNewCountries, score, gameStartTime, bestScore, streak]);
+
+  // Function to continue to next question
+  const continueToNext = useCallback(() => {
+    setShowPopulationResult(false);
+    setCountries(generateNewCountries());
+    setMessage('Which country has a higher population?');
+    setFadeKey(prev => prev + 1);
+    setGameStartTime(Date.now()); // Reset timer for new game
+  }, [generateNewCountries]);
+
+  // Handle Enter key press
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'Enter' && showPopulationResult) {
+        continueToNext();
+      }
+    };
+
+    if (showPopulationResult) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => {
+        document.removeEventListener('keydown', handleKeyPress);
+      };
+    }
+  }, [showPopulationResult, continueToNext]);
 
   if (showIntro) {
     return (
@@ -200,6 +242,240 @@ const Population = () => {
         px: { xs: 2, md: 4 },
         py: { xs: 1, md: 2 }
       }}>
+        {/* Population Result Display */}
+        {showPopulationResult && lastGuessResult && (
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(8px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999,
+              animation: 'fadeIn 0.3s ease-out'
+            }}
+          >
+            <Box
+              sx={{
+                position: 'relative',
+                background: 'linear-gradient(135deg, rgba(30,34,44,0.95) 0%, rgba(20,24,34,0.95) 100%)',
+                borderRadius: 3,
+                padding: { xs: 2, md: 3 },
+                maxWidth: { xs: '90vw', sm: '400px', md: '500px' },
+                width: '100%',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                transform: 'scale(0.9)',
+                animation: 'popIn 0.4s ease-out forwards',
+                overflow: 'hidden'
+              }}
+            >
+              {/* Animated background elements */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -50,
+                  right: -50,
+                  width: 100,
+                  height: 100,
+                  borderRadius: '50%',
+                  background: lastGuessResult.correct 
+                    ? 'radial-gradient(circle, rgba(76,175,80,0.2) 0%, transparent 70%)'
+                    : 'radial-gradient(circle, rgba(244,67,54,0.2) 0%, transparent 70%)',
+                  animation: 'float 3s ease-in-out infinite'
+                }}
+              />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: -30,
+                  left: -30,
+                  width: 60,
+                  height: 60,
+                  borderRadius: '50%',
+                  background: lastGuessResult.correct 
+                    ? 'radial-gradient(circle, rgba(139,195,74,0.15) 0%, transparent 70%)'
+                    : 'radial-gradient(circle, rgba(229,57,53,0.15) 0%, transparent 70%)',
+                  animation: 'float 2.5s ease-in-out infinite reverse'
+                }}
+              />
+
+              <Box sx={{ position: 'relative', zIndex: 2 }}>
+                {/* Result indicator */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 2,
+                    animation: 'slideDown 0.5s ease-out'
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: lastGuessResult.correct 
+                        ? 'linear-gradient(135deg, #4caf50, #66bb6a)'
+                        : 'linear-gradient(135deg, #f44336, #ef5350)',
+                      boxShadow: lastGuessResult.correct 
+                        ? '0 8px 24px rgba(76, 175, 80, 0.4)'
+                        : '0 8px 24px rgba(244, 67, 54, 0.4)',
+                      animation: 'pulse 2s ease-in-out infinite'
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '24px',
+                        color: 'white',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {lastGuessResult.correct ? '✓' : '✗'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Population comparison */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 2,
+                    animation: 'slideUp 0.5s ease-out 0.2s both'
+                  }}
+                >
+                  {/* Left country */}
+                  <Box sx={{ textAlign: 'center', flex: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#90caf9',
+                        fontWeight: 600,
+                        fontSize: { xs: '0.875rem', md: '1rem' },
+                        mb: 0.5
+                      }}
+                    >
+                      {lastGuessResult.leftCountry}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: lastGuessResult.leftPopulation >= lastGuessResult.rightPopulation ? '#4caf50' : '#f44336',
+                        fontWeight: 'bold',
+                        fontSize: { xs: '1.125rem', md: '1.25rem' }
+                      }}
+                    >
+                      {formatPopulation(lastGuessResult.leftPopulation)}
+                    </Typography>
+                  </Box>
+
+                  {/* VS indicator */}
+                  <Box
+                    sx={{
+                      mx: 2,
+                      px: 2,
+                      py: 0.5,
+                      borderRadius: 2,
+                      background: 'rgba(255, 152, 0, 0.2)',
+                      border: '1px solid rgba(255, 152, 0, 0.3)'
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#ff9800',
+                        fontWeight: 'bold',
+                        fontSize: { xs: '0.875rem', md: '1rem' }
+                      }}
+                    >
+                      VS
+                    </Typography>
+                  </Box>
+
+                  {/* Right country */}
+                  <Box sx={{ textAlign: 'center', flex: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#90caf9',
+                        fontWeight: 600,
+                        fontSize: { xs: '0.875rem', md: '1rem' },
+                        mb: 0.5
+                      }}
+                    >
+                      {lastGuessResult.rightCountry}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: lastGuessResult.rightPopulation >= lastGuessResult.leftPopulation ? '#4caf50' : '#f44336',
+                        fontWeight: 'bold',
+                        fontSize: { xs: '1.125rem', md: '1.25rem' }
+                      }}
+                    >
+                      {formatPopulation(lastGuessResult.rightPopulation)}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Difference */}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    textAlign: 'center',
+                    color: '#b0c4de',
+                    fontSize: { xs: '0.75rem', md: '0.875rem' },
+                    fontStyle: 'italic',
+                    mb: 2,
+                    animation: 'fadeIn 0.5s ease-out 0.4s both'
+                  }}
+                >
+                  Difference: {formatPopulation(Math.abs(lastGuessResult.leftPopulation - lastGuessResult.rightPopulation))}
+                </Typography>
+
+                {/* Continue button */}
+                <Box sx={{ textAlign: 'center', animation: 'slideUp 0.5s ease-out 0.6s both' }}>
+                  <Button
+                    variant="contained"
+                    onClick={continueToNext}
+                    sx={{
+                      background: 'linear-gradient(135deg, #1976d2, #1565c0)',
+                      color: 'white',
+                      px: 3,
+                      py: 1,
+                      borderRadius: 2,
+                      fontSize: { xs: '0.875rem', md: '1rem' },
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #1565c0, #0d47a1)',
+                        boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+                        transform: 'translateY(-1px)'
+                      },
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    Continue
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        )}
+        
         <Fade in key={fadeKey} timeout={400}>
           <Paper 
             elevation={6} 

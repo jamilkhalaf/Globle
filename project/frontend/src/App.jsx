@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, memo } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { ThemeProvider, createTheme, CircularProgress, Box } from '@mui/material'
+import { ThemeProvider, createTheme, CircularProgress, Box, Typography, Button } from '@mui/material'
+import { ErrorBoundary } from 'react-error-boundary'
 import './App.css'
 
 // Optimized lazy loading with chunk names for better caching
@@ -126,6 +127,32 @@ const LoadingFallback = memo(() => (
   </Box>
 ))
 
+// Error fallback component
+const ErrorFallback = ({ error, resetErrorBoundary }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      background: 'radial-gradient(ellipse at 60% 40%, #232a3b 60%, #121213 100%)',
+      color: 'white',
+      p: 3,
+    }}
+  >
+    <Typography variant="h4" sx={{ mb: 2 }}>
+      Something went wrong
+    </Typography>
+    <Typography variant="body1" sx={{ mb: 3, textAlign: 'center' }}>
+      {error.message}
+    </Typography>
+    <Button variant="contained" onClick={resetErrorBoundary}>
+      Try again
+    </Button>
+  </Box>
+)
+
 // Set this to true to enable maintenance mode
 const MAINTENANCE_MODE = false;
 
@@ -134,17 +161,20 @@ function App() {
   if (MAINTENANCE_MODE) {
     return (
       <ThemeProvider theme={theme}>
-        <Suspense fallback={<LoadingFallback />}>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Suspense fallback={<LoadingFallback />}>
         <Maintenance />
-        </Suspense>
+          </Suspense>
+        </ErrorBoundary>
       </ThemeProvider>
     );
   }
 
   return (
     <ThemeProvider theme={theme}>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
       <Router>
-        <Suspense fallback={<LoadingFallback />}>
+          <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -152,9 +182,9 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-            <Route path="/online" element={<Online />} />
-            <Route path="/educational-content" element={<EducationalContent />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/online" element={<Online />} />
+              <Route path="/educational-content" element={<EducationalContent />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/game" element={<Game />} />
           <Route path="/population" element={<Population />} />
           <Route path="/name" element={<Name />} />
@@ -165,10 +195,11 @@ function App() {
           <Route path="/shaple" element={<Shaple />} />
           <Route path="/us" element={<US />} />
           <Route path="/namle" element={<Namle />} />
-            <Route path="/satle" element={<Satle />} />
+              <Route path="/satle" element={<Satle />} />
         </Routes>
-        </Suspense>
+          </Suspense>
       </Router>
+      </ErrorBoundary>
     </ThemeProvider>
   )
 }

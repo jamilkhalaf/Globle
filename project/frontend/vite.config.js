@@ -29,14 +29,20 @@ export default defineConfig({
     cssCodeSplit: true,
     assetsInlineLimit: 4096,
   },
-  // Standard dev server
+  // Development server configuration
   server: {
-    host: true,
+    host: 'localhost',
     port: 3000,
+    strictPort: true,
+    hmr: {
+      port: 3001, // Use different port for HMR WebSocket
+      protocol: 'ws',
+    },
   },
   // Standard dependencies
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
+    exclude: ['socket.io-client'], // Exclude socket.io from pre-bundling
   },
   // Standard esbuild settings
   esbuild: {

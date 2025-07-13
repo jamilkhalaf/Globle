@@ -14,6 +14,28 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import NotificationModal from './NotificationModal';
 
+function levenshtein(a, b) {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  const matrix = [];
+  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1).toLowerCase() === a.charAt(j - 1).toLowerCase()) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
 const Namle = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -28,7 +50,6 @@ const Namle = () => {
   const [showIntro, setShowIntro] = useState(true);
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [inputError, setInputError] = useState('');
-  const [countryOptions, setCountryOptions] = useState([]);
   const [showSuccessTick, setShowSuccessTick] = useState(false);
   const timerRef = useRef(null);
   const mapRef = useRef(null);
@@ -176,12 +197,6 @@ const Namle = () => {
         
         setCountries(validCountries);
         
-        // Create options for autocomplete using the official countries
-        const options = officialCountries.map(countryName => ({
-          label: countryName,
-          value: countryName
-        }));
-        setCountryOptions(options);
       })
       .catch(error => {
         console.error('Error loading countries:', error);
@@ -243,46 +258,70 @@ const Namle = () => {
 
   const handleGuess = () => {
     if (!inputValue.trim()) return;
-    
-    // Check if the input matches any official country name
-    const validCountry = officialCountries.some(countryName => 
-      countryName.toLowerCase() === inputValue.trim().toLowerCase()
-    );
-    
-    // Also check if the input matches any reverse mapping (user-friendly name to official name)
-    const reverseMappingMatch = Object.entries(reverseCountryNameMapping).find(([userFriendly, official]) => 
-      userFriendly.toLowerCase() === inputValue.trim().toLowerCase()
-    );
-    
-    // Check if the input matches any user-friendly mapping
-    const userFriendlyMatch = Object.entries(userFriendlyMappings).find(([userFriendly, official]) => 
-      userFriendly.toLowerCase() === inputValue.trim().toLowerCase()
-    );
-    
-    if (!validCountry && !reverseMappingMatch && !userFriendlyMatch) {
-      setInputError('Invalid country name. Please select a valid country.');
+    const guess = inputValue.trim().toLowerCase();
+
+    // Build all possible country names (official + user-friendly)
+    const allNames = [
+      ...officialCountries,
+      ...Object.keys(userFriendlyMappings),
+      ...Object.values(userFriendlyMappings),
+      ...Object.keys(reverseCountryNameMapping),
+      ...Object.values(reverseCountryNameMapping)
+    ];
+
+    // 1. Check for exact (case-insensitive) match
+    const exactMatches = allNames.filter(name => name.toLowerCase() === guess);
+    if (exactMatches.length === 1) {
+      let normalized = exactMatches[0];
+      if (userFriendlyMappings[normalized]) normalized = userFriendlyMappings[normalized];
+      if (reverseCountryNameMapping[normalized]) normalized = normalized;
+      if (namedCountries.has(normalized)) {
+        setInputError('You already named this country. Try a different one.');
+        return;
+      }
+      setNamedCountries(prev => new Set([...prev, normalized]));
+      setInputValue('');
+      setInputError('');
+      showSuccessAnimation();
+      if (namedCountries.size + 1 >= totalCountries) finishGame();
       return;
-    } else if (namedCountries.has(inputValue.trim()) || 
-               (reverseMappingMatch && namedCountries.has(reverseMappingMatch[1])) ||
-               (userFriendlyMatch && namedCountries.has(userFriendlyMatch[1]))) {
+    }
+    // 2. If multiple exact matches (ambiguous, e.g. 'congo'), prompt for specificity
+    if (exactMatches.length > 1) {
+      setInputError('Please be more specific (e.g., "Congo, Dem. Rep." or "Congo, Rep.")');
+      return;
+    }
+    // 3. For short inputs, do not allow typo-tolerance
+    if (guess.length <= 5) {
+      setInputError('Invalid country name. Please enter a valid country.');
+      return;
+    }
+    // 4. Typo-tolerant matching for longer inputs
+    let bestMatch = null;
+    let bestDistance = Infinity;
+    for (const name of allNames) {
+      const dist = levenshtein(guess, name.toLowerCase());
+      if (dist < bestDistance) {
+        bestDistance = dist;
+        bestMatch = name;
+      }
+    }
+    if (bestDistance > 2) {
+      setInputError('Invalid country name. Please enter a valid country.');
+      return;
+    }
+    let normalized = bestMatch;
+    if (userFriendlyMappings[bestMatch]) normalized = userFriendlyMappings[bestMatch];
+    if (reverseCountryNameMapping[bestMatch]) normalized = bestMatch;
+    if (namedCountries.has(normalized)) {
       setInputError('You already named this country. Try a different one.');
       return;
-    } else {
-      setInputError('');
     }
-
-    // Use the official country name for progress tracking
-    const countryName = reverseMappingMatch ? reverseMappingMatch[1] : 
-                       userFriendlyMatch ? userFriendlyMatch[1] : 
-                       inputValue.trim();
-    
-    setNamedCountries(prev => new Set([...prev, countryName]));
+    setNamedCountries(prev => new Set([...prev, normalized]));
     setInputValue('');
-
-    // Check if all countries are named
-    if (namedCountries.size + 1 >= totalCountries) {
-      finishGame();
-    }
+    setInputError('');
+    showSuccessAnimation();
+    if (namedCountries.size + 1 >= totalCountries) finishGame();
   };
 
   const isCountryOrTerritoryNamed = (countryName) => {
@@ -631,148 +670,41 @@ const Namle = () => {
             <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.75rem' }}>
               Name a Country
             </Typography>
-            <Autocomplete
-              freeSolo={false}
-              disableClearable
-              options={inputValue.length > 0 ? countryOptions : []}
-              getOptionLabel={option => typeof option === 'string' ? option : option.label}
+            <TextField
+              placeholder="Type country name"
+              size="small"
+              variant="outlined"
               value={inputValue}
-              inputValue={inputValue}
-              onInputChange={(event, newInputValue, reason) => {
-                setInputValue(newInputValue);
+              onChange={(e) => {
+                setInputValue(e.target.value);
                 setInputError('');
               }}
-              onChange={(event, newValue, reason) => {
-                if (reason === 'selectOption') {
-                  // User selected an option from dropdown
-                  if (newValue && newValue.label) {
-                    const countryName = newValue.label;
-                    setInputValue(countryName);
-                    // Use setTimeout to ensure inputValue is updated before calling handleGuess
-                    setTimeout(() => {
-                      // Check if this country is already named
-                      const isAlreadyNamed = namedCountries.has(countryName) ||
-                        Object.entries(userFriendlyMappings).some(([userFriendly, official]) => 
-                          official === countryName && namedCountries.has(userFriendly)
-                        );
-                      
-                      if (isAlreadyNamed) {
-                        setInputError('You already named this country. Try a different one.');
-                      } else {
-                        // Process the guess with the selected country name
-                        const validCountry = officialCountries.some(country => 
-                          country.toLowerCase() === countryName.toLowerCase()
-                        );
-                        
-                        const userFriendlyMatch = Object.entries(userFriendlyMappings).find(([userFriendly, official]) => 
-                          userFriendly.toLowerCase() === countryName.toLowerCase()
-                        );
-                        
-                        if (validCountry || userFriendlyMatch) {
-                          const finalCountryName = userFriendlyMatch ? userFriendlyMatch[1] : countryName;
-                          setNamedCountries(prev => new Set([...prev, finalCountryName]));
-                          setInputValue('');
-                          setInputError('');
-                          showSuccessAnimation(); // Trigger success animation
-                          
-                          // Check if all countries are named
-                          if (namedCountries.size + 1 >= totalCountries) {
-                            finishGame();
-                          }
-                        } else {
-                          setInputError('Invalid country name. Please select a valid country.');
-                        }
-                      }
-                    }, 0);
-                  }
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleGuess();
                 }
               }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Type country name"
-                  size="small"
-                  variant="outlined"
-                  sx={{ 
-                    bgcolor: 'white', 
-                    borderRadius: 1,
-                    '& .MuiOutlinedInput-root': {
-                      fontSize: '0.75rem',
-                      '& fieldset': {
-                        borderColor: inputError ? '#f44336' : 'rgba(255,255,255,0.3)',
-                      },
-                    }
-                  }}
-                  inputProps={{ 
-                    ...params.inputProps, 
-                    style: { fontSize: 12 }
-                  }}
-                  error={!!inputError}
-                  helperText={inputError}
-                />
-              )}
               sx={{ 
-                '& .MuiAutocomplete-input': {
-                  fontSize: '0.75rem'
-                },
-                '& .MuiAutocomplete-option': {
+                bgcolor: 'white', 
+                borderRadius: 1,
+                '& .MuiOutlinedInput-root': {
                   fontSize: '0.75rem',
-                  padding: '8px 12px'
+                  '& fieldset': {
+                    borderColor: inputError ? '#f44336' : 'rgba(255,255,255,0.3)',
+                  },
                 }
               }}
+              inputProps={{ 
+                style: { fontSize: 12 }
+              }}
+              error={!!inputError}
+              helperText={inputError}
             />
             <Button
               variant="contained"
               size="small"
-              onClick={() => {
-                // Only allow submission if a valid country is selected
-                const selectedCountry = countryOptions.find(option => 
-                  option.label.toLowerCase() === inputValue.toLowerCase()
-                );
-                
-                if (selectedCountry) {
-                  // Simulate selecting the option
-                  const event = { target: { value: selectedCountry } };
-                  const newValue = selectedCountry;
-                  const reason = 'selectOption';
-                  
-                  // Check if this country is already named
-                  const isAlreadyNamed = namedCountries.has(selectedCountry.label) ||
-                    Object.entries(userFriendlyMappings).some(([userFriendly, official]) => 
-                      official === selectedCountry.label && namedCountries.has(userFriendly)
-                    );
-                  
-                  if (isAlreadyNamed) {
-                    setInputError('You already named this country. Try a different one.');
-                  } else {
-                    // Process the guess with the selected country name
-                    const validCountry = officialCountries.some(country => 
-                      country.toLowerCase() === selectedCountry.label.toLowerCase()
-                    );
-                    
-                    const userFriendlyMatch = Object.entries(userFriendlyMappings).find(([userFriendly, official]) => 
-                      userFriendly.toLowerCase() === selectedCountry.label.toLowerCase()
-                    );
-                    
-                    if (validCountry || userFriendlyMatch) {
-                      const finalCountryName = userFriendlyMatch ? userFriendlyMatch[1] : selectedCountry.label;
-                      setNamedCountries(prev => new Set([...prev, finalCountryName]));
-                      setInputValue('');
-                      setInputError('');
-                      showSuccessAnimation(); // Trigger success animation
-                      
-                      // Check if all countries are named
-                      if (namedCountries.size + 1 >= totalCountries) {
-                        finishGame();
-                      }
-                    } else {
-                      setInputError('Invalid country name. Please select a valid country.');
-                    }
-                  }
-                } else {
-                  setInputError('Please select a country from the dropdown menu.');
-                }
-              }}
+              onClick={handleGuess}
               sx={{
                 background: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
                 color: 'white',
