@@ -123,7 +123,6 @@ const Header = forwardRef((props, ref) => {
   const mainMenuItems = [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
-    { path: '/educational-content', label: 'Learning Resources' },
     { path: '/badges', label: 'Badges' },
     { path: '/contact', label: 'Contact' },
     { path: '/online', label: 'Online', icon: <WifiIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
@@ -135,8 +134,15 @@ const Header = forwardRef((props, ref) => {
   ];
 
   const drawer = (
-    <Box sx={{ width: 250, bgcolor: '#121213', height: '100%' }}>
-      <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+    <Box sx={{ 
+      width: 250, 
+      bgcolor: '#121213', 
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
+      <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
         <Box
           sx={{
             color: 'white',
@@ -159,7 +165,7 @@ const Header = forwardRef((props, ref) => {
       
       {/* User section in mobile drawer */}
       {user ? (
-        <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar sx={{ bgcolor: '#43cea2', width: 40, height: 40 }}>
               <PersonIcon />
@@ -175,7 +181,7 @@ const Header = forwardRef((props, ref) => {
           </Box>
         </Box>
       ) : (
-        <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
           <Typography sx={{ color: 'white', fontSize: '0.9rem', mb: 1 }}>
             Welcome to Globle
           </Typography>
@@ -221,124 +227,142 @@ const Header = forwardRef((props, ref) => {
         </Box>
       )}
 
-      <List>
-        {mainMenuItems.map((item) => (
-          <ListItem 
-            key={item.label} 
-            component={item.isComingSoon ? 'div' : RouterLink} 
-            to={item.isComingSoon ? undefined : item.path}
-            onClick={item.isComingSoon ? () => {
-              item.action();
-              handleDrawerToggle();
-            } : handleDrawerToggle}
-            sx={{
-              color: item.isComingSoon ? '#ff9800' : 'white',
-              borderBottom: '1px solid rgba(255,255,255,0.05)',
-              backgroundColor: !item.isComingSoon && location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
-              '&:hover': {
-                backgroundColor: 'rgba(255,255,255,0.05)',
-              },
-              cursor: 'pointer',
-            }}
-          >
-            <ListItemText 
-              primary={item.label} 
+      <Box sx={{ 
+        flex: 1, 
+        overflow: 'auto',
+        '&::-webkit-scrollbar': {
+          width: '6px',
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'rgba(255,255,255,0.1)',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: 'rgba(255,255,255,0.3)',
+          borderRadius: '3px',
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+          background: 'rgba(255,255,255,0.5)',
+        }
+      }}>
+        <List>
+          {mainMenuItems.map((item) => (
+            <ListItem 
+              key={item.label} 
+              component={item.isComingSoon ? 'div' : RouterLink} 
+              to={item.isComingSoon ? undefined : item.path}
+              onClick={item.isComingSoon ? () => {
+                item.action();
+                handleDrawerToggle();
+              } : handleDrawerToggle}
               sx={{
-                '& .MuiListItemText-primary': {
-                  fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
-                  fontSize: '1.1rem',
-                  color: item.isComingSoon ? '#ff9800 !important' : 'white !important',
-                }
+                color: item.isComingSoon ? '#ff9800' : 'white',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                backgroundColor: !item.isComingSoon && location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                },
+                cursor: 'pointer',
               }}
-            />
-          </ListItem>
-        ))}
-        <ListItem 
-          sx={{
-            color: 'white',
-            borderBottom: '1px solid rgba(255,255,255,0.05)',
-            backgroundColor: games.some(game => location.pathname === game.path) ? 'rgba(255,255,255,0.1)' : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(255,255,255,0.05)',
-            }
-          }}
-        >
-          <ListItemText 
-            primary="Games" 
-            sx={{
-              '& .MuiListItemText-primary': {
-                fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
-                fontSize: '1.1rem',
-                color: 'white !important'
-              }
-            }}
-          />
-        </ListItem>
-        {games.map((game) => (
+            >
+              <ListItemText 
+                primary={item.label} 
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
+                    fontSize: '1.1rem',
+                    color: item.isComingSoon ? '#ff9800 !important' : 'white !important',
+                  }
+                }}
+              />
+            </ListItem>
+          ))}
           <ListItem 
-            key={game.path} 
-            component={RouterLink} 
-            to={game.path}
-            onClick={handleDrawerToggle}
             sx={{
               color: 'white',
               borderBottom: '1px solid rgba(255,255,255,0.05)',
-              backgroundColor: location.pathname === game.path ? 'rgba(255,255,255,0.1)' : 'transparent',
-              pl: 4,
+              backgroundColor: games.some(game => location.pathname === game.path) ? 'rgba(255,255,255,0.1)' : 'transparent',
               '&:hover': {
                 backgroundColor: 'rgba(255,255,255,0.05)',
               }
             }}
           >
-            <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
-              {game.icon}
-            </ListItemIcon>
             <ListItemText 
-              primary={game.label} 
+              primary="Games" 
               sx={{
                 '& .MuiListItemText-primary': {
-                  fontWeight: location.pathname === game.path ? 'bold' : 'normal',
-                  fontSize: '1rem',
+                  fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
+                  fontSize: '1.1rem',
                   color: 'white !important'
                 }
               }}
             />
           </ListItem>
-        ))}
-        
-        {/* Logout option in mobile drawer */}
-        {user && (
-          <>
-            <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 1 }} />
+          {games.map((game) => (
             <ListItem 
-              onClick={() => {
-                handleLogout();
-                handleDrawerToggle();
-              }}
+              key={game.path} 
+              component={RouterLink} 
+              to={game.path}
+              onClick={handleDrawerToggle}
               sx={{
                 color: 'white',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
+                backgroundColor: location.pathname === game.path ? 'rgba(255,255,255,0.1)' : 'transparent',
+                pl: 4,
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.05)',
                 }
               }}
             >
               <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
-                <LogoutIcon />
+                {game.icon}
               </ListItemIcon>
               <ListItemText 
-                primary="Logout" 
+                primary={game.label} 
                 sx={{
                   '& .MuiListItemText-primary': {
-                    fontSize: '1.1rem',
+                    fontWeight: location.pathname === game.path ? 'bold' : 'normal',
+                    fontSize: '1rem',
                     color: 'white !important'
                   }
                 }}
               />
             </ListItem>
-          </>
-        )}
-      </List>
+          ))}
+          
+          {/* Logout option in mobile drawer */}
+          {user && (
+            <>
+              <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 1 }} />
+              <ListItem 
+                onClick={() => {
+                  handleLogout();
+                  handleDrawerToggle();
+                }}
+                sx={{
+                  color: 'white',
+                  borderBottom: '1px solid rgba(255,255,255,0.05)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Logout" 
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      fontSize: '1.1rem',
+                      color: 'white !important'
+                    }
+                  }}
+                />
+              </ListItem>
+            </>
+          )}
+        </List>
+      </Box>
     </Box>
   );
 
@@ -350,7 +374,8 @@ const Header = forwardRef((props, ref) => {
           bgcolor: '#121213', 
           zIndex: theme.zIndex.drawer + 1,
           backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)'
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: { xs: 0, md: '0 0 12px 12px' } // Rectangular on mobile, rounded on desktop
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 56, md: 64 } }}>
@@ -705,6 +730,9 @@ const Header = forwardRef((props, ref) => {
             boxSizing: 'border-box', 
             width: 250,
             bgcolor: '#121213',
+            borderRadius: 0, // No rounded corners anywhere
+            border: 'none',
+            boxShadow: 'none', // Remove default shadow for cleaner look
             '& .MuiListItemText-primary': {
               color: 'white !important',
             },
