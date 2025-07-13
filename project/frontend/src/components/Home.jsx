@@ -93,24 +93,24 @@ const Home = () => {
             mx: 'auto'
           }}>
             {/* Hero Section */}
-            <Fade in timeout={800}>
-              <Paper
-                elevation={8}
-                sx={{
+      <Fade in timeout={800}>
+        <Paper
+          elevation={8}
+          sx={{
                   mt: { xs: 1, md: 4 },
                   px: { xs: 3, md: 6 },
                   py: { xs: 4, md: 8 },
-                  borderRadius: 6,
-                  width: '100%',
-                  textAlign: 'center',
-                  background: 'rgba(30,34,44,0.98)',
-                  color: 'white',
-                  boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  minHeight: { xs: 'auto', md: '70vh' },
-                  justifyContent: 'space-between',
+            borderRadius: 6,
+            width: '100%',
+            textAlign: 'center',
+            background: 'rgba(30,34,44,0.98)',
+            color: 'white',
+            boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            minHeight: { xs: 'auto', md: '70vh' },
+            justifyContent: 'space-between',
                   position: 'relative',
                   overflow: 'hidden',
                   '&::before': {
@@ -123,20 +123,20 @@ const Home = () => {
                     background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(0,188,212,0.1) 100%)',
                     zIndex: 0,
                   }
-                }}
-              >
+          }}
+        >
                 <Box sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
-                  <Box
-                    sx={{
+          <Box
+            sx={{
                       width: { xs: 80, md: 120 },
                       height: { xs: 80, md: 120 },
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
                       margin: { xs: '0 auto 24px', md: '0 auto 40px' },
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
                       animation: 'pulse 2s infinite',
                       '@keyframes pulse': {
                         '0%': { transform: 'scale(1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)' },
@@ -144,81 +144,81 @@ const Home = () => {
                         '100%': { transform: 'scale(1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)' },
                       }
                     }}
-                  >
+          >
                     <PublicIcon sx={{ fontSize: { xs: 40, md: 60 }, color: 'white', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
-                  </Box>
-                  <Typography
+          </Box>
+          <Typography
                     variant={isMobile ? 'h4' : 'h2'}
-                    component="h1"
-                    sx={{
-                      fontWeight: 900,
-                      color: 'transparent',
-                      background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
+            component="h1"
+            sx={{
+              fontWeight: 900,
+              color: 'transparent',
+              background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
                       mb: { xs: 2, md: 3 },
-                      letterSpacing: 2,
-                      textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              letterSpacing: 2,
+              textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                       fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
-                    }}
-                  >
+            }}
+          >
                     Educational Geography Games
-                  </Typography>
-                  <Typography
-                    variant={isMobile ? 'h6' : 'h5'}
-                    sx={{
-                      color: '#b0c4de',
-                      fontWeight: 600,
+          </Typography>
+          <Typography
+            variant={isMobile ? 'h6' : 'h5'}
+            sx={{
+              color: '#b0c4de',
+              fontWeight: 600,
                       mb: 6,
-                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                       maxWidth: 700,
                       mx: 'auto',
                       lineHeight: 1.6
-                    }}
-                  >
+            }}
+          >
                     Interactive learning experiences designed to enhance your geographical knowledge through engaging gameplay and educational content.
-                  </Typography>
-                        
+          </Typography>
+                
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, alignItems: 'center', justifyContent: 'center', mb: 4 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="large"
-                      sx={{
-                        fontWeight: 700,
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            sx={{
+              fontWeight: 700,
                         fontSize: { xs: 18, md: 22 },
-                        borderRadius: 3,
+              borderRadius: 3,
                         px: { xs: 4, md: 6 },
                         py: { xs: 1.5, md: 2 },
-                        boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
-                        background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
-                        textTransform: 'none',
+              boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
+              background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
+              textTransform: 'none',
                         '&:hover': {
                           transform: 'translateY(-2px)',
                           boxShadow: '0 8px 32px rgba(25, 118, 210, 0.6)',
                         }
-                      }}
-                      onClick={handleExploreClick}
+            }}
+            onClick={handleExploreClick}
                       startIcon={<ExploreIcon />}
-                    >
+          >
                       Explore Games
-                    </Button>
-                    <Button
+          </Button>
+                  <Button
                       component={RouterLink}
                       to="/educational-content"
-                      variant="outlined"
-                      size="large"
-                      sx={{
+                    variant="outlined"
+                    size="large"
+                    sx={{
                         fontWeight: 600,
                         fontSize: { xs: 16, md: 20 },
-                        borderRadius: 3,
+                      borderRadius: 3,
                         px: { xs: 3, md: 5 },
                         py: { xs: 1.5, md: 2 },
                         borderWidth: 2,
                         borderColor: 'rgba(255,255,255,0.3)',
                         color: 'white',
-                        textTransform: 'none',
-                        '&:hover': {
+                      textTransform: 'none',
+                      '&:hover': {
                           borderColor: 'white',
                           backgroundColor: 'rgba(255,255,255,0.1)',
                           transform: 'translateY(-2px)',
@@ -227,9 +227,9 @@ const Home = () => {
                       startIcon={<SchoolIcon />}
                     >
                       Learning Resources
-                    </Button>
-                  </Box>
-                </Box>
+                </Button>
+              </Box>
+            </Box>
               </Paper>
             </Fade>
           </Box>
@@ -270,21 +270,21 @@ const Home = () => {
           py: 2
         }}>
           {/* Mobile Hero Section */}
-          <Fade in timeout={800}>
-            <Paper
-              elevation={8}
-              sx={{
+        <Fade in timeout={800}>
+          <Paper
+            elevation={8}
+            sx={{
                 px: 3,
                 py: 4,
                 borderRadius: 4,
-                width: '100%',
-                textAlign: 'center',
-                background: 'rgba(30,34,44,0.98)',
-                color: 'white',
-                boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+              width: '100%',
+              textAlign: 'center',
+              background: 'rgba(30,34,44,0.98)',
+              color: 'white',
+              boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
                 position: 'relative',
                 overflow: 'hidden',
                 '&::before': {
@@ -297,20 +297,20 @@ const Home = () => {
                   background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(0,188,212,0.1) 100%)',
                   zIndex: 0,
                 }
-              }}
-            >
+            }}
+          >
               <Box sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
-                <Box
-                  sx={{
+            <Box
+              sx={{
                     width: 80,
                     height: 80,
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                     margin: '0 auto 24px',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
                     animation: 'pulse 2s infinite',
                     '@keyframes pulse': {
                       '0%': { transform: 'scale(1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)' },
@@ -318,108 +318,108 @@ const Home = () => {
                       '100%': { transform: 'scale(1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)' },
                     }
                   }}
-                >
+            >
                   <PublicIcon sx={{ fontSize: 40, color: 'white', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
-                </Box>
-                <Typography
+            </Box>
+            <Typography
                   variant="h4"
-                  component="h1"
-                  sx={{
-                    fontWeight: 900,
-                    color: 'transparent',
-                    background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
+              component="h1"
+              sx={{
+                fontWeight: 900,
+                color: 'transparent',
+                background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
                     mb: 2,
-                    letterSpacing: 2,
-                    textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                letterSpacing: 2,
+                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                     fontSize: '1.5rem',
-                  }}
-                >
+              }}
+            >
                   Educational Geography Games
-                </Typography>
-                <Typography
+            </Typography>
+            <Typography
                   variant="h6"
-                  sx={{
-                    color: '#b0c4de',
-                    fontWeight: 600,
-                    mb: 4,
-                    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+              sx={{
+                color: '#b0c4de',
+                fontWeight: 600,
+                mb: 4,
+                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                     lineHeight: 1.6
-                  }}
-                >
+              }}
+            >
                   Interactive learning experiences designed to enhance your geographical knowledge through engaging gameplay and educational content.
-                </Typography>
-                      
+            </Typography>
+            
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', justifyContent: 'center' }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    sx={{
-                      fontWeight: 700,
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                sx={{
+                  fontWeight: 700,
                       fontSize: 18,
-                      borderRadius: 3,
+                  borderRadius: 3,
                       px: 4,
                       py: 1.5,
-                      boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
-                      background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
-                      textTransform: 'none',
+                  boxShadow: '0 4px 20px rgba(25, 118, 210, 0.4)',
+                  background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)',
+                  textTransform: 'none',
                       '&:hover': {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 8px 32px rgba(25, 118, 210, 0.6)',
                       }
-                    }}
-                    onClick={handleExploreClick}
+                }}
+                onClick={handleExploreClick}
                     startIcon={<ExploreIcon />}
-                  >
+              >
                     Explore Games
-                  </Button>
-                  <Button
+              </Button>
+              <Button
                     component={RouterLink}
                     to="/educational-content"
-                    variant="outlined"
-                    size="large"
-                    sx={{
+                variant="outlined"
+                size="large"
+                sx={{
                       fontWeight: 600,
                       fontSize: 16,
-                      borderRadius: 3,
+                  borderRadius: 3,
                       px: 3,
                       py: 1.5,
                       borderWidth: 2,
                       borderColor: 'rgba(255,255,255,0.3)',
                       color: 'white',
-                      textTransform: 'none',
-                      '&:hover': {
+                  textTransform: 'none',
+                  '&:hover': {
                         borderColor: 'white',
                         backgroundColor: 'rgba(255,255,255,0.1)',
                         transform: 'translateY(-2px)',
-                      }
-                    }}
+                  }
+                }}
                     startIcon={<SchoolIcon />}
                   >
                     Learning Resources
-                  </Button>
-                </Box>
+              </Button>
+            </Box>
               </Box>
             </Paper>
           </Fade>
 
           {/* Mobile Bottom Ad */}
           <Box sx={{ mt: 3 }}>
-            <SmartAdComponent
+              <SmartAdComponent
               adSlot="mobile-bottom"
               adType="banner"
               adFormat="horizontal"
-              responsive={true}
-              style={{
-                width: '100%',
-                minHeight: '100px',
+                responsive={true}
+                style={{
+                  width: '100%',
+                  minHeight: '100px',
                 borderRadius: '8px',
                 overflow: 'hidden'
-              }}
-            />
-          </Box>
+                }}
+              />
+            </Box>
         </Box>
       )}
       

@@ -5,7 +5,7 @@ const NotificationModal = ({ open, onClose, title, description, buttonText = 'Re
   <Dialog open={open} disableEscapeKeyDown disableBackdropClick>
     <DialogTitle sx={{ fontWeight: 800, fontSize: 28, color, textAlign: 'center' }}>{title}</DialogTitle>
     <DialogContent>
-      <Typography sx={{ mb: 2, color: '#333', fontSize: 18, textAlign: 'center' }}>
+      <Typography sx={{ mb: 2, color: 'yellow', fontSize: 18, textAlign: 'center' }}>
         {description}
       </Typography>
     </DialogContent>
