@@ -58,7 +58,7 @@ const Header = forwardRef((props, ref) => {
     
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));
+      setUser(JSON.parse(userData));
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('user');
@@ -239,126 +239,126 @@ const Header = forwardRef((props, ref) => {
           background: 'rgba(255,255,255,0.5)',
         }
       }}>
-        <List>
-          {mainMenuItems.map((item) => (
+      <List>
+        {mainMenuItems.map((item) => (
             <MemoizedListItem 
-              key={item.label} 
+            key={item.label} 
               component={RouterLink} 
               to={item.path}
               onClick={handleDrawerToggle}
-              sx={{
+            sx={{
                 color: 'white',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
+              borderBottom: '1px solid rgba(255,255,255,0.05)',
                 backgroundColor: location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
-                '&:hover': {
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                },
-                cursor: 'pointer',
-              }}
-            >
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.05)',
+              },
+              cursor: 'pointer',
+            }}
+          >
               {item.icon && (
                 <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
                   {item.icon}
                 </ListItemIcon>
               )}
-              <ListItemText 
-                primary={item.label} 
-                sx={{
-                  '& .MuiListItemText-primary': {
+            <ListItemText 
+              primary={item.label} 
+              sx={{
+                '& .MuiListItemText-primary': {
                     fontWeight: location.pathname === item.path ? 'bold' : 'normal',
-                    fontSize: '1.1rem',
+                  fontSize: '1.1rem',
                     color: 'white !important',
-                  }
-                }}
-              />
+                }
+              }}
+            />
             </MemoizedListItem>
-          ))}
+        ))}
           <MemoizedListItem 
+          sx={{
+            color: 'white',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            backgroundColor: games.some(game => location.pathname === game.path) ? 'rgba(255,255,255,0.1)' : 'transparent',
+            '&:hover': {
+              backgroundColor: 'rgba(255,255,255,0.05)',
+            }
+          }}
+        >
+          <ListItemText 
+            primary="Games" 
+            sx={{
+              '& .MuiListItemText-primary': {
+                fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
+                fontSize: '1.1rem',
+                  color: 'white !important'
+              }
+            }}
+          />
+          </MemoizedListItem>
+        {games.map((game) => (
+            <MemoizedListItem 
+            key={game.path} 
+            component={RouterLink} 
+            to={game.path}
+            onClick={handleDrawerToggle}
             sx={{
               color: 'white',
               borderBottom: '1px solid rgba(255,255,255,0.05)',
-              backgroundColor: games.some(game => location.pathname === game.path) ? 'rgba(255,255,255,0.1)' : 'transparent',
+              backgroundColor: location.pathname === game.path ? 'rgba(255,255,255,0.1)' : 'transparent',
+              pl: 4,
               '&:hover': {
                 backgroundColor: 'rgba(255,255,255,0.05)',
               }
             }}
           >
+            <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+              {game.icon}
+            </ListItemIcon>
             <ListItemText 
-              primary="Games" 
+              primary={game.label} 
               sx={{
                 '& .MuiListItemText-primary': {
-                  fontWeight: games.some(game => location.pathname === game.path) ? 'bold' : 'normal',
-                  fontSize: '1.1rem',
-                  color: 'white !important'
+                  fontWeight: location.pathname === game.path ? 'bold' : 'normal',
+                    fontSize: '1rem',
+                    color: 'white !important'
                 }
               }}
             />
-          </MemoizedListItem>
-          {games.map((game) => (
-            <MemoizedListItem 
-              key={game.path} 
-              component={RouterLink} 
-              to={game.path}
-              onClick={handleDrawerToggle}
+            </MemoizedListItem>
+        ))}
+        
+        {/* Logout option in mobile drawer */}
+        {user && (
+          <>
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 1 }} />
+              <MemoizedListItem 
+              onClick={() => {
+                handleLogout();
+                handleDrawerToggle();
+              }}
               sx={{
                 color: 'white',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
-                backgroundColor: location.pathname === game.path ? 'rgba(255,255,255,0.1)' : 'transparent',
-                pl: 4,
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.05)',
                 }
               }}
             >
               <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
-                {game.icon}
+                <LogoutIcon />
               </ListItemIcon>
               <ListItemText 
-                primary={game.label} 
+                primary="Logout" 
                 sx={{
                   '& .MuiListItemText-primary': {
-                    fontWeight: location.pathname === game.path ? 'bold' : 'normal',
-                    fontSize: '1rem',
-                    color: 'white !important'
+                      fontSize: '1.1rem',
+                      color: 'white !important'
                   }
                 }}
               />
-            </MemoizedListItem>
-          ))}
-          
-          {/* Logout option in mobile drawer */}
-          {user && (
-            <>
-              <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 1 }} />
-              <MemoizedListItem 
-                onClick={() => {
-                  handleLogout();
-                  handleDrawerToggle();
-                }}
-                sx={{
-                  color: 'white',
-                  borderBottom: '1px solid rgba(255,255,255,0.05)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.05)',
-                  }
-                }}
-              >
-                <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
-                  <LogoutIcon />
-                </ListItemIcon>
-                <ListItemText 
-                  primary="Logout" 
-                  sx={{
-                    '& .MuiListItemText-primary': {
-                      fontSize: '1.1rem',
-                      color: 'white !important'
-                    }
-                  }}
-                />
               </MemoizedListItem>
-            </>
-          )}
-        </List>
+          </>
+        )}
+      </List>
       </Box>
     </Box>
   );

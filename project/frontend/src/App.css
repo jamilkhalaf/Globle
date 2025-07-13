@@ -92,7 +92,7 @@ img, video, canvas, audio, iframe, embed, object {
   .leaflet-container {
     touch-action: pan-x pan-y !important;
     -webkit-overflow-scrolling: touch !important;
-  }
+}
 
   /* Optimize touch interactions */
   .leaflet-interactive {

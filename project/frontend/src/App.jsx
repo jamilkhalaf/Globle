@@ -46,7 +46,7 @@ const theme = createTheme({
     background: {
       default: '#121213',
       paper: 'rgba(30,34,44,0.95)',
-    },
+  },
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
@@ -135,7 +135,7 @@ function App() {
     return (
       <ThemeProvider theme={theme}>
         <Suspense fallback={<LoadingFallback />}>
-          <Maintenance />
+        <Maintenance />
         </Suspense>
       </ThemeProvider>
     );
@@ -145,28 +145,28 @@ function App() {
     <ThemeProvider theme={theme}>
       <Router>
         <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/badges" element={<Badges />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/badges" element={<Badges />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
             <Route path="/online" element={<Online />} />
             <Route path="/educational-content" element={<EducationalContent />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/game" element={<Game />} />
-            <Route path="/population" element={<Population />} />
-            <Route path="/name" element={<Name />} />
-            <Route path="/flagle" element={<Flagle />} />
-            <Route path="/worldle" element={<Worldle />} />
-            <Route path="/capitals" element={<Capitals />} />
-            <Route path="/hangman" element={<Hangman />} />
-            <Route path="/shaple" element={<Shaple />} />
-            <Route path="/us" element={<US />} />
-            <Route path="/namle" element={<Namle />} />
+          <Route path="/game" element={<Game />} />
+          <Route path="/population" element={<Population />} />
+          <Route path="/name" element={<Name />} />
+          <Route path="/flagle" element={<Flagle />} />
+          <Route path="/worldle" element={<Worldle />} />
+          <Route path="/capitals" element={<Capitals />} />
+          <Route path="/hangman" element={<Hangman />} />
+          <Route path="/shaple" element={<Shaple />} />
+          <Route path="/us" element={<US />} />
+          <Route path="/namle" element={<Namle />} />
             <Route path="/satle" element={<Satle />} />
-          </Routes>
+        </Routes>
         </Suspense>
       </Router>
     </ThemeProvider>
