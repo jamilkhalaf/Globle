@@ -224,10 +224,8 @@ const Contact = () => {
                 variant="contained"
                 color="primary"
                 size="small"
-                component="a"
-                href="https://jamilweb.click"
-                target="_blank"
-                rel="noopener noreferrer"
+                component={RouterLink}
+                to="/about"
                 sx={{
                   fontWeight: 700,
                   borderRadius: 1.5,
