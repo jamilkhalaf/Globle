@@ -34,7 +34,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import MapIcon from '@mui/icons-material/Map';
 import WifiIcon from '@mui/icons-material/Wifi';
-import ComingSoon from './ComingSoon';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
 
 // Memoized components for better performance
 const MemoizedListItem = memo(ListItem);
@@ -50,8 +50,6 @@ const Header = forwardRef((props, ref) => {
   const [gamesAnchorEl, setGamesAnchorEl] = useState(null);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
   const [user, setUser] = useState(null);
-  const [comingSoonOpen, setComingSoonOpen] = useState(false);
-  const [comingSoonFeature, setComingSoonFeature] = useState('New Feature');
 
   // Memoize user data to prevent unnecessary re-renders
   useEffect(() => {
@@ -96,11 +94,6 @@ const Header = forwardRef((props, ref) => {
     navigate('/');
   }, [navigate]);
 
-  const handleComingSoon = useCallback((feature = 'New Feature') => {
-    setComingSoonFeature(feature);
-    setComingSoonOpen(true);
-  }, []);
-
   // Expose functions to parent component
   useImperativeHandle(ref, () => ({
     openGamesMenu: () => {
@@ -132,12 +125,8 @@ const Header = forwardRef((props, ref) => {
     { path: '/badges', label: 'Badges' },
     { path: '/contact', label: 'Contact' },
     { path: '/online', label: 'Online', icon: <WifiIcon sx={{ fontSize: 20, color: '#43cea2' }} /> },
-    { 
-      label: 'Coming Soon', 
-      action: () => handleComingSoon('1v1 Multiplayer & Leaderboards'),
-      isComingSoon: true 
-    },
-  ], [handleComingSoon]);
+    { path: '/educational-content', label: 'Learning Outcomes', icon: <LightbulbIcon sx={{ fontSize: 20, color: '#ff9800' }} /> },
+  ], []);
 
   const drawer = (
     <Box sx={{ 
@@ -254,29 +243,31 @@ const Header = forwardRef((props, ref) => {
           {mainMenuItems.map((item) => (
             <MemoizedListItem 
               key={item.label} 
-              component={item.isComingSoon ? 'div' : RouterLink} 
-              to={item.isComingSoon ? undefined : item.path}
-              onClick={item.isComingSoon ? () => {
-                item.action();
-                handleDrawerToggle();
-              } : handleDrawerToggle}
+              component={RouterLink} 
+              to={item.path}
+              onClick={handleDrawerToggle}
               sx={{
-                color: item.isComingSoon ? '#ff9800' : 'white',
+                color: 'white',
                 borderBottom: '1px solid rgba(255,255,255,0.05)',
-                backgroundColor: !item.isComingSoon && location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
+                backgroundColor: location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
                 '&:hover': {
                   backgroundColor: 'rgba(255,255,255,0.05)',
                 },
                 cursor: 'pointer',
               }}
             >
+              {item.icon && (
+                <ListItemIcon sx={{ color: 'white', minWidth: 36 }}>
+                  {item.icon}
+                </ListItemIcon>
+              )}
               <ListItemText 
                 primary={item.label} 
                 sx={{
                   '& .MuiListItemText-primary': {
-                    fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
+                    fontWeight: location.pathname === item.path ? 'bold' : 'normal',
                     fontSize: '1.1rem',
-                    color: item.isComingSoon ? '#ff9800 !important' : 'white !important',
+                    color: 'white !important',
                   }
                 }}
               />
@@ -433,13 +424,12 @@ const Header = forwardRef((props, ref) => {
                 <MemoizedButton 
                   key={item.label}
                   color="inherit" 
-                  component={item.isComingSoon ? 'button' : RouterLink} 
-                  to={item.isComingSoon ? undefined : item.path}
-                  onClick={item.isComingSoon ? item.action : undefined}
+                  component={RouterLink} 
+                  to={item.path}
                   sx={{ 
-                    color: item.isComingSoon ? '#ff9800' : 'white',
-                    fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
-                    borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
+                    color: 'white',
+                    fontWeight: location.pathname === item.path ? 'bold' : 'normal',
+                    borderBottom: location.pathname === item.path ? '2px solid white' : 'none',
                     fontSize: { xs: '0.8rem', md: '0.9rem', lg: '1rem' },
                     px: { xs: 1, md: 1.5, lg: 2 },
                     py: { xs: 0.5, md: 0.75, lg: 1 },
@@ -448,7 +438,7 @@ const Header = forwardRef((props, ref) => {
                     letterSpacing: 0.5,
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      color: item.isComingSoon ? '#f57c00' : 'white',
+                      color: 'white',
                       backgroundColor: 'rgba(255,255,255,0.08)',
                       transform: 'translateY(-1px)',
                     }
@@ -467,7 +457,7 @@ const Header = forwardRef((props, ref) => {
                 mx: { xs: 0.5, md: 1 }
               }} />
 
-              {/* Online and Coming Soon */}
+              {/* Online and Learning Outcomes */}
               <Box sx={{ 
                 display: 'flex', 
                 gap: { xs: 1, md: 2 }, 
@@ -477,14 +467,13 @@ const Header = forwardRef((props, ref) => {
                   <MemoizedButton 
                     key={item.label}
                     color="inherit" 
-                    component={item.isComingSoon ? 'button' : RouterLink} 
-                    to={item.isComingSoon ? undefined : item.path}
-                    onClick={item.isComingSoon ? item.action : undefined}
+                    component={RouterLink} 
+                    to={item.path}
                     startIcon={item.icon}
                     sx={{ 
-                      color: item.isComingSoon ? '#ff9800' : 'white',
-                      fontWeight: !item.isComingSoon && location.pathname === item.path ? 'bold' : 'normal',
-                      borderBottom: !item.isComingSoon && location.pathname === item.path ? '2px solid white' : 'none',
+                      color: 'white',
+                      fontWeight: location.pathname === item.path ? 'bold' : 'normal',
+                      borderBottom: location.pathname === item.path ? '2px solid white' : 'none',
                       fontSize: { xs: '0.8rem', md: '0.9rem', lg: '1rem' },
                       px: { xs: 1, md: 1.5, lg: 2 },
                       py: { xs: 0.5, md: 0.75, lg: 1 },
@@ -492,16 +481,16 @@ const Header = forwardRef((props, ref) => {
                       textTransform: 'none',
                       letterSpacing: 0.5,
                       transition: 'all 0.2s ease',
-                    '&:hover': {
-                      color: item.isComingSoon ? '#f57c00' : 'white',
+                      '&:hover': {
+                        color: 'white',
                         backgroundColor: 'rgba(255,255,255,0.08)',
                         transform: 'translateY(-1px)',
-                    }
-                  }}
-                >
-                  {item.label}
-                </MemoizedButton>
-              ))}
+                      }
+                    }}
+                  >
+                    {item.label}
+                  </MemoizedButton>
+                ))}
               </Box>
 
               {/* Separator */}
@@ -753,13 +742,6 @@ const Header = forwardRef((props, ref) => {
       >
         {drawer}
       </Drawer>
-
-      {/* Coming Soon Dialog */}
-      <ComingSoon 
-        open={comingSoonOpen}
-        onClose={() => setComingSoonOpen(false)}
-        feature={comingSoonFeature}
-      />
     </>
   );
 });

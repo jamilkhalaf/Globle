@@ -1207,19 +1207,136 @@ const Online = () => {
 
         {/* Login Required Alert */}
         {!localStorage.getItem('token') && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-              You need to be logged in to play online games.
-            </Typography>
-            <Button 
-              variant="contained" 
-              size="small" 
-              onClick={() => window.location.href = '/login'}
-              sx={{ bgcolor: '#43cea2' }}
+          <Box
+            sx={{
+              background: 'linear-gradient(135deg, rgba(67, 206, 162, 0.1) 0%, rgba(67, 206, 162, 0.05) 100%)',
+              border: '2px solid rgba(67, 206, 162, 0.3)',
+              borderRadius: 3,
+              p: 3,
+              mb: 3,
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '3px',
+                background: 'linear-gradient(90deg, #43cea2, #185a9d)',
+              }
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              <Box
+                sx={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #43cea2, #185a9d)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mb: 2,
+                  boxShadow: '0 4px 20px rgba(67, 206, 162, 0.3)',
+                }}
+              >
+                <WifiIcon sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+            </Box>
+            
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                color: 'white', 
+                fontWeight: 700, 
+                mb: 1,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}
             >
-              Go to Login
-            </Button>
-          </Alert>
+              🎮 Online Gaming Access
+            </Typography>
+            
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.9)', 
+                mb: 3,
+                fontSize: '1.1rem',
+                lineHeight: 1.6,
+                maxWidth: 500,
+                mx: 'auto'
+              }}
+            >
+              Join the competitive world of online geography games! 
+              <br />
+              <strong>Login required</strong> to access multiplayer features, leaderboards, and real-time competitions.
+            </Typography>
+            
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button 
+                variant="contained" 
+                size="large"
+                onClick={() => window.location.href = '/login'}
+                sx={{ 
+                  background: 'linear-gradient(135deg, #43cea2, #185a9d)',
+                  color: 'white',
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 3,
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textTransform: 'none',
+                  boxShadow: '0 4px 15px rgba(67, 206, 162, 0.4)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #3bb08f, #134a7d)',
+                    boxShadow: '0 6px 20px rgba(67, 206, 162, 0.5)',
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                🔐 Login Now
+              </Button>
+              
+              <Button 
+                variant="outlined" 
+                size="large"
+                onClick={() => window.location.href = '/signup'}
+                sx={{ 
+                  borderColor: 'rgba(67, 206, 162, 0.5)',
+                  color: '#43cea2',
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 3,
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  textTransform: 'none',
+                  borderWidth: 2,
+                  '&:hover': {
+                    borderColor: '#43cea2',
+                    backgroundColor: 'rgba(67, 206, 162, 0.1)',
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                ✨ Create Account
+              </Button>
+            </Box>
+            
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.6)', 
+                mt: 2,
+                fontSize: '0.9rem'
+              }}
+            >
+              🏆 Compete with players worldwide • 📊 Track your progress • 🎯 Climb the leaderboards
+            </Typography>
+          </Box>
         )}
 
         {/* Error Alert */}
