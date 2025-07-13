@@ -35,8 +35,8 @@ export default defineConfig({
     sourcemap: false,
     // Reduce unused code
     reportCompressedSize: false,
-    // Optimize CSS
-    cssCodeSplit: true,
+    // Optimize CSS - ensure consistent processing
+    cssCodeSplit: false, // Disable CSS code splitting to prevent conflicts
     // Optimize assets
     assetsInlineLimit: 4096,
   },
@@ -63,5 +63,16 @@ export default defineConfig({
   // Define global constants
   define: {
     __DEV__: false,
+  },
+  // CSS processing options
+  css: {
+    // Ensure consistent CSS processing
+    postcss: {
+      plugins: [
+        // Add any PostCSS plugins if needed
+      ],
+    },
+    // Disable CSS modules to prevent conflicts
+    modules: false,
   },
 })

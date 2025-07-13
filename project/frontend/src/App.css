@@ -1,3 +1,16 @@
+/* Essential reset styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
 /* Optimized CSS for better mobile performance and Core Web Vitals */
 
 /* Critical CSS - Load first */
@@ -92,7 +105,7 @@ img, video, canvas, audio, iframe, embed, object {
   .leaflet-container {
     touch-action: pan-x pan-y !important;
     -webkit-overflow-scrolling: touch !important;
-}
+  }
 
   /* Optimize touch interactions */
   .leaflet-interactive {
