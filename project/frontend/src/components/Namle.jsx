@@ -134,7 +134,6 @@ const Namle = () => {
 
   // Additional user-friendly name mappings
   const userFriendlyMappings = {
-    'Bahamas': 'Bahamas, The',
     'USA': 'United States of America',
     'US': 'United States of America',
     'America': 'United States of America',
@@ -267,14 +266,14 @@ const Namle = () => {
       ...Object.values(userFriendlyMappings),
       ...Object.keys(reverseCountryNameMapping),
       ...Object.values(reverseCountryNameMapping)
-    ];
+    ].filter((name, index, array) => array.indexOf(name) === index); // Remove duplicates
 
     // 1. Check for exact (case-insensitive) match
     const exactMatches = allNames.filter(name => name.toLowerCase() === guess);
     if (exactMatches.length === 1) {
       let normalized = exactMatches[0];
       if (userFriendlyMappings[normalized]) normalized = userFriendlyMappings[normalized];
-      if (reverseCountryNameMapping[normalized]) normalized = normalized;
+      if (reverseCountryNameMapping[normalized]) normalized = reverseCountryNameMapping[normalized];
       if (namedCountries.has(normalized)) {
         setInputError('You already named this country. Try a different one.');
         return;
@@ -312,7 +311,7 @@ const Namle = () => {
     }
     let normalized = bestMatch;
     if (userFriendlyMappings[bestMatch]) normalized = userFriendlyMappings[bestMatch];
-    if (reverseCountryNameMapping[bestMatch]) normalized = bestMatch;
+    if (reverseCountryNameMapping[bestMatch]) normalized = reverseCountryNameMapping[bestMatch];
     if (namedCountries.has(normalized)) {
       setInputError('You already named this country. Try a different one.');
       return;
@@ -327,6 +326,8 @@ const Namle = () => {
   const isCountryOrTerritoryNamed = (countryName) => {
     console.log('Checking if country is named:', countryName);
     console.log('Named countries:', Array.from(namedCountries));
+    console.log('Country mappings:', countryNameMapping);
+    console.log('Reverse mappings:', reverseCountryNameMapping);
     
     // Check if the country itself is named
     if (namedCountries.has(countryName)) {
@@ -346,6 +347,13 @@ const Namle = () => {
     const progressName = countryNameMapping[countryName];
     if (progressName && namedCountries.has(progressName)) {
       console.log('Country mapping match found for:', countryName, '->', progressName);
+      return true;
+    }
+    
+    // Check if this is a reverse mapping (official name that maps to GeoJSON name)
+    const reverseProgressName = reverseCountryNameMapping[countryName];
+    if (reverseProgressName && namedCountries.has(reverseProgressName)) {
+      console.log('Reverse country mapping match found for:', countryName, '->', reverseProgressName);
       return true;
     }
     

@@ -20,7 +20,7 @@ const countryInfo = {
   'Bangladesh': { capital: 'Dhaka', population: 171_467_000 },
   'Bulgaria': { capital: 'Sofia', population: 6_886_000 },
   'Bahrain': { capital: 'Manama', population: 1_772_000 },
-  'Bahamas, The': { capital: 'Nassau', population: 420_000 },
+  'Bahamas': { capital: 'Nassau', population: 420_000 },
   'Bosnia and Herzegovina': { capital: 'Sarajevo', population: 3_263_000 },
   'Belarus': { capital: 'Minsk', population: 9_237_000 },
   'Belize': { capital: 'Belmopan', population: 419_000 },
