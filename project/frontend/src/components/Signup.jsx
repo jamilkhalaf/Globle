@@ -119,7 +119,7 @@ const Signup = () => {
         
         setAlert({
           show: true,
-          message: 'Account created successfully! Welcome to Globle!',
+          message: 'Account created successfully! Welcome to MapZap!',
           severity: 'success'
         });
 
@@ -216,7 +216,7 @@ const Signup = () => {
                   letterSpacing: 1,
                 }}
               >
-                Join Globle
+                Join MapZap
               </Typography>
 
               <Typography

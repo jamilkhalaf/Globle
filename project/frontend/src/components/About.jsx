@@ -124,7 +124,7 @@ const About = () => {
                   fontWeight: 400,
                 }}
               >
-                Welcome to Globle, a comprehensive collection of interactive geography games designed to make learning about the world engaging, educational, and entertaining. 
+                Welcome to MapZap, a comprehensive collection of interactive geography games designed to make learning about the world engaging, educational, and entertaining. 
                 Our platform offers a unique approach to geography education through gamification, helping students, educators, and geography enthusiasts explore our planet's diverse countries, cultures, and landscapes.
               </Typography>
 
@@ -299,7 +299,7 @@ const About = () => {
                     <CardContent>
                       <Typography variant="h6" sx={{ color: '#9c27b0', mb: 2 }}>Interactive Globe Games</Typography>
                       <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 2 }}>
-                        • <strong>Globle:</strong> Explore countries on an interactive 3D globe with distance-based hints
+                        • <strong>MapZap:</strong> Explore countries on an interactive 3D globe with distance-based hints
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 2 }}>
                         • <strong>Worldle:</strong> Guess countries through progressive hints and clues
