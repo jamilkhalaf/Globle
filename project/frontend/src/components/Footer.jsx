@@ -69,7 +69,7 @@ const Footer = () => {
                 </Box>
                 <Box>
                   <Typography variant="h5" sx={{ fontWeight: 700, color: '#43cea2', mb: 0.5 }}>
-                    Globle Games
+                    MapZap
                   </Typography>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                     Educational Geography Platform
