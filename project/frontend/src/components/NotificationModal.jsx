@@ -11,7 +11,7 @@ const NotificationModal = ({ open, onClose, title, description, buttonText = 'Re
       }
     }}
   >
-    <DialogTitle sx={{ fontWeight: 800, fontSize: 28, color, textAlign: 'center' }}>{title}</DialogTitle>
+    <DialogTitle sx={{ fontWeight: 800, fontSize: 28, color: 'yellow', textAlign: 'center' }}>{title}</DialogTitle>
     <DialogContent>
       <Typography sx={{ mb: 2, color: 'yellow', fontSize: 18, textAlign: 'center' }}>
         {description}

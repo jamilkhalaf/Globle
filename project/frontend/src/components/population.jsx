@@ -174,14 +174,14 @@ const Population = () => {
     
     setIsLoading(false);
   }, [countries, isLoading, generateNewCountries, score, gameStartTime, bestScore, streak]);
-
+      
   // Function to continue to next question
   const continueToNext = useCallback(() => {
     setShowPopulationResult(false);
-    setCountries(generateNewCountries());
-    setMessage('Which country has a higher population?');
-    setFadeKey(prev => prev + 1);
-    setGameStartTime(Date.now()); // Reset timer for new game
+        setCountries(generateNewCountries());
+        setMessage('Which country has a higher population?');
+        setFadeKey(prev => prev + 1);
+        setGameStartTime(Date.now()); // Reset timer for new game
   }, [generateNewCountries]);
 
   // Handle Enter key press

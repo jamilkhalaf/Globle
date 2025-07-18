@@ -275,11 +275,11 @@ const Namle = () => {
       if (userFriendlyMappings[normalized]) normalized = userFriendlyMappings[normalized];
       if (reverseCountryNameMapping[normalized]) normalized = reverseCountryNameMapping[normalized];
       if (namedCountries.has(normalized)) {
-        setInputError('You already named this country. Try a different one.');
-        return;
+      setInputError('You already named this country. Try a different one.');
+      return;
       }
       setNamedCountries(prev => new Set([...prev, normalized]));
-      setInputValue('');
+    setInputValue('');
       setInputError('');
       showSuccessAnimation();
       if (namedCountries.size + 1 >= totalCountries) finishGame();
@@ -691,23 +691,23 @@ const Namle = () => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   handleGuess();
-                }
+                        }
               }}
-              sx={{ 
-                bgcolor: 'white', 
-                borderRadius: 1,
-                '& .MuiOutlinedInput-root': {
-                  fontSize: '0.75rem',
-                  '& fieldset': {
-                    borderColor: inputError ? '#f44336' : 'rgba(255,255,255,0.3)',
-                  },
-                }
-              }}
-              inputProps={{ 
-                style: { fontSize: 12 }
-              }}
-              error={!!inputError}
-              helperText={inputError}
+                  sx={{ 
+                    bgcolor: 'white', 
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                      fontSize: '0.75rem',
+                      '& fieldset': {
+                        borderColor: inputError ? '#f44336' : 'rgba(255,255,255,0.3)',
+                      },
+                    }
+                  }}
+                  inputProps={{ 
+                    style: { fontSize: 12 }
+                  }}
+                  error={!!inputError}
+                  helperText={inputError}
             />
             <Button
               variant="contained"

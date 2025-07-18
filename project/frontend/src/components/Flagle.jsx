@@ -307,7 +307,7 @@ const Flagle = () => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   if (!gameOver) {
-                    handleGuess();
+                  handleGuess();
                   } else {
                     handleNext();
                   }
@@ -315,13 +315,13 @@ const Flagle = () => {
               }}
               slotProps={{
                 popper: {
-                  placement: 'bottom-start',
-                  modifiers: [
-                    {
-                      name: 'flip',
-                      enabled: false,
-                    },
-                  ],
+                placement: 'bottom-start',
+                modifiers: [
+                  {
+                    name: 'flip',
+                    enabled: false,
+                  },
+                ],
                 },
               }}
               renderInput={(params) => (
