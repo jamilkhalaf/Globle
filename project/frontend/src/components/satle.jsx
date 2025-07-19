@@ -193,6 +193,9 @@ const Satle = () => {
       if (userResponse.ok) {
         const userData = await userResponse.json();
         console.log('Fresh user data for badge check:', userData);
+        console.log('Satle games played from fresh data:', userData.games?.satle?.gamesPlayed);
+        console.log('Satle current streak from fresh data:', userData.games?.satle?.currentStreak);
+        console.log('Satle best score from fresh data:', userData.games?.satle?.bestScore);
       }
 
       const response = await fetch('https://api.jamilweb.click/api/badges/update', {
@@ -214,6 +217,8 @@ const Satle = () => {
         console.log('Satle badge update response:', data);
         if (data.totalNewBadges > 0) {
           console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+          // Trigger a page refresh to update the badges display
+          window.location.reload();
         } else {
           console.log('No new badges unlocked');
         }
