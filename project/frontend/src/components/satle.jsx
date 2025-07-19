@@ -159,7 +159,7 @@ const Satle = () => {
 
       if (response.ok) {
         console.log('Satle game stats updated successfully');
-        // Update badge progress
+        // Update badge progress after stats are saved
         await updateBadgeProgress(finalScore, gameTime, attempts);
       } else {
         console.error('Satle game stats update failed:', response.status);
@@ -177,6 +177,9 @@ const Satle = () => {
       console.log('Satle updateBadgeProgress - finalScore:', finalScore);
       console.log('Satle updateBadgeProgress - gameTime:', gameTime);
       console.log('Satle updateBadgeProgress - attempts:', attempts);
+
+      // Add a small delay to ensure user stats are saved
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const response = await fetch('https://api.jamilweb.click/api/badges/update', {
         method: 'POST',
@@ -197,6 +200,8 @@ const Satle = () => {
         console.log('Satle badge update response:', data);
         if (data.totalNewBadges > 0) {
           console.log(`🎉 Unlocked ${data.totalNewBadges} new badges!`);
+        } else {
+          console.log('No new badges unlocked');
         }
       } else {
         console.error('Satle badge update failed:', response.status);

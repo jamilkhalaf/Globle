@@ -1423,6 +1423,46 @@ const Badges = () => {
           unlocked: getBadgeData('satle_quick_guess')?.unlocked || false,
           progress: getBadgeData('satle_quick_guess')?.unlocked ? 2 : 0,
           maxProgress: 2
+        },
+        {
+          id: 'satle_efficient_guess',
+          name: 'Satle Efficient',
+          description: 'Guess correctly within 3 attempts',
+          icon: <TrendingUpIcon sx={{ fontSize: 24, color: '#4CAF50' }} />,
+          color: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+          unlocked: getBadgeData('satle_efficient_guess')?.unlocked || false,
+          progress: getBadgeData('satle_efficient_guess')?.unlocked ? 3 : 0,
+          maxProgress: 3
+        },
+        {
+          id: 'satle_streak_3',
+          name: 'Satle Streaker',
+          description: 'Maintain a 3-game Satle streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FF5722' }} />,
+          color: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)',
+          unlocked: getBadgeData('satle_streak_3')?.unlocked || userStats?.games?.satle?.currentStreak >= 3,
+          progress: Math.min(userStats?.games?.satle?.currentStreak || 0, 3),
+          maxProgress: 3
+        },
+        {
+          id: 'satle_streak_5',
+          name: 'Satle Fire',
+          description: 'Maintain a 5-game Satle streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#FF9800' }} />,
+          color: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          unlocked: getBadgeData('satle_streak_5')?.unlocked || userStats?.games?.satle?.currentStreak >= 5,
+          progress: Math.min(userStats?.games?.satle?.currentStreak || 0, 5),
+          maxProgress: 5
+        },
+        {
+          id: 'satle_streak_10',
+          name: 'Satle Inferno',
+          description: 'Maintain a 10-game Satle streak',
+          icon: <LocalFireDepartmentIcon sx={{ fontSize: 24, color: '#E91E63' }} />,
+          color: 'linear-gradient(135deg, #E91E63 0%, #C2185B 100%)',
+          unlocked: getBadgeData('satle_streak_10')?.unlocked || userStats?.games?.satle?.currentStreak >= 10,
+          progress: Math.min(userStats?.games?.satle?.currentStreak || 0, 10),
+          maxProgress: 10
         }
       ]
     }

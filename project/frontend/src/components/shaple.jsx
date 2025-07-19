@@ -266,7 +266,7 @@ const Shaple = () => {
               US States
             </ToggleButton>
           </ToggleButtonGroup>
-          <Box sx={{ my: 3, minHeight: 200 }}>
+          <Box sx={{ my: 3, minHeight: 200, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             {secret && <img src={getImageSrc()} alt="shape" style={{ maxHeight: 200, filter: 'drop-shadow(0 0 8px #43cea2)' }} />}
           </Box>
           <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ mb: 2 }}>
