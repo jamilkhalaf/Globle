@@ -80,7 +80,7 @@ const Namle = () => {
       'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United Kingdom', 'Vatican City'
     ],
     'North America': [
-      'Antigua and Barbuda', 'Bahamas, The', 'Barbados', 'Belize', 'Canada', 'Costa Rica', 'Cuba', 'Dominica', 
+      'Antigua and Barbuda', 'Bahamas', 'Barbados', 'Belize', 'Canada', 'Costa Rica', 'Cuba', 'Dominica', 
       'Dominican Republic', 'El Salvador', 'Grenada', 'Guatemala', 'Haiti', 'Honduras', 'Jamaica', 'Mexico', 
       'Nicaragua', 'Panama', 'Saint Kitts and Nevis', 'St. Lucia', 'St. Vincent and the Grenadines', 
       'Trinidad and Tobago', 'United States of America'
@@ -124,7 +124,12 @@ const Namle = () => {
     'Bahamas, The': 'Bahamas',
     'United States of America': 'United States',
     'St. Lucia': 'Saint Lucia',
-    'St. Vincent and the Grenadines': 'Saint Vincent and the Grenadines'
+    'St. Vincent and the Grenadines': 'Saint Vincent and the Grenadines',
+    // New mappings for the requested countries
+    'United Republic of Tanzania': 'Tanzania',
+    'Micronesia, Fed. Sts.': 'Micronesia',
+    'Saint Kitts and Nevis': 'St. Kitts and Nevis',
+    'Saint Vincent and the Grenadines': 'St. Vincent and the Grenadines'
   };
 
   // Reverse mapping for checking progress
@@ -160,7 +165,22 @@ const Namle = () => {
     'Cuba': 'Cuba',
     'Dominica': 'Dominica',
     'Belize': 'Belize',
-    'Canada': 'Canada'
+    'Canada': 'Canada',
+    // New mappings for the requested countries
+    'Tanzania': 'United Republic of Tanzania',
+    'Republic of Tanzania': 'United Republic of Tanzania',
+    'Micronesia': 'Micronesia, Fed. Sts.',
+    'Micronesia, Fed. Sts.': 'Micronesia, Fed. Sts.',
+    'Federated States of Micronesia': 'Micronesia, Fed. Sts.',
+    'FSM': 'Micronesia, Fed. Sts.',
+    'St. Kitts': 'Saint Kitts and Nevis',
+    'Saint Kitts': 'Saint Kitts and Nevis',
+    'St. Lucia': 'Saint Lucia',
+    'Saint Lucia': 'Saint Lucia',
+    'St. Vincent': 'Saint Vincent and the Grenadines',
+    'Saint Vincent': 'Saint Vincent and the Grenadines',
+    'St. Vincent and the Grenadines': 'Saint Vincent and the Grenadines',
+    'Saint Vincent and the Grenadines': 'Saint Vincent and the Grenadines'
   };
 
   // Load countries data
