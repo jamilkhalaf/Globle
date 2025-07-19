@@ -116,12 +116,12 @@ const Namle = () => {
     'South Georgia': 'United Kingdom',
     'Somaliland': 'Somalia',
     'Western Sahara': 'Morocco',
+    'China': 'Taiwan',
   };
 
   // Mapping between GeoJSON names and progress tracking names
   const countryNameMapping = {
     'Republic of Serbia': 'Serbia',
-    'Bahamas': 'Bahamas, The',
     'Bahamas, The': 'Bahamas',
     'United States of America': 'United States',
     'St. Lucia': 'Saint Lucia',
