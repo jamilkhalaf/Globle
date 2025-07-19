@@ -80,7 +80,7 @@ const Namle = () => {
       'Slovakia', 'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United Kingdom', 'Vatican City'
     ],
     'North America': [
-      'Antigua and Barbuda', 'Bahamas', 'Barbados', 'Belize', 'Canada', 'Costa Rica', 'Cuba', 'Dominica', 
+      'Antigua and Barbuda', 'Bahamas, The', 'Barbados', 'Belize', 'Canada', 'Costa Rica', 'Cuba', 'Dominica', 
       'Dominican Republic', 'El Salvador', 'Grenada', 'Guatemala', 'Haiti', 'Honduras', 'Jamaica', 'Mexico', 
       'Nicaragua', 'Panama', 'Saint Kitts and Nevis', 'St. Lucia', 'St. Vincent and the Grenadines', 
       'Trinidad and Tobago', 'United States of America'
@@ -121,6 +121,7 @@ const Namle = () => {
   // Mapping between GeoJSON names and progress tracking names
   const countryNameMapping = {
     'Republic of Serbia': 'Serbia',
+    'Bahamas': 'Bahamas, The',
     'Bahamas, The': 'Bahamas',
     'United States of America': 'United States',
     'St. Lucia': 'Saint Lucia',
@@ -129,7 +130,10 @@ const Namle = () => {
     'United Republic of Tanzania': 'Tanzania',
     'Micronesia, Fed. Sts.': 'Micronesia',
     'Saint Kitts and Nevis': 'St. Kitts and Nevis',
-    'Saint Vincent and the Grenadines': 'St. Vincent and the Grenadines'
+    'Saint Vincent and the Grenadines': 'St. Vincent and the Grenadines',
+    'UAE': 'United Arab Emirates',
+    'CAR': 'Central African Republic',
+    'UK': 'United Kingdom'
   };
 
   // Reverse mapping for checking progress
@@ -180,7 +184,8 @@ const Namle = () => {
     'St. Vincent': 'Saint Vincent and the Grenadines',
     'Saint Vincent': 'Saint Vincent and the Grenadines',
     'St. Vincent and the Grenadines': 'Saint Vincent and the Grenadines',
-    'Saint Vincent and the Grenadines': 'Saint Vincent and the Grenadines'
+    'Saint Vincent and the Grenadines': 'Saint Vincent and the Grenadines',
+    'Bahamas': 'Bahamas, The'
   };
 
   // Load countries data
