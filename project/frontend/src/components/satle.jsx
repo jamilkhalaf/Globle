@@ -178,8 +178,22 @@ const Satle = () => {
       console.log('Satle updateBadgeProgress - gameTime:', gameTime);
       console.log('Satle updateBadgeProgress - attempts:', attempts);
 
-      // Add a small delay to ensure user stats are saved
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Add a longer delay to ensure user stats are saved
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Fetch fresh user data to ensure we have the latest stats
+      const userResponse = await fetch('https://api.jamilweb.click/api/games/stats', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        console.log('Fresh user data for badge check:', userData);
+      }
 
       const response = await fetch('https://api.jamilweb.click/api/badges/update', {
         method: 'POST',

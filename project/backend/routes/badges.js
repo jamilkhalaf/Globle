@@ -280,11 +280,18 @@ router.post('/update', auth, async (req, res) => {
       const score = req.body.score || 0; // Score based on guesses used (5 = perfect, 1 = barely won)
       const attempts = req.body.attempts || 0; // Number of guesses used
       
-      console.log('Satle badge check - gameStats:', gameStats);
+      console.log('=== SATLE BADGE DEBUG ===');
+      console.log('User ID:', req.user.id);
+      console.log('User games object:', user.games);
+      console.log('Satle gameStats:', gameStats);
       console.log('Satle badge check - score:', score);
       console.log('Satle badge check - attempts:', attempts);
       console.log('Satle badge check - gamesPlayed:', gameStats.gamesPlayed);
       console.log('Satle badge check - currentStreak:', gameStats.currentStreak);
+      console.log('Satle badge check - bestScore:', gameStats.bestScore);
+      console.log('Satle badge check - averageScore:', gameStats.averageScore);
+      console.log('Satle badge check - lastPlayed:', gameStats.lastPlayed);
+      console.log('=== END SATLE BADGE DEBUG ===');
       
       badgesToCheck.push(
         { id: 'satle_first_win', category: 'satle', condition: gameStats.gamesPlayed >= 1 },
@@ -302,6 +309,7 @@ router.post('/update', auth, async (req, res) => {
       console.log('Satle first_win condition:', gameStats.gamesPlayed >= 1);
       console.log('Satle perfect_guess condition:', attempts === 1 && score > 0);
       console.log('Satle quick_guess condition:', attempts <= 2 && score > 0);
+      console.log('Satle efficient_guess condition:', attempts <= 3 && score > 0);
     }
 
     // Check and create/update badges
