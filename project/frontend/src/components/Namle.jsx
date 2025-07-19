@@ -116,7 +116,7 @@ const Namle = () => {
     'South Georgia': 'United Kingdom',
     'Somaliland': 'Somalia',
     'Western Sahara': 'Morocco',
-    'China': 'Taiwan',
+    'Taiwan': 'China',
   };
 
   // Mapping between GeoJSON names and progress tracking names
@@ -299,6 +299,12 @@ const Namle = () => {
       let normalized = exactMatches[0];
       if (userFriendlyMappings[normalized]) normalized = userFriendlyMappings[normalized];
       if (reverseCountryNameMapping[normalized]) normalized = reverseCountryNameMapping[normalized];
+      
+      // Special case for Bahamas - store as the GeoJSON name for proper map highlighting
+      if (normalized === 'Bahamas, The') {
+        normalized = 'Bahamas, The';
+      }
+      
       if (namedCountries.has(normalized)) {
       setInputError('You already named this country. Try a different one.');
       return;
@@ -410,6 +416,12 @@ const Namle = () => {
         console.log('User-friendly name match found for:', countryName, '->', userFriendlyName);
         return true;
       }
+    }
+    
+    // Special case for Bahamas mapping
+    if (countryName === 'Bahamas, The' && namedCountries.has('Bahamas')) {
+      console.log('Bahamas special case match found');
+      return true;
     }
     
     console.log('No match found for:', countryName);
