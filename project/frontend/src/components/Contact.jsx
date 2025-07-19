@@ -22,15 +22,6 @@ const Contact = () => {
       color: 'linear-gradient(135deg, #1976d2 0%, #00bcd4 100%)',
     },
     {
-      title: 'Instagram',
-      subtitle: 'Social Updates',
-      description: 'Follow for behind-the-scenes content and updates.',
-      icon: <InstagramIcon sx={{ fontSize: 24, color: 'white' }} />,
-      action: 'Follow @jamillkhalaf',
-      href: 'https://instagram.com/jamillkhalaf',
-      color: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)',
-    },
-    {
       title: 'LinkedIn',
       subtitle: 'Professional Network',
       description: 'Connect professionally and stay updated with my work.',
