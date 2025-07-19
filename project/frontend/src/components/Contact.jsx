@@ -38,15 +38,6 @@ const Contact = () => {
       action: 'Connect on LinkedIn',
       href: 'https://www.linkedin.com/in/jamil-khalaf-35b428247',
       color: 'linear-gradient(135deg, #0077b5 0%, #00a0dc 100%)',
-    },
-    {
-      title: 'GitHub',
-      subtitle: 'Open Source',
-      description: 'Check out my open source projects and contributions.',
-      icon: <GitHubIcon sx={{ fontSize: 24, color: 'white' }} />,
-      action: 'View Projects',
-      href: 'https://github.com/jamilkhalaf',
-      color: 'linear-gradient(135deg, #333 0%, #666 100%)',
     }
   ];
 
