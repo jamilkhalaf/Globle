@@ -30,15 +30,15 @@ export default defineConfig({
     assetsInlineLimit: 4096,
   },
   // Development server configuration
-  server: {
-    host: 'localhost',
-    port: 3000,
-    strictPort: true,
-    hmr: {
-      port: 3001, // Use different port for HMR WebSocket
-      protocol: 'ws',
-    },
-  },
+  // server: {
+  //   host: 'localhost',
+  //   port: 3000,
+  //   strictPort: true,
+  //   hmr: {
+  //     port: 3000, // Use different port for HMR WebSocket
+  //     protocol: 'ws',
+  //   },
+  // },
   // Standard dependencies
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
