@@ -13,6 +13,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import SmartAdComponent from './SmartAdComponent';
 
 const AdPopup = ({ open, onClose, title = "Support Us" }) => {
+  const handleClose = () => {
+    console.log('AdPopup: handleClose called');
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -20,8 +27,9 @@ const AdPopup = ({ open, onClose, title = "Support Us" }) => {
       maxWidth="sm"
       fullWidth
       onClose={(event, reason) => {
+        console.log('AdPopup: Dialog onClose called with reason:', reason);
         if (reason !== 'backdropClick') {
-          onClose();
+          handleClose();
         }
       }}
       PaperProps={{
@@ -31,7 +39,8 @@ const AdPopup = ({ open, onClose, title = "Support Us" }) => {
           color: 'white',
           border: '1px solid rgba(255,255,255,0.1)',
           backdropFilter: 'blur(10px)',
-          boxShadow: '0 16px 64px 0 rgba(31,38,135,0.4)'
+          boxShadow: '0 16px 64px 0 rgba(31,38,135,0.4)',
+          zIndex: 10000 // Ensure it's above everything
         }
       }}
     >
@@ -46,7 +55,7 @@ const AdPopup = ({ open, onClose, title = "Support Us" }) => {
         {title}
         <IconButton
           aria-label="close"
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             position: 'absolute',
             right: 8,
@@ -71,6 +80,20 @@ const AdPopup = ({ open, onClose, title = "Support Us" }) => {
         }}>
           Enjoying the game? Consider supporting us by viewing this ad!
         </Typography>
+        
+        {/* Test button to verify clicks work */}
+        <Button 
+          variant="outlined" 
+          onClick={handleClose}
+          sx={{ 
+            mb: 2, 
+            color: 'white', 
+            borderColor: 'white',
+            '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' }
+          }}
+        >
+          Test Close Button
+        </Button>
         
         {/* Square Ad */}
         <Box
@@ -121,7 +144,7 @@ const AdPopup = ({ open, onClose, title = "Support Us" }) => {
               background: 'linear-gradient(135deg, #1565c0 0%, #00acc1 100%)'
             }
           }} 
-          onClick={onClose}
+          onClick={handleClose}
         >
           Continue Playing
         </Button>

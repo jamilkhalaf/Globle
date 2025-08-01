@@ -61,8 +61,10 @@ const Game = () => {
   // Add effect to show ad popup after intro closes
   useEffect(() => {
     if (!showIntro && !showAdPopup) {
+      console.log('Game: useEffect triggered - showing ad popup');
       // Small delay to ensure smooth transition
       const timer = setTimeout(() => {
+        console.log('Game: Setting showAdPopup to true');
         setShowAdPopup(true);
       }, 100);
       return () => clearTimeout(timer);
@@ -1198,7 +1200,10 @@ const Game = () => {
       {/* Ad Popup - Shows after notification modal closes */}
       <AdPopup
         open={showAdPopup}
-        onClose={() => setShowAdPopup(false)}
+        onClose={() => {
+          console.log('Game: AdPopup onClose called, setting showAdPopup to false');
+          setShowAdPopup(false);
+        }}
         title="Support Us"
       />
 
