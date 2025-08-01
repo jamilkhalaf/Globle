@@ -13,6 +13,7 @@ import DialogActions from '@mui/material/DialogActions';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import officialCountries from './officialCountries';
 import SmartAdComponent from './SmartAdComponent';
 import { GameCompletionAd } from './AdPlacements';
@@ -53,6 +54,9 @@ const Game = () => {
 
   // Add state for showing the intro modal
   const [showIntro, setShowIntro] = useState(true);
+
+  // Add state for showing the ad popup
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
@@ -700,10 +704,18 @@ const Game = () => {
         <Toolbar />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            setShowAdPopup(true);
+          }}
           title="How to Play Globle"
           description={"Guess the secret country! Each guess shows how close you are. The color indicates distance: red (close), yellow (far). Try to find the country in as few guesses as possible!"}
           color="primary"
+        />
+        <AdPopup
+          open={showAdPopup}
+          onClose={() => setShowAdPopup(false)}
+          title="Support Us"
         />
       </>
     );

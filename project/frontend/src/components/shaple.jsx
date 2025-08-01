@@ -3,6 +3,7 @@ import { Box, Typography, Paper, Button, Fade, Toolbar, ToggleButton, ToggleButt
 import Autocomplete from '@mui/material/Autocomplete';
 import Header from './Header';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import officialCountries from './officialCountries';
 import SmartAdComponent from './SmartAdComponent';
@@ -120,6 +121,7 @@ const Shaple = () => {
   const [showContinue, setShowContinue] = useState(false);
   const [guessesLeft, setGuessesLeft] = useState(6);
   const [showIntro, setShowIntro] = useState(true);
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   useEffect(() => {
     if (!showIntro) startNewGame();
@@ -223,10 +225,18 @@ const Shaple = () => {
         <Header />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            setShowAdPopup(true);
+          }}
           title="How to Play Shaple"
           description="Guess the country or US state by its shape! You have 5 guesses. Choose a mode, look at the silhouette, and type your answer."
           color="primary"
+        />
+        <AdPopup
+          open={showAdPopup}
+          onClose={() => setShowAdPopup(false)}
+          title="Support Us"
         />
       </>
     );

@@ -3,6 +3,7 @@ import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autoco
 import Header from './Header';
 import countryInfo from './countryInfo';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import officialCountries from './officialCountries';
 import SmartAdComponent from './SmartAdComponent';
 import { GameCompletionAd } from './AdPlacements';
@@ -76,6 +77,7 @@ const Flagle = () => {
   const [round, setRound] = useState(0); // Used to force remount flag box
   const [showIntro, setShowIntro] = useState(true);
   const [bestScore, setBestScore] = useState(0);
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
@@ -226,10 +228,18 @@ const Flagle = () => {
       <Toolbar />
       <NotificationModal
         open={showIntro}
-        onClose={() => setShowIntro(false)}
+        onClose={() => {
+          setShowIntro(false);
+          setShowAdPopup(true);
+        }}
         title="How to Play Flagle"
         description={"Guess the country by its flag! Each wrong guess reveals a new part of the flag. You have 8 tries. Type or select a country and press Guess. Good luck!"}
         color="warning"
+      />
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
       />
       <Fade in timeout={600}>
         <Paper elevation={8} sx={{ mt: { xs: 2, md: 6 }, p: { xs: 1.5, md: 5 }, borderRadius: 4, maxWidth: { xs: 320, sm: 380, md: 600 }, width: '100%', textAlign: 'center', position: 'relative', background: 'rgba(30,34,44,0.98)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)', display: showIntro ? 'none' : 'block' }}>

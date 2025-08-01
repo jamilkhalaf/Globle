@@ -3,6 +3,7 @@ import countryInfo from './countryInfo';
 import officialCountries from './officialCountries';
 import Header from './Header';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import SmartAdComponent from './SmartAdComponent';
 import { Box, useTheme, useMediaQuery } from '@mui/material';
 
@@ -22,6 +23,7 @@ const Capitals = () => {
   const [showIntro, setShowIntro] = useState(true);
   const [bestStreak, setBestStreak] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(null);
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   // Get all available countries that have capital info
   const availableCountries = officialCountries.filter(country => 
@@ -536,11 +538,19 @@ const Capitals = () => {
       <Header />
       <NotificationModal
         open={showIntro}
-        onClose={handleIntroClose}
+        onClose={() => {
+          handleIntroClose();
+          setShowAdPopup(true);
+        }}
         title="How to Play Capitals"
         description="Test your knowledge of world capitals! You'll be shown a country name and 4 capital city options. Choose the correct capital to score points and build your streak. Complete 10 questions to finish the game. No time limit - take your time!"
         color="primary"
         buttonText="Start Game"
+      />
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
       />
       <div style={styles.container}>
         <div style={styles.gameHeader}>

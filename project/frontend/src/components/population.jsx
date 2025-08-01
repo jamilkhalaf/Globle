@@ -8,6 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import SmartAdComponent from './SmartAdComponent';
 
 const getRandomCountry = (exclude) => {
@@ -54,6 +55,7 @@ const Population = () => {
   // Add state for showing population results
   const [showPopulationResult, setShowPopulationResult] = useState(false);
   const [lastGuessResult, setLastGuessResult] = useState(null);
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   const updateGameStats = async (finalScore, gameTime, currentStreak) => {
     try {
@@ -208,10 +210,18 @@ const Population = () => {
         <Toolbar />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            setShowAdPopup(true);
+          }}
           title="How to Play Population Showdown"
           description={"Choose which country has the higher population. Each correct answer increases your score. Try to get the highest streak!"}
           color="info"
+        />
+        <AdPopup
+          open={showAdPopup}
+          onClose={() => setShowAdPopup(false)}
+          title="Support Us"
         />
       </>
     );

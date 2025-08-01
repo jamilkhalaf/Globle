@@ -4,6 +4,7 @@ import Header from './Header';
 import countryInfo from './countryInfo';
 import countryExtra from './countryExtra';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import CloseIcon from '@mui/icons-material/Close';
 import officialCountries from './officialCountries';
 import SmartAdComponent from './SmartAdComponent';
@@ -123,6 +124,7 @@ const Worldle = () => {
   const [round, setRound] = useState(0);
   const [scrollHint, setScrollHint] = useState(false);
   const [bestScore, setBestScore] = useState(0);
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   const country = countryInfo[target];
   const extra = countryExtra[target];
@@ -252,10 +254,18 @@ const Worldle = () => {
         <Toolbar />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            setShowAdPopup(true);
+          }}
           title="How to Play Worldle"
           description={"Guess the country based on hints! Each wrong guess reveals a new hint: population, capital, famous places, country shape, borders, hemisphere, and flag. You have 5 tries. Good luck!"}
           color="success"
+        />
+        <AdPopup
+          open={showAdPopup}
+          onClose={() => setShowAdPopup(false)}
+          title="Support Us"
         />
       </>
     );

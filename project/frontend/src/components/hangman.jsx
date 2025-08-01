@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Paper, Button, Stack, Fade, useTheme, useMediaQuery, Toolbar } from '@mui/material';
 import Header from './Header';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import officialCountries from './officialCountries';
 import SmartAdComponent from './SmartAdComponent';
 
@@ -20,6 +21,7 @@ const Hangman = () => {
   const [streak, setStreak] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(null);
+  const [showAdPopup, setShowAdPopup] = useState(false);
 
   // Filter countries to only use official ones and those with reasonable lengths
   const allCountries = officialCountries.filter(name => 
@@ -278,10 +280,18 @@ const Hangman = () => {
         <Header />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            setShowAdPopup(true);
+          }}
           title="How to Play Hangman"
           description="Guess the country name one letter at a time! Each wrong guess adds a part to the hangman. You have 6 wrong guesses before the game is over. Good luck!"
           color="error"
+        />
+        <AdPopup
+          open={showAdPopup}
+          onClose={() => setShowAdPopup(false)}
+          title="Support Us"
         />
       </>
     );
