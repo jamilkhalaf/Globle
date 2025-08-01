@@ -81,6 +81,10 @@ class MonetizationManager {
 
   // Check if ad blocker is active with multiple detection methods
   checkAdBlocker() {
+    // Temporarily disable ad blocker detection for testing
+    this.adBlocked = false;
+    return;
+    
     // Method 1: Test ad element
     const testAd = document.createElement('div');
     testAd.innerHTML = '&nbsp;';
@@ -195,6 +199,9 @@ class MonetizationManager {
 
   // Check if ad should be shown based on frequency and user preferences
   shouldShowAd(adType, adSlot = null) {
+    // Temporarily disable all blocking for testing
+    return true;
+    
     if (!this.userPreferences.showAds) {
       return false;
     }
