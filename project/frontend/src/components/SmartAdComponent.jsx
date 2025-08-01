@@ -29,39 +29,24 @@ const SmartAdComponent = ({
     domain: 'jamilweb.click' // Use your main domain, not subdomain
   };
 
+  // Debug AdSense loading
+  useEffect(() => {
+    const checkAdSenseStatus = () => {
+      console.log('AdSense Status Check:');
+      console.log('- Window adsbygoogle:', !!window.adsbygoogle);
+      console.log('- Array check:', Array.isArray(window.adsbygoogle));
+      console.log('- Publisher ID:', ADSENSE_CONFIG.publisherId);
+      console.log('- Domain:', ADSENSE_CONFIG.domain);
+    };
+
+    // Check after page loads
+    setTimeout(checkAdSenseStatus, 1000);
+  }, []);
+
   useEffect(() => {
     // Check if ad should be shown
     const shouldShowAd = monetizationManager.shouldShowAd();
     setShouldShow(shouldShowAd);
-
-    // Detect ad blocker
-    const detectAdBlocker = () => {
-      const testAd = document.createElement('div');
-      testAd.innerHTML = '&nbsp;';
-      testAd.className = 'adsbox';
-      testAd.style.position = 'absolute';
-      testAd.style.left = '-9999px';
-      testAd.style.top = '-9999px';
-      document.body.appendChild(testAd);
-      
-      const isBlocked = testAd.offsetHeight === 0;
-      document.body.removeChild(testAd);
-      
-      if (isBlocked) {
-        console.warn('Ad blocker detected! Ads may not display properly.');
-        setAdsenseError('Ad blocker detected');
-      }
-      
-      return isBlocked;
-    };
-
-    // Check for ad blocker
-    const adBlockerDetected = detectAdBlocker();
-    
-    if (adBlockerDetected) {
-      setShowFallback(true);
-      return;
-    }
 
     if (!shouldShowAd || shouldShowAd === 'fallback') {
       return;
@@ -74,10 +59,16 @@ const SmartAdComponent = ({
       return;
     }
 
-    // Initialize the ad after a short delay to ensure AdSense script is loaded
-    const timer = setTimeout(() => {
-      if (adRef.current && window.adsbygoogle) {
+    // Check if AdSense script is loaded
+    const checkAdSenseLoaded = () => {
+      return window.adsbygoogle && Array.isArray(window.adsbygoogle);
+    };
+
+    // Initialize the ad with retry logic
+    const initializeAd = () => {
+      if (adRef.current && checkAdSenseLoaded()) {
         try {
+          console.log('Initializing AdSense ad:', adSlot);
           (window.adsbygoogle = window.adsbygoogle || []).push({});
           monetizationManager.markAdShown(adType, adSlot);
           monetizationManager.trackAdImpression(adType);
@@ -88,13 +79,23 @@ const SmartAdComponent = ({
           setShowFallback(true);
         }
       } else {
-        // If AdSense is not available, show fallback
+        console.warn('AdSense script not loaded or ad container not found');
         setAdError(true);
         setShowFallback(true);
       }
-    }, 1000);
+    };
 
-    return () => clearTimeout(timer);
+    // Try to initialize immediately
+    if (checkAdSenseLoaded()) {
+      initializeAd();
+    } else {
+      // Wait for AdSense to load
+      const timer = setTimeout(() => {
+        initializeAd();
+      }, 3000); // Increased delay to ensure AdSense script loads
+
+      return () => clearTimeout(timer);
+    }
   }, [adSlot, adType]);
 
   const getAdStyle = () => {
@@ -174,7 +175,7 @@ const SmartAdComponent = ({
         }}
       >
         <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
-          {adsenseError === 'Ad blocker detected' ? '🔒 Ad blocker detected' : '📢 Ad Space'}
+          📢 Ad Space
         </Typography>
         <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
           {adsenseError === 'Ad blocker detected' 
