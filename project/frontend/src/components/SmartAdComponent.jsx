@@ -34,9 +34,16 @@ const SmartAdComponent = ({
     const checkAdSenseStatus = () => {
       console.log('AdSense Status Check:');
       console.log('- Window adsbygoogle:', !!window.adsbygoogle);
+      console.log('- Type of adsbygoogle:', typeof window.adsbygoogle);
       console.log('- Array check:', Array.isArray(window.adsbygoogle));
       console.log('- Publisher ID:', ADSENSE_CONFIG.publisherId);
       console.log('- Domain:', ADSENSE_CONFIG.domain);
+      
+      // Try to initialize adsbygoogle as array if it's not
+      if (window.adsbygoogle && !Array.isArray(window.adsbygoogle)) {
+        console.log('Fixing adsbygoogle array...');
+        window.adsbygoogle = [];
+      }
     };
 
     // Check after page loads
@@ -44,11 +51,14 @@ const SmartAdComponent = ({
   }, []);
 
   useEffect(() => {
-    // Check if ad should be shown
-    const shouldShowAd = monetizationManager.shouldShowAd();
+    // Temporarily bypass monetization manager for testing
+    // const shouldShowAd = monetizationManager.shouldShowAd(adType, adSlot);
+    const shouldShowAd = true; // Force show ads for testing
+    console.log(`Ad check for ${adType}/${adSlot}:`, shouldShowAd);
     setShouldShow(shouldShowAd);
 
     if (!shouldShowAd || shouldShowAd === 'fallback') {
+      console.log(`Ad not shown for ${adType}/${adSlot}:`, shouldShowAd);
       return;
     }
 
@@ -61,6 +71,10 @@ const SmartAdComponent = ({
 
     // Check if AdSense script is loaded
     const checkAdSenseLoaded = () => {
+      // Ensure adsbygoogle is an array
+      if (window.adsbygoogle && !Array.isArray(window.adsbygoogle)) {
+        window.adsbygoogle = [];
+      }
       return window.adsbygoogle && Array.isArray(window.adsbygoogle);
     };
 
@@ -189,8 +203,11 @@ const SmartAdComponent = ({
 
   // Don't render if ad shouldn't be shown
   if (!shouldShow) {
+    console.log(`Ad not rendered for ${adType}/${adSlot}: shouldShow is false`);
     return null;
   }
+
+  console.log(`Rendering ad: ${adType}/${adSlot}`);
 
   // Show custom fallback content if provided and ad fails to load
   if (adError && fallbackContent) {
