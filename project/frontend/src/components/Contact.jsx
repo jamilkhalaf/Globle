@@ -6,6 +6,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { Link as RouterLink } from 'react-router-dom';
+import SmartAdComponent from './SmartAdComponent';
 
 const Contact = () => {
   const theme = useTheme();
@@ -47,6 +48,32 @@ const Contact = () => {
     >
       <Header />
       <Toolbar />
+      
+      {/* Horizontal Ad at Top */}
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '728px',
+          margin: '0 auto',
+          padding: '16px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}
+      >
+        <SmartAdComponent
+          adSlot="9646146414"
+          adType="header"
+          adFormat="auto"
+          responsive={true}
+          style={{
+            width: '100%',
+            minHeight: '90px',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        />
+      </Box>
+      
       <Fade in timeout={800}>
         <Container maxWidth="lg" sx={{ flex: 1, py: { xs: 2, md: 4 } }}>
           {/* Hero Section */}

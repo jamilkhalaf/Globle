@@ -31,7 +31,7 @@ import ExploreIcon from '@mui/icons-material/Explore';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { HeaderAd } from './AdPlacements';
+import SmartAdComponent from './SmartAdComponent';
 
 const EducationalContent = () => {
   const theme = useTheme();
@@ -51,8 +51,30 @@ const EducationalContent = () => {
       <Header />
       <Toolbar />
       
-      {/* Header Ad */}
-      <HeaderAd />
+      {/* Horizontal Ad at Top */}
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '728px',
+          margin: '0 auto',
+          padding: '16px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}
+      >
+        <SmartAdComponent
+          adSlot="9646146414"
+          adType="header"
+          adFormat="auto"
+          responsive={true}
+          style={{
+            width: '100%',
+            minHeight: '90px',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        />
+      </Box>
       
       <Fade in timeout={800}>
         <Box sx={{ 

@@ -50,6 +50,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import Header from './Header';
 import { io } from 'socket.io-client';
 import FlagGuessGame from './FlagGuessGame';
+import SmartAdComponent from './SmartAdComponent';
 
 const Online = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -1213,6 +1214,31 @@ const Online = () => {
     >
       <Header />
       <Toolbar />
+      
+      {/* Horizontal Ad at Top */}
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '728px',
+          margin: '0 auto',
+          padding: '16px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}
+      >
+        <SmartAdComponent
+          adSlot="9646146414"
+          adType="header"
+          adFormat="auto"
+          responsive={true}
+          style={{
+            width: '100%',
+            minHeight: '90px',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        />
+      </Box>
       
       <Box sx={{ p: 3, maxWidth: 1200, mx: 'auto', width: '100%' }}>
         {/* Connection Status */}
