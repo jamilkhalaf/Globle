@@ -1,6 +1,6 @@
-import React, { Suspense, lazy, memo } from 'react'
+import React, { Suspense, lazy, memo, useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { ThemeProvider, createTheme, CircularProgress, Box, Typography, Button } from '@mui/material'
+import { ThemeProvider, createTheme, CircularProgress, Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material'
 import { ErrorBoundary } from 'react-error-boundary'
 import './App.css'
 
@@ -156,7 +156,143 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
 // Set this to true to enable maintenance mode
 const MAINTENANCE_MODE = false;
 
+// Ad Blocker Detection Component
+const AdBlockerModal = ({ open, onClose }) => (
+  <Dialog 
+    open={open} 
+    onClose={onClose}
+    maxWidth="sm"
+    fullWidth
+    PaperProps={{
+      sx: {
+        backgroundColor: 'rgba(30,34,44,0.98)',
+        color: 'white',
+        borderRadius: 3,
+        border: '1px solid rgba(255,255,255,0.1)'
+      }
+    }}
+  >
+    <DialogTitle sx={{ 
+      textAlign: 'center', 
+      color: '#f44336',
+      fontWeight: 'bold',
+      fontSize: '1.5rem'
+    }}>
+      ⚠️ Ad Blocker Detected
+    </DialogTitle>
+    <DialogContent>
+      <Typography variant="body1" sx={{ mb: 2, textAlign: 'center' }}>
+        We've detected that you're using an ad blocker. Our educational games are free thanks to advertising revenue.
+      </Typography>
+      <Typography variant="body1" sx={{ mb: 2, textAlign: 'center' }}>
+        To continue using our website, please:
+      </Typography>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
+          1. Disable your ad blocker for this site
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
+          2. Refresh the page
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
+          3. Or whitelist mapzap.click in your ad blocker settings
+        </Typography>
+      </Box>
+      <Typography variant="body2" sx={{ 
+        textAlign: 'center', 
+        color: 'rgba(255,255,255,0.7)',
+        fontStyle: 'italic'
+      }}>
+        Your support helps us keep these educational games free for everyone.
+      </Typography>
+    </DialogContent>
+    <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+      <Button 
+        variant="contained" 
+        onClick={() => window.location.reload()}
+        sx={{
+          backgroundColor: '#1976d2',
+          '&:hover': { backgroundColor: '#1565c0' }
+        }}
+      >
+        I've Disabled Ad Blocker - Reload Page
+      </Button>
+    </DialogActions>
+  </Dialog>
+);
+
 function App() {
+  const [adBlockerDetected, setAdBlockerDetected] = useState(false);
+  const [showAdBlockerModal, setShowAdBlockerModal] = useState(false);
+
+  // Ad blocker detection
+  useEffect(() => {
+    const detectAdBlocker = () => {
+      // Method 1: Test ad element
+      const testAd = document.createElement('div');
+      testAd.innerHTML = '&nbsp;';
+      testAd.className = 'adsbox';
+      testAd.style.position = 'absolute';
+      testAd.style.left = '-9999px';
+      testAd.style.top = '-9999px';
+      document.body.appendChild(testAd);
+      
+      setTimeout(() => {
+        if (testAd.offsetHeight === 0) {
+          setAdBlockerDetected(true);
+          setShowAdBlockerModal(true);
+        }
+        document.body.removeChild(testAd);
+      }, 100);
+
+      // Method 2: Test AdSense script
+      const testScript = document.createElement('script');
+      testScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
+      testScript.async = true;
+      
+      testScript.onerror = () => {
+        setAdBlockerDetected(true);
+        setShowAdBlockerModal(true);
+      };
+      
+      testScript.onload = () => {
+        setTimeout(() => {
+          if (typeof window.adsbygoogle === 'undefined') {
+            setAdBlockerDetected(true);
+            setShowAdBlockerModal(true);
+          }
+        }, 1000);
+      };
+      
+      document.head.appendChild(testScript);
+    };
+
+    // Run detection after a short delay
+    const timer = setTimeout(detectAdBlocker, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // If ad blocker is detected, show modal and block access
+  if (adBlockerDetected) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Box sx={{
+          minHeight: '100vh',
+          background: 'radial-gradient(ellipse at 60% 40%, #232a3b 60%, #121213 100%)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white'
+        }}>
+          <AdBlockerModal 
+            open={showAdBlockerModal} 
+            onClose={() => setShowAdBlockerModal(false)}
+          />
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   // If maintenance mode is enabled, show maintenance page for all routes
   if (MAINTENANCE_MODE) {
     return (
