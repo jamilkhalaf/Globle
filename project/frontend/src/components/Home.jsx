@@ -420,22 +420,6 @@ const Home = () => {
               }}
             />
           </Box>
-
-          {/* Mobile Bottom Ad */}
-          <Box sx={{ mt: 3 }}>
-              <SmartAdComponent
-              adSlot="mobile-bottom"
-              adType="banner"
-              adFormat="horizontal"
-                responsive={true}
-                style={{
-                  width: '100%',
-                  minHeight: '100px',
-                borderRadius: '8px',
-                overflow: 'hidden'
-                }}
-              />
-            </Box>
         </Box>
       )}
       

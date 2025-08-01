@@ -11,7 +11,6 @@ import FlagIcon from '@mui/icons-material/Flag';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MapIcon from '@mui/icons-material/Map';
 import { Link as RouterLink } from 'react-router-dom';
-import { HeaderAd } from './AdPlacements';
 import SmartAdComponent from './SmartAdComponent';
 
 const About = () => {
@@ -34,9 +33,6 @@ const About = () => {
       <Header />
       <Toolbar />
       
-      {/* Header Ad */}
-      <HeaderAd />
-
       {/* Square Ad at Top */}
       <Box
         sx={{
