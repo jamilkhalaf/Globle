@@ -1310,7 +1310,7 @@ const Game = () => {
       </Box>
 
       {/* Game Completion Ad - Shows when game is over */}
-      {/* <GameCompletionAd show={gameOver} /> */}
+      <GameCompletionAd show={gameOver} />
 
       {/* Ad Popup - Shows after notification modal closes */}
       {/* <AdPopup
