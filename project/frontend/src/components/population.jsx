@@ -55,6 +55,10 @@ const Population = () => {
   
   // Add state to track if ad popup has been shown and closed
   const [adPopupShown, setAdPopupShown] = useState(false);
+  
+  // Add state for showing population results
+  const [showPopulationResult, setShowPopulationResult] = useState(false);
+  const [lastGuessResult, setLastGuessResult] = useState(null);
 
   // Add effect to show ad popup after intro closes
   useEffect(() => {
