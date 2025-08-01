@@ -60,10 +60,14 @@ const Game = () => {
   
   // Add state to track if ad popup has been shown and closed
   const [adPopupShown, setAdPopupShown] = useState(false);
+  
+  // Add state to track if we're resetting the game
+  const [isResetting, setIsResetting] = useState(false);
 
   // Add effect to show ad popup after intro closes
   useEffect(() => {
-    if (!showIntro && !showAdPopup && !adPopupShown) {
+    console.log('Ad popup useEffect - showIntro:', showIntro, 'showAdPopup:', showAdPopup, 'adPopupShown:', adPopupShown, 'isResetting:', isResetting);
+    if (!showIntro && !showAdPopup && !adPopupShown && !isResetting) {
       console.log('Game: useEffect triggered - showing ad popup');
       // Small delay to ensure smooth transition
       const timer = setTimeout(() => {
@@ -72,7 +76,7 @@ const Game = () => {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showIntro, showAdPopup, adPopupShown]);
+  }, [showIntro, showAdPopup, adPopupShown, isResetting]);
 
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
@@ -608,10 +612,16 @@ const Game = () => {
   };
 
   const resetGame = () => {
+    console.log('resetGame called');
+    
+    // Set resetting flag to prevent ad popup interference
+    setIsResetting(true);
+    
     // Check if countries data is available
     if (!countries || countries.length === 0) {
       console.error('No countries data available for reset');
       setMessage('Error: No countries data available');
+      setIsResetting(false);
       return;
     }
 
@@ -645,6 +655,7 @@ const Game = () => {
         });
       }
       
+      console.log('Setting new secret country:', newSecretCountry?.properties?.name);
       setSecretCountry(newSecretCountry);
       setGuessedCountries([]);
       setMessage('Guess the country!');
@@ -655,9 +666,19 @@ const Game = () => {
       setGameStartTime(Date.now());
       setGameEndTime(null);
       setScore(0);
+      
+      // Ensure showIntro stays false after reset
+      setShowIntro(false);
+      
+      // Clear resetting flag after a short delay to allow state updates
+      setTimeout(() => {
+        setIsResetting(false);
+        console.log('Game reset completed successfully');
+      }, 100);
     } catch (error) {
       console.error('Error in resetGame:', error);
       setMessage('Error resetting game. Please refresh the page.');
+      setIsResetting(false);
     }
   };
 
