@@ -372,8 +372,7 @@ const Header = forwardRef((props, ref) => {
           zIndex: theme.zIndex.drawer + 1,
           backdropFilter: 'blur(10px)',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: { xs: 0, md: '0 0 12px 12px' }, // Rectangular on mobile, rounded on desktop
-          top: 0 // Adjust position if banner is shown
+          borderRadius: { xs: 0, md: '0 0 12px 12px' } // Rectangular on mobile, rounded on desktop
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 56, md: 64 } }}>

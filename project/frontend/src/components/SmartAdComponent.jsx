@@ -22,8 +22,6 @@ const SmartAdComponent = ({
   const [showFallback, setShowFallback] = useState(false);
   const [adsenseError, setAdsenseError] = useState('');
 
-  console.log(`SmartAdComponent mounted: ${adType}/${adSlot}`);
-
   // AdSense Configuration
   const ADSENSE_CONFIG = {
     publisherId: 'ca-pub-5704559495232028', // Your real AdSense publisher ID
@@ -31,41 +29,13 @@ const SmartAdComponent = ({
     domain: 'jamilweb.click' // Use your main domain, not subdomain
   };
 
-  // Debug shouldShow state changes
   useEffect(() => {
-    console.log(`shouldShow changed for ${adType}/${adSlot}:`, shouldShow);
-  }, [shouldShow, adType, adSlot]);
+    // Check if ad should be shown
+    const canShow = monetizationManager.shouldShowAd(adType, adSlot);
+    setShouldShow(canShow === true);
+    setShowFallback(canShow === 'fallback');
 
-  // Debug AdSense loading
-  useEffect(() => {
-    const checkAdSenseStatus = () => {
-      console.log('AdSense Status Check:');
-      console.log('- Window adsbygoogle:', !!window.adsbygoogle);
-      console.log('- Type of adsbygoogle:', typeof window.adsbygoogle);
-      console.log('- Array check:', Array.isArray(window.adsbygoogle));
-      console.log('- Publisher ID:', ADSENSE_CONFIG.publisherId);
-      console.log('- Domain:', ADSENSE_CONFIG.domain);
-      
-      // Try to initialize adsbygoogle as array if it's not
-      if (window.adsbygoogle && !Array.isArray(window.adsbygoogle)) {
-        console.log('Fixing adsbygoogle array...');
-        window.adsbygoogle = [];
-      }
-    };
-
-    // Check after page loads
-    setTimeout(checkAdSenseStatus, 1000);
-  }, []);
-
-  useEffect(() => {
-    // Temporarily bypass monetization manager for testing
-    // const shouldShowAd = monetizationManager.shouldShowAd(adType, adSlot);
-    const shouldShowAd = true; // Force show ads for testing
-    console.log(`Ad check for ${adType}/${adSlot}:`, shouldShowAd);
-    setShouldShow(shouldShowAd);
-
-    if (!shouldShowAd || shouldShowAd === 'fallback') {
-      console.log(`Ad not shown for ${adType}/${adSlot}:`, shouldShowAd);
+    if (!canShow || canShow === 'fallback') {
       return;
     }
 
@@ -76,63 +46,27 @@ const SmartAdComponent = ({
       return;
     }
 
-    // Check if AdSense script is loaded
-    const checkAdSenseLoaded = () => {
-      // Ensure adsbygoogle is an array
-      if (window.adsbygoogle && !Array.isArray(window.adsbygoogle)) {
-        window.adsbygoogle = [];
-      }
-      return window.adsbygoogle && Array.isArray(window.adsbygoogle);
-    };
-
-    // Initialize the ad with retry logic
-    const initializeAd = () => {
-      console.log('Checking ad container:', adRef.current);
-      console.log('AdSense available:', !!window.adsbygoogle);
-      
-      if (adRef.current && checkAdSenseLoaded()) {
+    // Initialize the ad after a short delay to ensure AdSense script is loaded
+    const timer = setTimeout(() => {
+      if (adRef.current && window.adsbygoogle) {
         try {
-          console.log('Initializing AdSense ad:', adSlot);
-          
-          // Ensure the ins element exists
-          const insElement = adRef.current.querySelector('ins.adsbygoogle');
-          if (!insElement) {
-            console.error('AdSense ins element not found');
-            setAdError(true);
-            setShowFallback(true);
-            return;
-          }
-          
           (window.adsbygoogle = window.adsbygoogle || []).push({});
           monetizationManager.markAdShown(adType, adSlot);
           monetizationManager.trackAdImpression(adType);
           setAdLoaded(true);
-          console.log('Ad initialized successfully');
         } catch (error) {
           console.error('AdSense error:', error);
           setAdError(true);
           setShowFallback(true);
         }
       } else {
-        console.warn('AdSense script not loaded or ad container not found');
-        console.log('adRef.current:', adRef.current);
-        console.log('checkAdSenseLoaded():', checkAdSenseLoaded());
+        // If AdSense is not available, show fallback
         setAdError(true);
         setShowFallback(true);
       }
-    };
+    }, 1000);
 
-    // Try to initialize immediately
-    if (checkAdSenseLoaded()) {
-      initializeAd();
-    } else {
-      // Wait for AdSense to load
-      const timer = setTimeout(() => {
-        initializeAd();
-      }, 3000); // Increased delay to ensure AdSense script loads
-
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, [adSlot, adType]);
 
   const getAdStyle = () => {
@@ -193,48 +127,24 @@ const SmartAdComponent = ({
     );
   }
 
-  // Show fallback content when ads are blocked or not available
+  // Show fallback content if ad blocker is detected or ad fails to load
   if (showFallback) {
     return (
-      <Box
-        sx={{
-          ...style,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '8px',
-          padding: '16px',
-          textAlign: 'center',
-          minHeight: style.minHeight || '100px'
-        }}
-      >
-        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
-          📢 Ad Space
-        </Typography>
-        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-          {adsenseError === 'Ad blocker detected' 
-            ? 'Please disable your ad blocker to support this site' 
-            : 'Ad loading...'
-          }
-        </Typography>
+      <Box sx={getAdStyle()}>
+        <FallbackAdComponent
+          adType={adType}
+          style={style}
+          className={className}
+          onAction={handleFallbackAction}
+        />
       </Box>
     );
   }
 
   // Don't render if ad shouldn't be shown
   if (!shouldShow) {
-    console.log(`Ad not rendered for ${adType}/${adSlot}: shouldShow is false`);
-    console.log('shouldShow state:', shouldShow);
-    console.log('adType:', adType);
-    console.log('adSlot:', adSlot);
     return null;
   }
-
-  console.log(`Rendering ad: ${adType}/${adSlot}`);
-  console.log('shouldShow state:', shouldShow);
 
   // Show custom fallback content if provided and ad fails to load
   if (adError && fallbackContent) {

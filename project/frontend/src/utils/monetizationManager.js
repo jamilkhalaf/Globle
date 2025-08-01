@@ -195,20 +195,12 @@ class MonetizationManager {
 
   // Check if ad should be shown based on frequency and user preferences
   shouldShowAd(adType, adSlot = null) {
-    console.log(`Checking if should show ad: ${adType}/${adSlot}`);
-    console.log('- User preferences showAds:', this.userPreferences.showAds);
-    console.log('- Ad blocked:', this.adBlocked);
-    console.log('- Daily impression count:', this.userPreferences.dailyImpressionCount);
-    console.log('- Max daily impressions:', this.maxDailyImpressions);
-    
     if (!this.userPreferences.showAds) {
-      console.log('Ads disabled by user preferences');
       return false;
     }
 
     // If ad blocker is active, show fallback content instead
     if (this.adBlocked) {
-      console.log('Ad blocker detected, showing fallback');
       return 'fallback';
     }
 
