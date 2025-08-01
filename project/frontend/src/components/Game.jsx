@@ -78,6 +78,21 @@ const Game = () => {
     }
   }, [showIntro, showAdPopup, adPopupShown, isResetting]);
 
+  // Add effect to track secretCountry changes and update map
+  useEffect(() => {
+    console.log('SecretCountry changed to:', secretCountry?.properties?.name);
+    if (secretCountry && mapRef.current) {
+      console.log('Updating map for new country');
+      // Force map to update
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+          mapRef.current.setView([20, 0], isMobile ? 2 : 3);
+        }
+      }, 100);
+    }
+  }, [secretCountry, isMobile]);
+
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
     const continents = {
@@ -822,6 +837,7 @@ const Game = () => {
       touchAction: 'none', // Prevent touch scrolling on the page
       WebkitOverflowScrolling: 'touch'
     }}>
+      {console.log('Game rendering - secretCountry:', secretCountry?.properties?.name, 'gameOver:', gameOver, 'isResetting:', isResetting, 'countries loaded:', countries.length > 0)}
       <Header />
       <Toolbar /> {/* This creates space for the fixed AppBar */}
       
@@ -840,110 +856,127 @@ const Game = () => {
         overflow: 'hidden', // Prevent scrolling
         touchAction: 'none' // Prevent touch scrolling
       }}>
-        <MapContainer
-          center={[20, 0]}
-          zoom={isMobile ? 2 : 3}
-          minZoom={isMobile ? 2 : 3}
-          maxZoom={10}
-          style={{ 
-            height: '100vh', 
-            width: '100vw',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            margin: 0,
-            padding: 0,
-            zIndex: 1,
-            backgroundColor: '#2b2b2b',
-            touchAction: 'pan-x pan-y', // Allow only map panning
-            overflow: 'hidden'
-          }}
-          zoomControl={!isMobile}
-          scrollWheelZoom={true}
-          doubleClickZoom={false}
-          dragging={true}
-          touchZoom={true}
-          boxZoom={false}
-          keyboard={false}
-          maxBounds={[[-85, -180], [85, 180]]}
-          maxBoundsViscosity={1.0}
-          ref={mapRef}
-          whenCreated={(map) => {
-            map.setMinZoom(isMobile ? 2 : 3);
-            map.setMaxZoom(10);
-            map.setMaxBounds([[-85, -180], [85, 180]]);
-            map.on('zoomend', () => {
-              const currentZoom = map.getZoom();
-              if (currentZoom < (isMobile ? 2 : 3)) {
-                map.setZoom(isMobile ? 2 : 3);
-              }
-            });
-            
-            // Prevent page scrolling when interacting with map
-            map.on('touchstart', (e) => {
-              e.originalEvent.stopPropagation();
-            });
-            
-            map.on('touchmove', (e) => {
-              e.originalEvent.stopPropagation();
-            });
-          }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-            noWrap={true}
-            updateWhenZooming={false}
-            updateWhenIdle={true}
-            keepBuffer={3}
-            maxNativeZoom={18}
+        {countries.length > 0 && secretCountry ? (
+          <MapContainer
+            key={`game-${secretCountry?.properties?.name || 'loading'}-${gameStartTime}`}
+            center={[20, 0]}
+            zoom={isMobile ? 2 : 3}
+            minZoom={isMobile ? 2 : 3}
             maxZoom={10}
-          />
-          {countries.map((country, index) => {
-            const isGuessed = guessedCountries.some(c => c.properties.name === country.properties.name);
-            const guessedCenter = isGuessed ? getCountryCenter(country) : null;
-            const secretCenter = getCountryCenter(secretCountry);
-            const distance = isGuessed ? calculateDistance(
-              guessedCenter.lat, guessedCenter.lon,
-              secretCenter.lat, secretCenter.lon
-            ) : null;
-            
-            // Debug logging for specific countries
-            if (isGuessed && (country.properties.name === 'France' || country.properties.name === 'Spain' || country.properties.name === 'Monaco')) {
-              console.log(`${country.properties.name}: distance=${distance}km, color=${getColor(distance)}`);
-            }
-            
-            // Determine fill color
-            let fillColor = '#333'; // Default for unguessed countries
-            if (isGuessed && distance !== null) {
-              fillColor = getColor(distance);
-            }
-            
-            return (
+            style={{ 
+              height: '100vh', 
+              width: '100vw',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              margin: 0,
+              padding: 0,
+              zIndex: 1,
+              backgroundColor: '#2b2b2b',
+              touchAction: 'pan-x pan-y', // Allow only map panning
+              overflow: 'hidden'
+            }}
+            zoomControl={!isMobile}
+            scrollWheelZoom={true}
+            doubleClickZoom={false}
+            dragging={true}
+            touchZoom={true}
+            boxZoom={false}
+            keyboard={false}
+            maxBounds={[[-85, -180], [85, 180]]}
+            maxBoundsViscosity={1.0}
+            ref={mapRef}
+            whenCreated={(map) => {
+              console.log('Map created/updated for country:', secretCountry?.properties?.name);
+              map.setMinZoom(isMobile ? 2 : 3);
+              map.setMaxZoom(10);
+              map.setMaxBounds([[-85, -180], [85, 180]]);
+              map.on('zoomend', () => {
+                const currentZoom = map.getZoom();
+                if (currentZoom < (isMobile ? 2 : 3)) {
+                  map.setZoom(isMobile ? 2 : 3);
+                }
+              });
+              
+              // Prevent page scrolling when interacting with map
+              map.on('touchstart', (e) => {
+                e.originalEvent.stopPropagation();
+              });
+              
+              map.on('touchmove', (e) => {
+                e.originalEvent.stopPropagation();
+              });
+            }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+              noWrap={true}
+              updateWhenZooming={false}
+              updateWhenIdle={true}
+              keepBuffer={3}
+              maxNativeZoom={18}
+              maxZoom={10}
+            />
+            {countries.map((country, index) => {
+              const isGuessed = guessedCountries.some(c => c.properties.name === country.properties.name);
+              const guessedCenter = isGuessed ? getCountryCenter(country) : null;
+              const secretCenter = getCountryCenter(secretCountry);
+              const distance = isGuessed ? calculateDistance(
+                guessedCenter.lat, guessedCenter.lon,
+                secretCenter.lat, secretCenter.lon
+              ) : null;
+              
+              // Debug logging for specific countries
+              if (isGuessed && (country.properties.name === 'France' || country.properties.name === 'Spain' || country.properties.name === 'Monaco')) {
+                console.log(`${country.properties.name}: distance=${distance}km, color=${getColor(distance)}`);
+              }
+              
+              // Determine fill color
+              let fillColor = '#333'; // Default for unguessed countries
+              if (isGuessed && distance !== null) {
+                fillColor = getColor(distance);
+              }
+              
+              return (
+                <GeoJSON
+                  key={index}
+                  data={country}
+                  style={{
+                    fillColor: fillColor,
+                    fillOpacity: isGuessed ? 0.9 : 0.3,
+                    color: '#666',
+                    weight: 1
+                  }}
+                />
+              );
+            })}
+            {showSecret && secretCountry && (
               <GeoJSON
-                key={index}
-                data={country}
+                data={secretCountry}
                 style={{
-                  fillColor: fillColor,
-                  fillOpacity: isGuessed ? 0.9 : 0.3,
-                  color: '#666',
-                  weight: 1
+                  fillColor: '#FF0000',
+                  fillOpacity: 1,
+                  color: '#fff',
+                  weight: 2
                 }}
               />
-            );
-          })}
-          {showSecret && secretCountry && (
-            <GeoJSON
-              data={secretCountry}
-              style={{
-                fillColor: '#FF0000',
-                fillOpacity: 1,
-                color: '#fff',
-                weight: 2
-              }}
-            />
-          )}
-        </MapContainer>
+            )}
+          </MapContainer>
+        ) : (
+          <Box sx={{ 
+            height: '100vh', 
+            width: '100vw', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            color: 'white', 
+            fontSize: '2rem', 
+            fontWeight: 'bold' 
+          }}>
+            Loading countries...
+          </Box>
+        )}
       </Box>
 
       {/* Game Info Panel */}
