@@ -30,21 +30,9 @@ const SmartAdComponent = ({
   };
 
   useEffect(() => {
-    // Check if ad should be shown
-    const canShow = monetizationManager.shouldShowAd(adType, adSlot);
-    setShouldShow(canShow === true);
-    setShowFallback(canShow === 'fallback');
-
-    if (!canShow || canShow === 'fallback') {
-      return;
-    }
-
-    // Check if AdSense is properly configured
-    if (!ADSENSE_CONFIG.isConfigured) {
-      setAdsenseError('AdSense not configured. Please add your publisher ID.');
-      setShowFallback(true);
-      return;
-    }
+    // Always show ads, regardless of ad blocker detection
+    setShouldShow(true);
+    setShowFallback(false);
 
     // Initialize the ad after a short delay to ensure AdSense script is loaded
     const timer = setTimeout(() => {
@@ -57,12 +45,12 @@ const SmartAdComponent = ({
         } catch (error) {
           console.error('AdSense error:', error);
           setAdError(true);
-          setShowFallback(true);
+          // Don't show fallback, let AdSense handle it
         }
       } else {
-        // If AdSense is not available, show fallback
+        // If AdSense is not available, still try to show the ad container
         setAdError(true);
-        setShowFallback(true);
+        // Don't show fallback, let the ad container remain visible
       }
     }, 1000);
 
@@ -127,34 +115,12 @@ const SmartAdComponent = ({
     );
   }
 
-  // Show fallback content if ad blocker is detected or ad fails to load
-  if (showFallback) {
-    return (
-      <Box sx={getAdStyle()}>
-        <FallbackAdComponent
-          adType={adType}
-          style={style}
-          className={className}
-          onAction={handleFallbackAction}
-        />
-      </Box>
-    );
-  }
-
   // Don't render if ad shouldn't be shown
   if (!shouldShow) {
     return null;
   }
 
-  // Show custom fallback content if provided and ad fails to load
-  if (adError && fallbackContent) {
-    return (
-      <Box sx={getAdStyle()}>
-        {fallbackContent}
-      </Box>
-    );
-  }
-
+  // Always try to show the ad, don't show fallback content
   return (
     <Box
       ref={adRef}

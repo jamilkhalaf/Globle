@@ -33,11 +33,11 @@ const About = () => {
       <Header />
       <Toolbar />
       
-      {/* Square Ad at Top */}
+      {/* Horizontal Ad at Top */}
       <Box
         sx={{
           width: '100%',
-          maxWidth: '300px',
+          maxWidth: '728px',
           margin: '0 auto',
           padding: '16px',
           display: 'flex',
@@ -45,13 +45,13 @@ const About = () => {
         }}
       >
         <SmartAdComponent
-          adSlot="3930499892"
-          adType="square"
+          adSlot="9646146414"
+          adType="header"
           adFormat="auto"
           responsive={true}
           style={{
-            width: '300px',
-            minHeight: '250px',
+            width: '100%',
+            minHeight: '90px',
             borderRadius: '8px',
             overflow: 'hidden'
           }}

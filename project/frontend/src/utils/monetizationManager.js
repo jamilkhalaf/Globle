@@ -81,7 +81,7 @@ class MonetizationManager {
 
   // Check if ad blocker is active with multiple detection methods
   checkAdBlocker() {
-    // Temporarily disable ad blocker detection for testing
+    // Always allow ads to show, even with ad blockers
     this.adBlocked = false;
     return;
     
@@ -199,7 +199,7 @@ class MonetizationManager {
 
   // Check if ad should be shown based on frequency and user preferences
   shouldShowAd(adType, adSlot = null) {
-    // Temporarily disable all blocking for testing
+    // Always show ads, regardless of ad blocker or other restrictions
     return true;
     
     if (!this.userPreferences.showAds) {
