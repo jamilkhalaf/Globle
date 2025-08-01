@@ -31,11 +31,39 @@ const SmartAdComponent = ({
 
   useEffect(() => {
     // Check if ad should be shown
-    const canShow = monetizationManager.shouldShowAd(adType, adSlot);
-    setShouldShow(canShow === true);
-    setShowFallback(canShow === 'fallback');
+    const shouldShowAd = monetizationManager.shouldShowAd();
+    setShouldShow(shouldShowAd);
 
-    if (!canShow || canShow === 'fallback') {
+    // Detect ad blocker
+    const detectAdBlocker = () => {
+      const testAd = document.createElement('div');
+      testAd.innerHTML = '&nbsp;';
+      testAd.className = 'adsbox';
+      testAd.style.position = 'absolute';
+      testAd.style.left = '-9999px';
+      testAd.style.top = '-9999px';
+      document.body.appendChild(testAd);
+      
+      const isBlocked = testAd.offsetHeight === 0;
+      document.body.removeChild(testAd);
+      
+      if (isBlocked) {
+        console.warn('Ad blocker detected! Ads may not display properly.');
+        setAdsenseError('Ad blocker detected');
+      }
+      
+      return isBlocked;
+    };
+
+    // Check for ad blocker
+    const adBlockerDetected = detectAdBlocker();
+    
+    if (adBlockerDetected) {
+      setShowFallback(true);
+      return;
+    }
+
+    if (!shouldShowAd || shouldShowAd === 'fallback') {
       return;
     }
 
@@ -127,16 +155,33 @@ const SmartAdComponent = ({
     );
   }
 
-  // Show fallback content if ad blocker is detected or ad fails to load
+  // Show fallback content when ads are blocked or not available
   if (showFallback) {
     return (
-      <Box sx={getAdStyle()}>
-        <FallbackAdComponent
-          adType={adType}
-          style={style}
-          className={className}
-          onAction={handleFallbackAction}
-        />
+      <Box
+        sx={{
+          ...style,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '8px',
+          padding: '16px',
+          textAlign: 'center',
+          minHeight: style.minHeight || '100px'
+        }}
+      >
+        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
+          {adsenseError === 'Ad blocker detected' ? '🔒 Ad blocker detected' : '📢 Ad Space'}
+        </Typography>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+          {adsenseError === 'Ad blocker detected' 
+            ? 'Please disable your ad blocker to support this site' 
+            : 'Ad loading...'
+          }
+        </Typography>
       </Box>
     );
   }

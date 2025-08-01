@@ -50,6 +50,30 @@ const Header = forwardRef((props, ref) => {
   const [gamesAnchorEl, setGamesAnchorEl] = useState(null);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
   const [user, setUser] = useState(null);
+  const [showAdBlockerBanner, setShowAdBlockerBanner] = useState(false);
+
+  // Detect ad blocker on component mount
+  useEffect(() => {
+    const detectAdBlocker = () => {
+      const testAd = document.createElement('div');
+      testAd.innerHTML = '&nbsp;';
+      testAd.className = 'adsbox';
+      testAd.style.position = 'absolute';
+      testAd.style.left = '-9999px';
+      testAd.style.top = '-9999px';
+      document.body.appendChild(testAd);
+      
+      const isBlocked = testAd.offsetHeight === 0;
+      document.body.removeChild(testAd);
+      
+      if (isBlocked) {
+        setShowAdBlockerBanner(true);
+      }
+    };
+
+    // Check after a short delay to ensure page is loaded
+    setTimeout(detectAdBlocker, 1000);
+  }, []);
 
   // Memoize user data to prevent unnecessary re-renders
   useEffect(() => {
@@ -365,6 +389,29 @@ const Header = forwardRef((props, ref) => {
 
   return (
     <>
+      {/* Ad Blocker Detection Banner */}
+      {showAdBlockerBanner && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'rgba(255, 193, 7, 0.95)',
+            color: '#000',
+            padding: '8px 16px',
+            textAlign: 'center',
+            zIndex: theme.zIndex.drawer + 2,
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(255, 193, 7, 0.3)'
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            🔒 Ad blocker detected. Please disable it to support this site and see ads.
+          </Typography>
+        </Box>
+      )}
+
       <AppBar 
         position="fixed" 
         sx={{ 
@@ -372,7 +419,8 @@ const Header = forwardRef((props, ref) => {
           zIndex: theme.zIndex.drawer + 1,
           backdropFilter: 'blur(10px)',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: { xs: 0, md: '0 0 12px 12px' } // Rectangular on mobile, rounded on desktop
+          borderRadius: { xs: 0, md: '0 0 12px 12px' }, // Rectangular on mobile, rounded on desktop
+          top: showAdBlockerBanner ? '40px' : 0 // Adjust position if banner is shown
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', minHeight: { xs: 56, md: 64 } }}>
