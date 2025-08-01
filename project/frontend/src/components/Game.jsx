@@ -141,6 +141,12 @@ const Game = () => {
   };
 
   const selectRandomCountry = (countryList) => {
+    // Check if countryList is valid
+    if (!countryList || countryList.length === 0) {
+      console.error('Invalid countryList provided to selectRandomCountry');
+      return null;
+    }
+
     // Filter out countries that are too small, have invalid coordinates, or aren't in the official 195 countries
     const validCountries = countryList.filter(country => {
       try {
@@ -149,9 +155,16 @@ const Game = () => {
         const isOfficialCountry = countryInfo[country.properties.name] && officialCountries.includes(country.properties.name);
         return hasValidCoordinates && isOfficialCountry;
       } catch (e) {
+        console.warn('Error filtering country:', country?.properties?.name, e);
         return false;
       }
     });
+    
+    // If no valid countries found, return null
+    if (validCountries.length === 0) {
+      console.error('No valid countries found after filtering');
+      return null;
+    }
     
     // Filter out recently used countries (last 5 games) for better variety
     const availableCountries = validCountries.filter(country => 
@@ -168,8 +181,13 @@ const Game = () => {
     if (random < 0.7) {
       // 70% chance: prefer easy and medium countries
       const easyMediumCountries = countriesToUse.filter(country => {
-        const difficulty = getCountryDifficulty(country.properties.name);
-        return difficulty === 'easy' || difficulty === 'medium';
+        try {
+          const difficulty = getCountryDifficulty(country.properties.name);
+          return difficulty === 'easy' || difficulty === 'medium';
+        } catch (e) {
+          console.warn('Error getting difficulty for country:', country?.properties?.name, e);
+          return false;
+        }
       });
       
       if (easyMediumCountries.length > 0) {
@@ -186,6 +204,12 @@ const Game = () => {
     console.log(`Valid countries after filtering: ${validCountries.length}`);
     console.log(`Available countries (excluding recent): ${countriesToUse.length}`);
     console.log(`Final selection pool: ${filteredCountries.length}`);
+    
+    // Check if we have any countries to select from
+    if (filteredCountries.length === 0) {
+      console.error('No countries available in final selection pool');
+      return null;
+    }
     
     // Use a more robust random selection
     const randomIndex = Math.floor(Math.random() * filteredCountries.length);
@@ -209,8 +233,17 @@ const Game = () => {
   // Load countries data
   useEffect(() => {
     fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
+        if (!data.features || data.features.length === 0) {
+          throw new Error('No countries data found in response');
+        }
+        
         setCountries(data.features);
         // Create options for autocomplete
         const options = data.features.map(country => ({
@@ -224,13 +257,17 @@ const Game = () => {
         
         // Start new game
         const randomCountry = selectRandomCountry(data.features);
-        setSecretCountry(randomCountry);
-        setGameStartTime(Date.now());
-        setMessage('Guess the country!');
+        if (randomCountry) {
+          setSecretCountry(randomCountry);
+          setGameStartTime(Date.now());
+          setMessage('Guess the country!');
+        } else {
+          setMessage('Error: Could not select a country. Please refresh the page.');
+        }
       })
       .catch(error => {
         console.error('Error loading countries:', error);
-        setMessage('Error loading countries data');
+        setMessage('Error loading countries data. Please refresh the page.');
       });
   }, []);
 
@@ -571,38 +608,57 @@ const Game = () => {
   };
 
   const resetGame = () => {
+    // Check if countries data is available
+    if (!countries || countries.length === 0) {
+      console.error('No countries data available for reset');
+      setMessage('Error: No countries data available');
+      return;
+    }
+
     // Start new game with different country
     let newSecretCountry;
     let attempts = 0;
     const maxAttempts = 10; // Prevent infinite loop
     
-    do {
-      newSecretCountry = selectRandomCountry(countries);
-      attempts++;
-    } while (
-      newSecretCountry.properties.name === secretCountry?.properties.name && 
-      attempts < maxAttempts
-    );
-    
-    // Track recently used countries for better variety
-    if (secretCountry) {
-      setRecentlyUsedCountries(prev => {
-        const updated = [secretCountry.properties.name, ...prev.slice(0, 4)]; // Keep last 5
-        console.log(`Recently used countries: ${updated.join(', ')}`);
-        return updated;
-      });
+    try {
+      do {
+        newSecretCountry = selectRandomCountry(countries);
+        attempts++;
+      } while (
+        newSecretCountry && 
+        newSecretCountry.properties.name === secretCountry?.properties.name && 
+        attempts < maxAttempts
+      );
+      
+      // If we couldn't find a different country, just use the same one
+      if (!newSecretCountry) {
+        console.warn('Could not find a different country, reusing current one');
+        newSecretCountry = secretCountry;
+      }
+      
+      // Track recently used countries for better variety
+      if (secretCountry) {
+        setRecentlyUsedCountries(prev => {
+          const updated = [secretCountry.properties.name, ...prev.slice(0, 4)]; // Keep last 5
+          console.log(`Recently used countries: ${updated.join(', ')}`);
+          return updated;
+        });
+      }
+      
+      setSecretCountry(newSecretCountry);
+      setGuessedCountries([]);
+      setMessage('Guess the country!');
+      setGameOver(false);
+      setShowSecret(false);
+      setLastDistance(null);
+      setGuess('');
+      setGameStartTime(Date.now());
+      setGameEndTime(null);
+      setScore(0);
+    } catch (error) {
+      console.error('Error in resetGame:', error);
+      setMessage('Error resetting game. Please refresh the page.');
     }
-    
-    setSecretCountry(newSecretCountry);
-    setGuessedCountries([]);
-    setMessage('Guess the country!');
-    setGameOver(false);
-    setShowSecret(false);
-    setLastDistance(null);
-    setGuess('');
-    setGameStartTime(Date.now());
-    setGameEndTime(null);
-    setScore(0);
   };
 
   const handleGiveUp = () => {
