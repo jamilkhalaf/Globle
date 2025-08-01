@@ -502,35 +502,6 @@ const About = () => {
         </Box>
       </Fade>
 
-      {/* Mobile Banner Ad - Fixed at bottom on mobile */}
-      {isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            zIndex: 1000,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            backdropFilter: 'blur(10px)',
-            padding: '8px'
-          }}
-        >
-          <SmartAdComponent
-            adSlot="mobile-banner"
-            adType="mobile"
-            adFormat="horizontal"
-            responsive={true}
-            style={{
-              width: '100%',
-              minHeight: '50px',
-              borderRadius: '8px',
-              overflow: 'hidden'
-            }}
-          />
-        </Box>
-      )}
-
       {/* Desktop Sidebar Ad - Fixed on right side */}
       {!isMobile && (
         <Box
