@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions, useTheme, useMediaQuery } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
 import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
+import SmartAdComponent from './SmartAdComponent';
+import { GameCompletionAd } from './AdPlacements';
 
 // Robust mapping from country name to ISO 3166-1 alpha-2 code
 const nameToCode = {
@@ -61,6 +63,8 @@ function getRandomCountry(exclude) {
 const NUM_PIECES = 8;
 
 const Flagle = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [target, setTarget] = useState(() => getRandomCountry());
   const [guess, setGuess] = useState('');
   const [revealedPieces, setRevealedPieces] = useState([]); // Array of revealed piece indices
@@ -355,6 +359,65 @@ const Flagle = () => {
           )}
         </Paper>
       </Fade>
+
+      {/* Game Completion Ad - Shows when game is over */}
+      <GameCompletionAd show={gameOver} />
+
+      {/* Mobile Banner Ad - Fixed at bottom on mobile */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            zIndex: 1000,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(10px)',
+            padding: '8px'
+          }}
+        >
+          <SmartAdComponent
+            adSlot="mobile-banner"
+            adType="mobile"
+            adFormat="horizontal"
+            responsive={true}
+            style={{
+              width: '100%',
+              minHeight: '50px',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Desktop Sidebar Ad - Fixed on right side */}
+      {!isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            right: '20px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '160px',
+            zIndex: 999
+          }}
+        >
+          <SmartAdComponent
+            adSlot="right-sidebar"
+            adType="sidebar"
+            adFormat="vertical"
+            responsive={false}
+            style={{
+              width: '160px',
+              minHeight: '600px',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}
+          />
+        </Box>
+      )}
     </Box>
   );
 };

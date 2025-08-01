@@ -14,6 +14,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
+import SmartAdComponent from './SmartAdComponent';
+import { GameCompletionAd } from './AdPlacements';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -1170,6 +1172,66 @@ const Game = () => {
           ?
         </Button>
       </Box>
+
+      {/* Game Completion Ad - Shows when game is over */}
+      <GameCompletionAd show={gameOver} />
+
+      {/* Mobile Banner Ad - Fixed at bottom on mobile */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            width: '100%',
+            zIndex: 1000,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(10px)',
+            padding: '8px'
+          }}
+        >
+          <SmartAdComponent
+            adSlot="mobile-banner"
+            adType="mobile"
+            adFormat="horizontal"
+            responsive={true}
+            style={{
+              width: '100%',
+              minHeight: '50px',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Desktop Sidebar Ad - Fixed on right side */}
+      {!isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            right: '20px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '160px',
+            zIndex: 999
+          }}
+        >
+          <SmartAdComponent
+            adSlot="right-sidebar"
+            adType="sidebar"
+            adFormat="vertical"
+            responsive={false}
+            style={{
+              width: '160px',
+              minHeight: '600px',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}
+          />
+        </Box>
+      )}
+
       <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
         <DialogTitle>Contact</DialogTitle>
         <DialogContent>

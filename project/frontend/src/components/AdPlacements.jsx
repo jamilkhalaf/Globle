@@ -18,7 +18,7 @@ export const HeaderAd = () => {
       }}
     >
       <SmartAdComponent
-        adSlot="YOUR_HEADER_AD_SLOT" // Replace with your AdSense ad slot ID
+        adSlot="header-banner" // ✅ Create this ad unit in AdSense
         adType="header"
         adFormat="auto"
         style={{
@@ -50,9 +50,10 @@ export const SidebarAd = () => {
       }}
     >
       <SmartAdComponent
-        adSlot="YOUR_SIDEBAR_AD_SLOT" // Replace with your AdSense ad slot ID
+        adSlot="9833563267" // ✅ Your new AdSense slot ID
         adType="sidebar"
         adFormat="auto"
+        responsive={true}
         style={{
           minHeight: '600px',
           backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -75,7 +76,7 @@ export const InContentAd = () => {
       }}
     >
       <SmartAdComponent
-        adSlot="YOUR_INCONTENT_AD_SLOT" // Replace with your AdSense ad slot ID
+        adSlot="in-content" // ✅ Create this ad unit in AdSense
         adType="inContent"
         adFormat="auto"
         style={{
@@ -100,7 +101,7 @@ export const FooterAd = () => {
       }}
     >
       <SmartAdComponent
-        adSlot="YOUR_FOOTER_AD_SLOT" // Replace with your AdSense ad slot ID
+        adSlot="footer-banner" // ✅ Create this ad unit in AdSense
         adType="footer"
         adFormat="auto"
         style={{
@@ -134,7 +135,7 @@ export const MobileBannerAd = () => {
       }}
     >
       <SmartAdComponent
-        adSlot="YOUR_MOBILE_BANNER_AD_SLOT" // Replace with your AdSense ad slot ID
+        adSlot="mobile-banner" // ✅ Create this ad unit in AdSense
         adType="mobile"
         adFormat="auto"
         style={{
@@ -162,7 +163,7 @@ export const GameCompletionAd = ({ show }) => {
       }}
     >
       <SmartAdComponent
-        adSlot="YOUR_GAME_COMPLETION_AD_SLOT" // Replace with your AdSense ad slot ID
+        adSlot="game-completion" // ✅ Create this ad unit in AdSense
         adType="gameCompletion"
         adFormat="auto"
         style={{

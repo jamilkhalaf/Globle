@@ -69,10 +69,10 @@ const Home = () => {
             }}
           >
             <SmartAdComponent
-              adSlot="left-sidebar"
+              adSlot="9833563267"
               adType="sidebar"
-              adFormat="vertical"
-              responsive={false}
+              adFormat="auto"
+              responsive={true}
               style={{
                 width: '180px',
                 minHeight: '600px',
