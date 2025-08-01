@@ -81,10 +81,6 @@ class MonetizationManager {
 
   // Check if ad blocker is active with multiple detection methods
   checkAdBlocker() {
-    // Always allow ads to show, even with ad blockers
-    this.adBlocked = false;
-    return;
-    
     // Method 1: Test ad element
     const testAd = document.createElement('div');
     testAd.innerHTML = '&nbsp;';
@@ -98,6 +94,7 @@ class MonetizationManager {
       if (testAd.offsetHeight === 0) {
         this.adBlocked = true;
         console.log('Ad blocker detected via element test');
+        this.showAdBlockerBlock();
       }
       document.body.removeChild(testAd);
     }, 100);
@@ -110,6 +107,7 @@ class MonetizationManager {
     testScript.onerror = () => {
       this.adBlocked = true;
       console.log('Ad blocker detected via script loading test');
+      this.showAdBlockerBlock();
     };
     
     testScript.onload = () => {
@@ -118,11 +116,83 @@ class MonetizationManager {
         if (typeof window.adsbygoogle === 'undefined') {
           this.adBlocked = true;
           console.log('Ad blocker detected via AdSense availability test');
+          this.showAdBlockerBlock();
         }
       }, 1000);
     };
     
     document.head.appendChild(testScript);
+  }
+
+  // Show ad blocker block screen
+  showAdBlockerBlock() {
+    // Create overlay if it doesn't exist
+    if (!document.getElementById('ad-blocker-overlay')) {
+      const overlay = document.createElement('div');
+      overlay.id = 'ad-blocker-overlay';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: Arial, sans-serif;
+        color: white;
+      `;
+      
+      overlay.innerHTML = `
+        <div style="
+          background: rgba(30, 34, 44, 0.98);
+          padding: 40px;
+          border-radius: 12px;
+          text-align: center;
+          max-width: 500px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        ">
+          <h2 style="color: #f44336; margin-bottom: 20px; font-size: 24px;">
+            🚫 Ad Blocker Detected
+          </h2>
+          <p style="margin-bottom: 20px; line-height: 1.6; font-size: 16px;">
+            Our games are free thanks to advertising revenue. To continue playing, please disable your ad blocker for this site.
+          </p>
+          <div style="margin-bottom: 30px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+            <h3 style="margin-bottom: 15px; color: #4CAF50;">How to disable ad blocker:</h3>
+            <ul style="text-align: left; line-height: 1.8;">
+              <li><strong>uBlock Origin:</strong> Click the extension icon → Click the power button → Refresh page</li>
+              <li><strong>AdBlock Plus:</strong> Click the extension icon → Disable for this site</li>
+              <li><strong>Chrome Ad Blocker:</strong> Click the shield icon in address bar → Allow ads</li>
+              <li><strong>Other blockers:</strong> Look for the extension icon and disable for this site</li>
+            </ul>
+          </div>
+          <button onclick="location.reload()" style="
+            background: linear-gradient(90deg, #1976d2, #00bcd4);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+          ">
+            I've Disabled Ad Blocker - Reload Page
+          </button>
+          <p style="margin-top: 20px; font-size: 14px; color: rgba(255, 255, 255, 0.7);">
+            If you continue to see this message, try refreshing the page or clearing your browser cache.
+          </p>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+    }
   }
 
   // Get fallback content for when ads are blocked
@@ -199,16 +269,13 @@ class MonetizationManager {
 
   // Check if ad should be shown based on frequency and user preferences
   shouldShowAd(adType, adSlot = null) {
-    // Always show ads, regardless of ad blocker or other restrictions
-    return true;
-    
-    if (!this.userPreferences.showAds) {
+    // Block access if ad blocker is detected
+    if (this.adBlocked) {
       return false;
     }
 
-    // If ad blocker is active, show fallback content instead
-    if (this.adBlocked) {
-      return 'fallback';
+    if (!this.userPreferences.showAds) {
+      return false;
     }
 
     // Check daily impression limit
