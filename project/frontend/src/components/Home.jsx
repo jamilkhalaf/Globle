@@ -246,10 +246,10 @@ const Home = () => {
             }}
           >
             <SmartAdComponent
-              adSlot="right-sidebar"
+              adSlot="5275872162"
               adType="sidebar"
-              adFormat="vertical"
-              responsive={false}
+              adFormat="auto"
+              responsive={true}
               style={{
                 width: '180px',
                 minHeight: '600px',
@@ -404,6 +404,22 @@ const Home = () => {
               </Box>
             </Paper>
           </Fade>
+
+          {/* Mobile Square Ad */}
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+            <SmartAdComponent
+              adSlot="3930499892"
+              adType="square"
+              adFormat="auto"
+              responsive={true}
+              style={{
+                width: '300px',
+                minHeight: '250px',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            />
+          </Box>
 
           {/* Mobile Bottom Ad */}
           <Box sx={{ mt: 3 }}>

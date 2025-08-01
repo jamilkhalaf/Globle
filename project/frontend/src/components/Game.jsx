@@ -1205,33 +1205,6 @@ const Game = () => {
         </Box>
       )}
 
-      {/* Desktop Sidebar Ad - Fixed on right side */}
-      {!isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            right: '20px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '160px',
-            zIndex: 999
-          }}
-        >
-          <SmartAdComponent
-            adSlot="right-sidebar"
-            adType="sidebar"
-            adFormat="vertical"
-            responsive={false}
-            style={{
-              width: '160px',
-              minHeight: '600px',
-              borderRadius: '8px',
-              overflow: 'hidden'
-            }}
-          />
-        </Box>
-      )}
-
       <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
         <DialogTitle>Contact</DialogTitle>
         <DialogContent>

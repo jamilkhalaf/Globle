@@ -3,6 +3,7 @@ import { Box, Typography, Paper, Button, Stack, Fade, useTheme, useMediaQuery, T
 import Header from './Header';
 import NotificationModal from './NotificationModal';
 import officialCountries from './officialCountries';
+import SmartAdComponent from './SmartAdComponent';
 
 const Hangman = () => {
   const theme = useTheme();
@@ -482,6 +483,61 @@ const Hangman = () => {
           </Box>
         </Paper>
       </Fade>
+
+      {/* Desktop Sidebar Ads - Fixed on left and right sides */}
+      {!isMobile && (
+        <>
+          {/* Left Sidebar Ad */}
+          <Box
+            sx={{
+              position: 'fixed',
+              left: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '160px',
+              zIndex: 999
+            }}
+          >
+            <SmartAdComponent
+              adSlot="9833563267"
+              adType="sidebar"
+              adFormat="auto"
+              responsive={true}
+              style={{
+                width: '160px',
+                minHeight: '600px',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            />
+          </Box>
+
+          {/* Right Sidebar Ad */}
+          <Box
+            sx={{
+              position: 'fixed',
+              right: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '160px',
+              zIndex: 999
+            }}
+          >
+            <SmartAdComponent
+              adSlot="5275872162"
+              adType="sidebar"
+              adFormat="auto"
+              responsive={true}
+              style={{
+                width: '160px',
+                minHeight: '600px',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            />
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography, Paper, Button, Stack, Fade, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Button, Stack, Fade, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
 import countryExtra from './countryExtra';
 import NotificationModal from './NotificationModal';
 import CloseIcon from '@mui/icons-material/Close';
 import officialCountries from './officialCountries';
+import SmartAdComponent from './SmartAdComponent';
 
 const NUM_TRIES = 6;
 
@@ -106,18 +107,21 @@ function getHints(country, extra, revealed, target) {
 }
 
 const Worldle = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [target, setTarget] = useState(() => getRandomCountry());
   const [guess, setGuess] = useState('');
-  const [inputValue, setInputValue] = useState('');
   const [guesses, setGuesses] = useState([]);
-  const [revealed, setRevealed] = useState(1); // Start with first hint
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('Guess the country!');
+  const [streak, setStreak] = useState(0);
+  const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState('');
+  const [showIntro, setShowIntro] = useState(true);
+  const [openImage, setOpenImage] = useState(null);
+  const [revealed, setRevealed] = useState(1); // Start with first hint
   const [round, setRound] = useState(0);
   const [scrollHint, setScrollHint] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
-  const [openImage, setOpenImage] = useState(null); // null | { type: 'image' | 'flag', src: string }
   const [bestScore, setBestScore] = useState(0);
 
   const country = countryInfo[target];
@@ -376,6 +380,61 @@ const Worldle = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Desktop Sidebar Ads - Fixed on left and right sides */}
+      {!isMobile && (
+        <>
+          {/* Left Sidebar Ad */}
+          <Box
+            sx={{
+              position: 'fixed',
+              left: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '160px',
+              zIndex: 999
+            }}
+          >
+            <SmartAdComponent
+              adSlot="9833563267"
+              adType="sidebar"
+              adFormat="auto"
+              responsive={true}
+              style={{
+                width: '160px',
+                minHeight: '600px',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            />
+          </Box>
+
+          {/* Right Sidebar Ad */}
+          <Box
+            sx={{
+              position: 'fixed',
+              right: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '160px',
+              zIndex: 999
+            }}
+          >
+            <SmartAdComponent
+              adSlot="5275872162"
+              adType="sidebar"
+              adFormat="auto"
+              responsive={true}
+              style={{
+                width: '160px',
+                minHeight: '600px',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            />
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

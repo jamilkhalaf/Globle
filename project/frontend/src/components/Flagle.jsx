@@ -405,10 +405,10 @@ const Flagle = () => {
           }}
         >
           <SmartAdComponent
-            adSlot="right-sidebar"
+            adSlot="5275872162"
             adType="sidebar"
-            adFormat="vertical"
-            responsive={false}
+            adFormat="auto"
+            responsive={true}
             style={{
               width: '160px',
               minHeight: '600px',

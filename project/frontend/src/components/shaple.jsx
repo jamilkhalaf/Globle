@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Button, Fade, Toolbar, ToggleButton, ToggleButtonGroup, TextField, Stack } from '@mui/material';
+import { Box, Typography, Paper, Button, Fade, Toolbar, ToggleButton, ToggleButtonGroup, TextField, Stack, useTheme, useMediaQuery } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import Header from './Header';
 import NotificationModal from './NotificationModal';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import officialCountries from './officialCountries';
+import SmartAdComponent from './SmartAdComponent';
 
 // Country to code mapping (from Flagle)
 const countryToCode = {
@@ -107,16 +108,18 @@ const updateGameStats = async (finalScore, streak, attempts) => {
 };
 
 const Shaple = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mode, setMode] = useState('world');
   const [secret, setSecret] = useState('');
   const [guess, setGuess] = useState('');
   const [message, setMessage] = useState('');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [showIntro, setShowIntro] = useState(true);
-  const [guessesLeft, setGuessesLeft] = useState(5);
   const [gameOver, setGameOver] = useState(false);
   const [showContinue, setShowContinue] = useState(false);
+  const [guessesLeft, setGuessesLeft] = useState(6);
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     if (!showIntro) startNewGame();
@@ -347,8 +350,63 @@ const Shaple = () => {
           </Box>
         </Paper>
       </Fade>
-    </Box>
-  );
+
+        {/* Desktop Sidebar Ads - Fixed on left and right sides */}
+        {!isMobile && (
+          <>
+            {/* Left Sidebar Ad */}
+            <Box
+              sx={{
+                position: 'fixed',
+                left: '20px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '160px',
+                zIndex: 999
+              }}
+            >
+              <SmartAdComponent
+                adSlot="9833563267"
+                adType="sidebar"
+                adFormat="auto"
+                responsive={true}
+                style={{
+                  width: '160px',
+                  minHeight: '600px',
+                  borderRadius: '8px',
+                  overflow: 'hidden'
+                }}
+              />
+            </Box>
+
+            {/* Right Sidebar Ad */}
+            <Box
+              sx={{
+                position: 'fixed',
+                right: '20px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '160px',
+                zIndex: 999
+              }}
+            >
+              <SmartAdComponent
+                adSlot="5275872162"
+                adType="sidebar"
+                adFormat="auto"
+                responsive={true}
+                style={{
+                  width: '160px',
+                  minHeight: '600px',
+                  borderRadius: '8px',
+                  overflow: 'hidden'
+                }}
+              />
+            </Box>
+          </>
+        )}
+      </Box>
+    );
 };
 
 export default Shaple; 

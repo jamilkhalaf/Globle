@@ -8,6 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import NotificationModal from './NotificationModal';
+import SmartAdComponent from './SmartAdComponent';
 
 const getRandomCountry = (exclude) => {
   const keys = Object.keys(countryInfo).filter(k => k !== exclude);
@@ -699,6 +700,61 @@ const Population = () => {
           </DialogContentText>
         </DialogContent>
       </Dialog>
+
+      {/* Desktop Sidebar Ads - Fixed on left and right sides */}
+      {!isMobile && (
+        <>
+          {/* Left Sidebar Ad */}
+          <Box
+            sx={{
+              position: 'fixed',
+              left: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '160px',
+              zIndex: 999
+            }}
+          >
+            <SmartAdComponent
+              adSlot="9833563267"
+              adType="sidebar"
+              adFormat="auto"
+              responsive={true}
+              style={{
+                width: '160px',
+                minHeight: '600px',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            />
+          </Box>
+
+          {/* Right Sidebar Ad */}
+          <Box
+            sx={{
+              position: 'fixed',
+              right: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '160px',
+              zIndex: 999
+            }}
+          >
+            <SmartAdComponent
+              adSlot="5275872162"
+              adType="sidebar"
+              adFormat="auto"
+              responsive={true}
+              style={{
+                width: '160px',
+                minHeight: '600px',
+                borderRadius: '8px',
+                overflow: 'hidden'
+              }}
+            />
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

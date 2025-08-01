@@ -36,6 +36,31 @@ const About = () => {
       
       {/* Header Ad */}
       <HeaderAd />
+
+      {/* Square Ad at Top */}
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '300px',
+          margin: '0 auto',
+          padding: '16px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}
+      >
+        <SmartAdComponent
+          adSlot="3930499892"
+          adType="square"
+          adFormat="auto"
+          responsive={true}
+          style={{
+            width: '300px',
+            minHeight: '250px',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          }}
+        />
+      </Box>
       
       <Fade in timeout={800}>
         <Box sx={{ 
@@ -523,10 +548,10 @@ const About = () => {
           }}
         >
           <SmartAdComponent
-            adSlot="right-sidebar"
+            adSlot="5275872162"
             adType="sidebar"
-            adFormat="vertical"
-            responsive={false}
+            adFormat="auto"
+            responsive={true}
             style={{
               width: '160px',
               minHeight: '600px',

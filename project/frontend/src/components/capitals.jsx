@@ -3,8 +3,12 @@ import countryInfo from './countryInfo';
 import officialCountries from './officialCountries';
 import Header from './Header';
 import NotificationModal from './NotificationModal';
+import SmartAdComponent from './SmartAdComponent';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
 
 const Capitals = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [currentCountry, setCurrentCountry] = useState('');
   const [options, setOptions] = useState([]);
   const [correctAnswer, setCorrectAnswer] = useState('');
@@ -603,6 +607,61 @@ const Capitals = () => {
             ))}
           </div>
         </div>
+
+        {/* Desktop Sidebar Ads - Fixed on left and right sides */}
+        {!isMobile && (
+          <>
+            {/* Left Sidebar Ad */}
+            <Box
+              sx={{
+                position: 'fixed',
+                left: '20px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '160px',
+                zIndex: 999
+              }}
+            >
+              <SmartAdComponent
+                adSlot="9833563267"
+                adType="sidebar"
+                adFormat="auto"
+                responsive={true}
+                style={{
+                  width: '160px',
+                  minHeight: '600px',
+                  borderRadius: '8px',
+                  overflow: 'hidden'
+                }}
+              />
+            </Box>
+
+            {/* Right Sidebar Ad */}
+            <Box
+              sx={{
+                position: 'fixed',
+                right: '20px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '160px',
+                zIndex: 999
+              }}
+            >
+              <SmartAdComponent
+                adSlot="5275872162"
+                adType="sidebar"
+                adFormat="auto"
+                responsive={true}
+                style={{
+                  width: '160px',
+                  minHeight: '600px',
+                  borderRadius: '8px',
+                  overflow: 'hidden'
+                }}
+              />
+            </Box>
+          </>
+        )}
       </div>
     </>
   );

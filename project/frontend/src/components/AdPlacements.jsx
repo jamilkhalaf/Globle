@@ -64,6 +64,39 @@ export const SidebarAd = () => {
   );
 };
 
+// Right sidebar ad for desktop
+export const RightSidebarAd = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  if (isMobile) return null; // Don't show sidebar ads on mobile
+
+  return (
+    <Box
+      sx={{
+        position: 'fixed',
+        right: '20px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '160px',
+        zIndex: 1000
+      }}
+    >
+      <SmartAdComponent
+        adSlot="5275872162" // ✅ Your new right sidebar AdSense slot ID
+        adType="rightSidebar"
+        adFormat="auto"
+        responsive={true}
+        style={{
+          minHeight: '600px',
+          backgroundColor: 'rgba(255, 255, 255, 0.03)',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }}
+      />
+    </Box>
+  );
+};
+
 // In-content ad for between game sections
 export const InContentAd = () => {
   return (
