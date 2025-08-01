@@ -65,6 +65,7 @@ const Game = () => {
   const [isResetting, setIsResetting] = useState(false);
 
   // Add effect to show ad popup after intro closes
+  /*
   useEffect(() => {
     console.log('Ad popup useEffect - showIntro:', showIntro, 'showAdPopup:', showAdPopup, 'adPopupShown:', adPopupShown, 'isResetting:', isResetting);
     if (!showIntro && !showAdPopup && !adPopupShown && !isResetting) {
@@ -77,6 +78,7 @@ const Game = () => {
       return () => clearTimeout(timer);
     }
   }, [showIntro, showAdPopup, adPopupShown, isResetting]);
+  */
 
   // Add effect to track secretCountry changes and update map
   useEffect(() => {
@@ -1308,10 +1310,10 @@ const Game = () => {
       </Box>
 
       {/* Game Completion Ad - Shows when game is over */}
-      <GameCompletionAd show={gameOver} />
+      {/* <GameCompletionAd show={gameOver} /> */}
 
       {/* Ad Popup - Shows after notification modal closes */}
-      <AdPopup
+      {/* <AdPopup
         open={showAdPopup}
         onClose={() => {
           console.log('Game: AdPopup onClose called, setting showAdPopup to false');
@@ -1319,7 +1321,7 @@ const Game = () => {
           setAdPopupShown(true); // Mark ad popup as shown
         }}
         title="Support Us"
-      />
+      /> */}
 
       <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
         <DialogTitle>Contact</DialogTitle>
