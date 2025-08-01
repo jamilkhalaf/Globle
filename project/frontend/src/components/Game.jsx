@@ -58,6 +58,17 @@ const Game = () => {
   // Add state for showing the ad popup
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup]);
+
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
     const continents = {
@@ -706,17 +717,13 @@ const Game = () => {
           open={showIntro}
           onClose={() => {
             setShowIntro(false);
-            setShowAdPopup(true);
+            // setShowAdPopup(true); // This will be handled by useEffect
           }}
           title="How to Play Globle"
           description={"Guess the secret country! Each guess shows how close you are. The color indicates distance: red (close), yellow (far). Try to find the country in as few guesses as possible!"}
           color="primary"
         />
-        <AdPopup
-          open={showAdPopup}
-          onClose={() => setShowAdPopup(false)}
-          title="Support Us"
-        />
+        {/* AdPopup is now rendered in the main game view */}
       </>
     );
   }
@@ -1187,6 +1194,13 @@ const Game = () => {
 
       {/* Game Completion Ad - Shows when game is over */}
       <GameCompletionAd show={gameOver} />
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
+      />
 
       <Dialog open={contactOpen} onClose={() => setContactOpen(false)}>
         <DialogTitle>Contact</DialogTitle>

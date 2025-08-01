@@ -123,6 +123,17 @@ const Shaple = () => {
   const [showIntro, setShowIntro] = useState(true);
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup]);
+
   useEffect(() => {
     if (!showIntro) startNewGame();
     // eslint-disable-next-line
@@ -227,17 +238,13 @@ const Shaple = () => {
           open={showIntro}
           onClose={() => {
             setShowIntro(false);
-            setShowAdPopup(true);
+            // setShowAdPopup(true); // This will be handled by useEffect
           }}
           title="How to Play Shaple"
           description="Guess the country or US state by its shape! You have 5 guesses. Choose a mode, look at the silhouette, and type your answer."
           color="primary"
         />
-        <AdPopup
-          open={showAdPopup}
-          onClose={() => setShowAdPopup(false)}
-          title="Support Us"
-        />
+        {/* AdPopup is now rendered in the main game view */}
       </>
     );
   }
@@ -415,8 +422,15 @@ const Shaple = () => {
             </Box>
           </>
         )}
-      </Box>
-    );
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
+      />
+    </Box>
+  );
 };
 
 export default Shaple; 

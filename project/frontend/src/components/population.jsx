@@ -57,6 +57,17 @@ const Population = () => {
   const [lastGuessResult, setLastGuessResult] = useState(null);
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup]);
+
   const updateGameStats = async (finalScore, gameTime, currentStreak) => {
     try {
       const token = localStorage.getItem('token');
@@ -212,17 +223,13 @@ const Population = () => {
           open={showIntro}
           onClose={() => {
             setShowIntro(false);
-            setShowAdPopup(true);
+            // setShowAdPopup(true); // This will be handled by useEffect
           }}
           title="How to Play Population Showdown"
           description={"Choose which country has the higher population. Each correct answer increases your score. Try to get the highest streak!"}
           color="info"
         />
-        <AdPopup
-          open={showAdPopup}
-          onClose={() => setShowAdPopup(false)}
-          title="Support Us"
-        />
+        {/* AdPopup is now rendered in the main game view */}
       </>
     );
   }
@@ -765,6 +772,13 @@ const Population = () => {
           </Box>
         </>
       )}
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
+      />
     </Box>
   );
 };

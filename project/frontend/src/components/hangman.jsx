@@ -23,6 +23,17 @@ const Hangman = () => {
   const [gameStartTime, setGameStartTime] = useState(null);
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup]);
+
   // Filter countries to only use official ones and those with reasonable lengths
   const allCountries = officialCountries.filter(name => 
     name.length >= 4 && name.length <= 15
@@ -282,17 +293,13 @@ const Hangman = () => {
           open={showIntro}
           onClose={() => {
             setShowIntro(false);
-            setShowAdPopup(true);
+            // setShowAdPopup(true); // This will be handled by useEffect
           }}
           title="How to Play Hangman"
           description="Guess the country name one letter at a time! Each wrong guess adds a part to the hangman. You have 6 wrong guesses before the game is over. Good luck!"
           color="error"
         />
-        <AdPopup
-          open={showAdPopup}
-          onClose={() => setShowAdPopup(false)}
-          title="Support Us"
-        />
+        {/* AdPopup is now rendered in the main game view */}
       </>
     );
   }
@@ -548,6 +555,13 @@ const Hangman = () => {
           </Box>
         </>
       )}
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
+      />
     </Box>
   );
 };

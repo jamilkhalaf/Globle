@@ -25,6 +25,17 @@ const Capitals = () => {
   const [gameStartTime, setGameStartTime] = useState(null);
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup]);
+
   // Get all available countries that have capital info
   const availableCountries = officialCountries.filter(country => 
     countryInfo[country] && countryInfo[country].capital
@@ -540,18 +551,14 @@ const Capitals = () => {
         open={showIntro}
         onClose={() => {
           handleIntroClose();
-          setShowAdPopup(true);
+          // setShowAdPopup(true); // This will be handled by useEffect
         }}
         title="How to Play Capitals"
         description="Test your knowledge of world capitals! You'll be shown a country name and 4 capital city options. Choose the correct capital to score points and build your streak. Complete 10 questions to finish the game. No time limit - take your time!"
         color="primary"
         buttonText="Start Game"
       />
-      <AdPopup
-        open={showAdPopup}
-        onClose={() => setShowAdPopup(false)}
-        title="Support Us"
-      />
+      {/* AdPopup is now rendered in the main game view */}
       <div style={styles.container}>
         <div style={styles.gameHeader}>
           <div style={styles.titleSection}>
@@ -672,6 +679,13 @@ const Capitals = () => {
             </Box>
           </>
         )}
+
+        {/* Ad Popup - Shows after notification modal closes */}
+        <AdPopup
+          open={showAdPopup}
+          onClose={() => setShowAdPopup(false)}
+          title="Support Us"
+        />
       </div>
     </>
   );

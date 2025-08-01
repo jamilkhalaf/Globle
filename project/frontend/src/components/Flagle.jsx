@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Paper, Stack, Toolbar, Fade, Autocomplete, Dialog, DialogTitle, DialogContent, DialogActions, useTheme, useMediaQuery } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
@@ -78,6 +78,17 @@ const Flagle = () => {
   const [showIntro, setShowIntro] = useState(true);
   const [bestScore, setBestScore] = useState(0);
   const [showAdPopup, setShowAdPopup] = useState(false);
+
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup]);
 
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
@@ -230,17 +241,13 @@ const Flagle = () => {
         open={showIntro}
         onClose={() => {
           setShowIntro(false);
-          setShowAdPopup(true);
+          // setShowAdPopup(true); // This will be handled by useEffect
         }}
         title="How to Play Flagle"
         description={"Guess the country by its flag! Each wrong guess reveals a new part of the flag. You have 8 tries. Type or select a country and press Guess. Good luck!"}
         color="warning"
       />
-      <AdPopup
-        open={showAdPopup}
-        onClose={() => setShowAdPopup(false)}
-        title="Support Us"
-      />
+      {/* AdPopup is now rendered in the main game view */}
       <Fade in timeout={600}>
         <Paper elevation={8} sx={{ mt: { xs: 2, md: 6 }, p: { xs: 1.5, md: 5 }, borderRadius: 4, maxWidth: { xs: 320, sm: 380, md: 600 }, width: '100%', textAlign: 'center', position: 'relative', background: 'rgba(30,34,44,0.98)', color: 'white', boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)', display: showIntro ? 'none' : 'block' }}>
           <Typography variant="h3" sx={{ mb: 3, fontWeight: 900, color: 'transparent', background: 'linear-gradient(90deg, #1976d2 30%, #00bcd4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Flagle</Typography>
@@ -372,6 +379,13 @@ const Flagle = () => {
 
       {/* Game Completion Ad - Shows when game is over */}
       <GameCompletionAd show={gameOver} />
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
+      />
 
       {/* Mobile Banner Ad - Fixed at bottom on mobile */}
       {isMobile && (

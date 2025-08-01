@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Typography, Paper, Button, Stack, Fade, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, IconButton, useTheme, useMediaQuery } from '@mui/material';
 import Header from './Header';
 import countryInfo from './countryInfo';
@@ -125,6 +125,17 @@ const Worldle = () => {
   const [scrollHint, setScrollHint] = useState(false);
   const [bestScore, setBestScore] = useState(0);
   const [showAdPopup, setShowAdPopup] = useState(false);
+
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup]);
 
   const country = countryInfo[target];
   const extra = countryExtra[target];
@@ -256,17 +267,13 @@ const Worldle = () => {
           open={showIntro}
           onClose={() => {
             setShowIntro(false);
-            setShowAdPopup(true);
+            // setShowAdPopup(true); // This is now handled by useEffect
           }}
           title="How to Play Worldle"
           description={"Guess the country based on hints! Each wrong guess reveals a new hint: population, capital, famous places, country shape, borders, hemisphere, and flag. You have 5 tries. Good luck!"}
           color="success"
         />
-        <AdPopup
-          open={showAdPopup}
-          onClose={() => setShowAdPopup(false)}
-          title="Support Us"
-        />
+        {/* AdPopup is now rendered in the main game view */}
       </>
     );
   }
@@ -445,6 +452,13 @@ const Worldle = () => {
           </Box>
         </>
       )}
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => setShowAdPopup(false)}
+        title="Support Us"
+      />
     </Box>
   );
 };
