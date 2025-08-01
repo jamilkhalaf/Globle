@@ -78,17 +78,20 @@ const Flagle = () => {
   const [showIntro, setShowIntro] = useState(true);
   const [bestScore, setBestScore] = useState(0);
   const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
 
   // Add effect to show ad popup after intro closes
   useEffect(() => {
-    if (!showIntro && !showAdPopup) {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
       // Small delay to ensure smooth transition
       const timer = setTimeout(() => {
         setShowAdPopup(true);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showIntro, showAdPopup]);
+  }, [showIntro, showAdPopup, adPopupShown]);
 
   const countryCode = useMemo(() => nameToCode[target] || target.slice(0,2).toLowerCase(), [target]);
   const flagSrc = `/flags/${countryCode}.png`;
@@ -383,7 +386,10 @@ const Flagle = () => {
       {/* Ad Popup - Shows after notification modal closes */}
       <AdPopup
         open={showAdPopup}
-        onClose={() => setShowAdPopup(false)}
+        onClose={() => {
+          setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad popup as shown
+        }}
         title="Support Us"
       />
 

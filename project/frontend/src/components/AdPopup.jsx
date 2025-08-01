@@ -81,20 +81,6 @@ const AdPopup = ({ open, onClose, title = "Support Us" }) => {
           Enjoying the game? Consider supporting us by viewing this ad!
         </Typography>
         
-        {/* Test button to verify clicks work */}
-        <Button 
-          variant="outlined" 
-          onClick={handleClose}
-          sx={{ 
-            mb: 2, 
-            color: 'white', 
-            borderColor: 'white',
-            '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' }
-          }}
-        >
-          Test Close Button
-        </Button>
-        
         {/* Square Ad */}
         <Box
           sx={{

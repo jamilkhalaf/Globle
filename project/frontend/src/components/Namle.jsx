@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import { Box, Typography, Button, Paper, Stack, Autocomplete, TextField, Toolbar, Dialog, DialogTitle, DialogContent, DialogActions, Chip, IconButton, useTheme, useMediaQuery, List, ListItem, ListItemText, Accordion, AccordionSummary, AccordionDetails, LinearProgress, Fade } from '@mui/material';
 import Header from './Header';
+import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import 'leaflet/dist/leaflet.css';
 import countryInfo from './countryInfo';
 import officialCountries from './officialCountries';
@@ -12,7 +14,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import NotificationModal from './NotificationModal';
 
 function levenshtein(a, b) {
   if (a.length === 0) return b.length;
@@ -51,6 +52,11 @@ const Namle = () => {
   const [showViewDialog, setShowViewDialog] = useState(false);
   const [inputError, setInputError] = useState('');
   const [showSuccessTick, setShowSuccessTick] = useState(false);
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
+  
   const timerRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -497,6 +503,17 @@ const Namle = () => {
     }
   }, [gameFinished, namedCount, totalCountries, timer]);
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup, adPopupShown]);
+
   if (showIntro) {
     return (
       <>
@@ -504,7 +521,10 @@ const Namle = () => {
         <Toolbar />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            // setShowAdPopup(true); // This will be handled by useEffect
+          }}
           title="How to Play Namle"
           description={
             "Name all 195 countries on the world map from memory! Type country names and see them highlighted as you go. Try to name them all as fast as you can. Use the timer and progress to track your challenge. Good luck!"
@@ -1099,6 +1119,16 @@ const Namle = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => {
+          setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad popup as shown
+        }}
+        title="Support Us"
+      />
     </Box>
   );
 };

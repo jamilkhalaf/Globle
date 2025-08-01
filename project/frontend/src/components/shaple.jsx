@@ -122,17 +122,20 @@ const Shaple = () => {
   const [guessesLeft, setGuessesLeft] = useState(6);
   const [showIntro, setShowIntro] = useState(true);
   const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
 
   // Add effect to show ad popup after intro closes
   useEffect(() => {
-    if (!showIntro && !showAdPopup) {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
       // Small delay to ensure smooth transition
       const timer = setTimeout(() => {
         setShowAdPopup(true);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showIntro, showAdPopup]);
+  }, [showIntro, showAdPopup, adPopupShown]);
 
   useEffect(() => {
     if (!showIntro) startNewGame();
@@ -426,7 +429,10 @@ const Shaple = () => {
       {/* Ad Popup - Shows after notification modal closes */}
       <AdPopup
         open={showAdPopup}
-        onClose={() => setShowAdPopup(false)}
+        onClose={() => {
+          setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad popup as shown
+        }}
         title="Support Us"
       />
     </Box>

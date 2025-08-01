@@ -51,22 +51,21 @@ const Population = () => {
 
   // Add state for notification modal
   const [showIntro, setShowIntro] = useState(true);
-
-  // Add state for showing population results
-  const [showPopulationResult, setShowPopulationResult] = useState(false);
-  const [lastGuessResult, setLastGuessResult] = useState(null);
   const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
 
   // Add effect to show ad popup after intro closes
   useEffect(() => {
-    if (!showIntro && !showAdPopup) {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
       // Small delay to ensure smooth transition
       const timer = setTimeout(() => {
         setShowAdPopup(true);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showIntro, showAdPopup]);
+  }, [showIntro, showAdPopup, adPopupShown]);
 
   const updateGameStats = async (finalScore, gameTime, currentStreak) => {
     try {
@@ -776,7 +775,10 @@ const Population = () => {
       {/* Ad Popup - Shows after notification modal closes */}
       <AdPopup
         open={showAdPopup}
-        onClose={() => setShowAdPopup(false)}
+        onClose={() => {
+          setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad as shown
+        }}
         title="Support Us"
       />
     </Box>

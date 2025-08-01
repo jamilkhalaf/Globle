@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import { Box, Typography, Paper, Button, Stack, Toolbar, useTheme, useMediaQuery, Fade } from '@mui/material';
 import Header from './Header';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import CropSquareIcon from '@mui/icons-material/CropSquare';
 import 'leaflet/dist/leaflet.css';
 import stateList from './stateList.json';
@@ -19,6 +20,11 @@ const US = () => {
   const [showContinue, setShowContinue] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [clickedState, setClickedState] = useState(null);
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
+  
   const mapRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -35,6 +41,17 @@ const US = () => {
   useEffect(() => {
     targetStateRef.current = targetState;
   }, [targetState]);
+
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup, adPopupShown]);
 
   const startNewRound = () => {
     setTargetState(stateList[Math.floor(Math.random() * stateList.length)]);
@@ -146,7 +163,10 @@ const US = () => {
         <Toolbar />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            // setShowAdPopup(true); // This will be handled by useEffect
+          }}
           title="How to Play US States Map Game"
           description="Click the correct US state on the map when prompted. Try to get the highest streak!"
           color="primary"
@@ -298,6 +318,16 @@ const US = () => {
           </Stack>
         </Paper>
       </Fade>
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => {
+          setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad popup as shown
+        }}
+        title="Support Us"
+      />
     </Box>
   );
 };

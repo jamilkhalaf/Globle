@@ -11,6 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 import officialCountries from './officialCountries';
 
 const Name = () => {
@@ -35,6 +36,10 @@ const Name = () => {
 
   // Add state for notification modal
   const [showIntro, setShowIntro] = useState(true);
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
 
   const updateGameStats = async (finalScore, gameTime, bestStreak) => {
     try {
@@ -269,6 +274,17 @@ const Name = () => {
     }
   };
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup, adPopupShown]);
+
   const handleCountryClick = (clickedCountry) => {
     if (isLoading || !targetCountry || showContinueButton) return;
     
@@ -347,7 +363,10 @@ const Name = () => {
         <Toolbar />
         <NotificationModal
           open={showIntro}
-          onClose={() => setShowIntro(false)}
+          onClose={() => {
+            setShowIntro(false);
+            // setShowAdPopup(true); // This will be handled by useEffect
+          }}
           title="How to Play Findle (Name Game)"
           description={"Find the country on the map! Each round, a country is named and you must click it on the map. Try to keep your streak going!"}
           color="primary"
@@ -612,6 +631,16 @@ const Name = () => {
           </DialogContentText>
         </DialogContent>
       </Dialog>
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => {
+          setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad popup as shown
+        }}
+        title="Support Us"
+      />
     </Box>
   );
 };

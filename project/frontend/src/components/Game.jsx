@@ -57,10 +57,13 @@ const Game = () => {
 
   // Add state for showing the ad popup
   const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
 
   // Add effect to show ad popup after intro closes
   useEffect(() => {
-    if (!showIntro && !showAdPopup) {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
       console.log('Game: useEffect triggered - showing ad popup');
       // Small delay to ensure smooth transition
       const timer = setTimeout(() => {
@@ -69,7 +72,7 @@ const Game = () => {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showIntro, showAdPopup]);
+  }, [showIntro, showAdPopup, adPopupShown]);
 
   // Function to show country selection statistics
   const logCountryVariety = (countryList) => {
@@ -1203,6 +1206,7 @@ const Game = () => {
         onClose={() => {
           console.log('Game: AdPopup onClose called, setting showAdPopup to false');
           setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad popup as shown
         }}
         title="Support Us"
       />

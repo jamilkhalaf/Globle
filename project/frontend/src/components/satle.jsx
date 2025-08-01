@@ -28,6 +28,8 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloseIcon from '@mui/icons-material/Close';
 import Header from './Header';
+import NotificationModal from './NotificationModal';
+import AdPopup from './AdPopup';
 
 const Satle = () => {
   const [currentGuess, setCurrentGuess] = useState('');
@@ -40,6 +42,11 @@ const Satle = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [showIntro, setShowIntro] = useState(true);
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  
+  // Add state to track if ad popup has been shown and closed
+  const [adPopupShown, setAdPopupShown] = useState(false);
   
   // Sample cities with coordinates (longitude, latitude)
   const cities = [
@@ -406,9 +413,35 @@ const Satle = () => {
     return Math.max(0, 5 - guesses.length);
   };
 
+  // Add effect to show ad popup after intro closes
+  useEffect(() => {
+    if (!showIntro && !showAdPopup && !adPopupShown) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShowAdPopup(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showIntro, showAdPopup, adPopupShown]);
+
   return (
     <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       <Header />
+      
+      {/* Intro Modal */}
+      {showIntro && (
+        <NotificationModal
+          open={showIntro}
+          onClose={() => {
+            setShowIntro(false);
+            // setShowAdPopup(true); // This will be handled by useEffect
+          }}
+          title="How to Play Satle"
+          description="Guess the city from satellite imagery! You'll see a satellite view of a city and need to guess which city it is. You have 5 guesses, and each guess will show you how close you are. Good luck!"
+          color="info"
+        />
+      )}
+
       <Box sx={{ pt: 8, pb: 4, px: 3 }}>
         <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
           {/* Game Header */}
@@ -747,6 +780,16 @@ const Satle = () => {
           </Grid>
         </Box>
       </Box>
+
+      {/* Ad Popup - Shows after notification modal closes */}
+      <AdPopup
+        open={showAdPopup}
+        onClose={() => {
+          setShowAdPopup(false);
+          setAdPopupShown(true); // Mark ad popup as shown
+        }}
+        title="Support Us"
+      />
     </Box>
   );
 };
