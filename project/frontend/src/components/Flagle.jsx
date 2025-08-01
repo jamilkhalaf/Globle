@@ -6,7 +6,6 @@ import NotificationModal from './NotificationModal';
 import AdPopup from './AdPopup';
 import officialCountries from './officialCountries';
 import SmartAdComponent from './SmartAdComponent';
-import { GameCompletionAd } from './AdPlacements';
 
 // Robust mapping from country name to ISO 3166-1 alpha-2 code
 const nameToCode = {
@@ -381,7 +380,7 @@ const Flagle = () => {
       </Fade>
 
       {/* Game Completion Ad - Shows when game is over */}
-      <GameCompletionAd show={gameOver} />
+      {/* <GameCompletionAd show={gameOver} /> */}
 
       {/* Ad Popup - Shows after notification modal closes */}
       <AdPopup
@@ -392,35 +391,6 @@ const Flagle = () => {
         }}
         title="Support Us"
       />
-
-      {/* Mobile Banner Ad - Fixed at bottom on mobile */}
-      {isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            zIndex: 1000,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            backdropFilter: 'blur(10px)',
-            padding: '8px'
-          }}
-        >
-          <SmartAdComponent
-            adSlot="mobile-banner"
-            adType="mobile"
-            adFormat="horizontal"
-            responsive={true}
-            style={{
-              width: '100%',
-              minHeight: '50px',
-              borderRadius: '8px',
-              overflow: 'hidden'
-            }}
-          />
-        </Box>
-      )}
 
       {/* Desktop Sidebar Ad - Fixed on right side */}
       {!isMobile && (
