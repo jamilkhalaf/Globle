@@ -33,11 +33,11 @@ const About = () => {
       <Header />
       <Toolbar />
       
-      {/* Square Ad at Top */}
+      {/* Horizontal Ad at Top */}
       <Box
         sx={{
           width: '100%',
-          maxWidth: '300px',
+          maxWidth: '728px',
           margin: '0 auto',
           padding: '16px',
           display: 'flex',
@@ -45,13 +45,13 @@ const About = () => {
         }}
       >
         <SmartAdComponent
-          adSlot="3930499892"
-          adType="square"
+          adSlot="9646146414"
+          adType="horizontal"
           adFormat="auto"
           responsive={true}
           style={{
-            width: '300px',
-            minHeight: '250px',
+            width: '100%',
+            minHeight: '90px',
             borderRadius: '8px',
             overflow: 'hidden'
           }}
@@ -501,35 +501,6 @@ const About = () => {
           </Paper>
         </Box>
       </Fade>
-
-      {/* Mobile Banner Ad - Fixed at bottom on mobile */}
-      {isMobile && (
-        <Box
-          sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            zIndex: 1000,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            backdropFilter: 'blur(10px)',
-            padding: '8px'
-          }}
-        >
-          <SmartAdComponent
-            adSlot="mobile-banner"
-            adType="mobile"
-            adFormat="horizontal"
-            responsive={true}
-            style={{
-              width: '100%',
-              minHeight: '50px',
-              borderRadius: '8px',
-              overflow: 'hidden'
-            }}
-          />
-        </Box>
-      )}
 
       {/* Desktop Sidebar Ad - Fixed on right side */}
       {!isMobile && (
